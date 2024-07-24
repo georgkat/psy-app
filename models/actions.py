@@ -3,5 +3,5 @@ from pydantic import EmailStr
 
 
 class ActionUserLogin(CoreModel):
-    user_email: EmailStr
+    user_email: str
     password: str

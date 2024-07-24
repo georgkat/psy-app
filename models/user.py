@@ -68,6 +68,43 @@ class UserClient(CoreModel):
     user_cash_preference: int
 
 
+class DocRegister(CoreModel):
+    doc_citizenship: str
+    doc_gender: str
+    doc_method: str
+    doc_additional_info: str
+    doc_another_job: str
+    doc_citizenship_other: Optional[str]
+    doc_comunity: str
+    doc_contact: Optional[str]
+    doc_contact_other: Optional[str]
+    doc_customers_amount_current: str
+    doc_customers_slots_available: str
+    doc_date_of_birth: str
+    doc_edu: str
+    doc_edu_additional: str
+    doc_email: str
+    doc_language: str
+    doc_method_other: Optional[str]
+    doc_name: str
+    doc_online_experience: str
+    doc_personal_therapy: str
+    doc_phone: str
+    doc_practice_start: str
+    doc_question_1: str  # что нельзя вылечить онлайн
+    doc_question_2: str  # с чем нельзя работать онлайн
+    doc_ref: str
+    doc_ref_other: Optional[str]
+    doc_socials_links: str
+    doc_supervision: str
+    doc_therapy_length: str
+
+class DocScheldure(CoreModel):
+    # token: Optional[str]
+    schedule: Optional[dict]
+    # timezone: Optional[str]
+
+
 class UserTherapist(CoreModel):
     session_token: str  # генерится на бэке для подтверждения сессии
 

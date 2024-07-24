@@ -8,7 +8,7 @@ import datetime
 
 import mariadb
 import uuid
-from fastapi import FastAPI, applications
+from fastapi import FastAPI, applications, Request
 from models.actions import ActionUserLogin
 from models.user import (UserCreate,
                          UserUpdate,
@@ -17,8 +17,13 @@ from models.user import (UserCreate,
                          SingleToken,
                          ApproveTime,
                          SelectTime,
-                         ReSelectTime)
+                         ReSelectTime,
+                         DocRegister,
+                         DocScheldure)
 from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.middleware.cors import CORSMiddleware
+
+
 
 config = {
     'host': 'localhost',
@@ -29,6 +34,15 @@ config = {
 }
 
 app = FastAPI()
+
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 con = mariadb.connect(**config)
 cur = con.cursor()
@@ -69,9 +83,9 @@ def root():
     return {"123": "345"}
 
 
-@app.get("/test")
-def test():
-    return {"123t345": "3asfda45"}
+@app.get("/test/{item_id}")
+def test(item_id: str):
+    return {"item_id": item_id}
 
 
 @app.post("/login")
@@ -129,6 +143,35 @@ def register(data:UserCreate):
         cur.close()
         con.close()
         return {'status': False}
+
+@app.post('/register_therapist')
+def register_therapist(data: DocRegister):
+    print(data)
+    return {'status': True}
+
+@app.post('/doctor_schedule')
+def doctor_schedule(data: DocScheldure):
+    # token = data.token
+    schedule = data.schedule
+
+    sh_dict = dict(schedule)
+    sh_list = []
+    for key in sh_dict:
+        for item in sh_dict[key]:
+            sh_list.append(item)
+    # timezone = data.timezone
+
+    # print('TOKEN:')
+    # print(token)
+    print('SCHELDURE:')
+    print(sh_dict)
+    for k in sh_dict.keys():
+        print(k, sh_dict[k])
+    # print('TIMEZONE:')
+    # print(timezone)
+    print(data
+    )
+    return {'status': True}
 
 @app.post('/update_client')
 def client_update(data: UserClient):
