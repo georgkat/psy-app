@@ -26,7 +26,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 config = {
-    'host': 'localhost',
+    #'host': 'localhost',
     'port': 3306,
     'user': 'root',
     'password': '',
