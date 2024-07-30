@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  mysql:
+    image: 'mysql:8.0'
+    working_dir: /application
+    volumes:
+      - '.:/application'
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=fastapi
+    ports:
+      - '6666:3306'
+  web:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 5555
+    volumes:
+      - '.:/app'
+    environment:
+      - DATABASE_URL=mysql+pymysql://root:password@mysql:3306/fastapi
+    ports:
+      - '5555:5555'

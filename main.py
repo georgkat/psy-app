@@ -9,6 +9,7 @@ import datetime
 import mariadb
 import uuid
 from fastapi import FastAPI, applications, Request
+from json_actions import parse_doctor_register
 from models.actions import ActionUserLogin
 from models.user import (UserCreate,
                          UserUpdate,
@@ -26,7 +27,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 config = {
-    #'host': 'localhost',
+    'host': 'mariadb',
     'port': 3306,
     'user': 'root',
     'password': '',
@@ -146,7 +147,7 @@ def register(data:UserCreate):
 
 @app.post('/register_therapist')
 def register_therapist(data: DocRegister):
-    print(data)
+
     return {'status': True}
 
 @app.post('/doctor_schedule')

@@ -77,7 +77,7 @@ class DocRegister(CoreModel):
     doc_citizenship_other: Optional[str]
     doc_comunity: str
     doc_contact: Optional[str]
-    doc_contact_other: Optional[str]
+    # doc_contact_other: Optional[str]
     doc_customers_amount_current: str
     doc_customers_slots_available: str
     doc_date_of_birth: str
@@ -98,6 +98,7 @@ class DocRegister(CoreModel):
     doc_socials_links: str
     doc_supervision: str
     doc_therapy_length: str
+    user_photo: list[dict]
 
 class DocScheldure(CoreModel):
     # token: Optional[str]
