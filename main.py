@@ -114,18 +114,21 @@ def login(data: ActionUserLogin):
             cur.close()
             con.close()
             return {'status': True,
-                    'token': token}
+                    'token': token,
+                    'error': ''}
         else:
-            print('else2')
+            print('incorrect password')
             print(f2)
             cur.close()
             con.close()
-            return {'status': False}
+            return {'status': False,
+                    'error': 'incorrect email/password'}
     else:
-        print('else0')
+        print('incorrect email')
         cur.close()
         con.close()
-        return {'status': False}
+        return {'status': False,
+                'error': 'incorrect email/password'}
 
 
 @app.post("/register")
@@ -143,7 +146,8 @@ def register(data:UserCreate):
     else:
         cur.close()
         con.close()
-        return {'status': False}
+        return {'status': False,
+                'error': 'registration error'}
 
 @app.post('/register_therapist')
 def register_therapist(data: DocRegister):
