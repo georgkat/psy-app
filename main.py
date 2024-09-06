@@ -4,6 +4,7 @@
 # TODO
 # TODO - DATABASE
 # TODO
+import copy
 import datetime
 
 import mariadb
@@ -154,16 +155,86 @@ def register_therapist(data: DocRegister):
 
     return {'status': True}
 
+
+# @app.post('/create_schedule_table')
+# def create_schedule_table():
+#     sql = None
+
 @app.post('/doctor_schedule')
 def doctor_schedule(data: DocScheldure):
-    # token = data.token
+    # разбираю данные с фронта
+    token = data.token
     schedule = data.schedule
 
     sh_dict = dict(schedule)
     sh_list = []
+    sq_dict = {}
+
     for key in sh_dict:
         for item in sh_dict[key]:
             sh_list.append(item)
+
+    # формирую словарик
+    for item in sh_list:
+        d = datetime.datetime.strptime(item, '%d.%m.%Y %H:%M')
+        day = f'{d.day}-{d.month}-{d.year}'
+        if day in sq_dict:
+            sq_dict[day][d.hour] = 'vacant'
+        else:
+            sq_dict[day] = [None] * 24
+
+    # sql part
+    sql = f'SELECT id FROM tokens WHERE token = {token}'
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    f = cur.fetchall()
+    cur.close()
+    con.close()
+    if not f:
+        return {'status': False,
+                'error': """user not auth-ed"""}
+    if f:
+        doc_id = f
+
+    # чекаю есть ли в расписании доктор
+    sql = f'SELECT * FROM schedule WHERE doc_id = {doc_id}'
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    f = cur.fetchall()
+    cur.close()
+    con.close()
+    # если нет добавляю доктора в расписание
+    if not f:
+        sql = f'INSERT INTO schedule (doc_id) values ({doc_id})'''
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        f = cur.fetchall()
+        cur.close()
+        con.close()
+        # и заполняю таблицу соответствующими данныем
+        for key in sq_dict.keys():
+            sql = f'UPDATE schedule SET {key} = {sq_dict[key]} WHERE doc_id = {doc_id}'''
+            con = mariadb.connect(**config)
+            cur = con.cursor()
+            cur.execute(sql)
+            f = cur.fetchall()
+            cur.close()
+            con.close()
+    else:
+        # и заполняю таблицу соответствующими данныем
+        for key in sq_dict.keys():
+            sql = f'UPDATE schedule SET {key} = {sq_dict[key]} WHERE doc_id = {doc_id}'''
+            con = mariadb.connect(**config)
+            cur = con.cursor()
+            cur.execute(sql)
+            f = cur.fetchall()
+            cur.close()
+            con.close()
+
+
     # timezone = data.timezone
 
     # print('TOKEN:')
@@ -188,7 +259,41 @@ def client_update(data: UserTherapist):
 
 @app.post('/get_available_slots')
 def get_available_slots(data: SingleToken):
-    return {'status': True, 'slots': ['01.01.2024 20:00', '01.02.2024 21:00', '01.03.2024 22:00']}
+    # sql part
+    sql = f'SELECT id FROM tokens WHERE token = {token}'
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    f = cur.fetchall()
+    cur.close()
+    con.close()
+    if not f:
+        return {'status': False,
+                'error': """user not auth-ed"""}
+    if f:
+        doc_id = f
+
+    sql = f'SELECT * FROM calendar WHERE therapist_id = {f}'
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    ff = cur.fetchall()
+    cur.close()
+    con.close()
+
+    sh_dict = {}
+    sh_list = []
+
+    for key in ff:
+        if key == 'doc_id':
+            pass
+        else:
+            for i, data in ff[key]:
+                if data:
+                    sh_list.append(f'{key} {i}:00')
+            sh_dict[key] = copy.copy(sh_list)
+
+    return {'status': True, 'slots': sh_list}
 
 @app.post('/select_slot')
 def select_slot_client(data: SelectTime):
