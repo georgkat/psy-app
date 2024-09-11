@@ -152,6 +152,17 @@ def register(data:UserCreate):
 
 @app.post('/register_therapist')
 def register_therapist(data: DocRegister):
+    columns = data.keys()
+    items = data.items()
+
+    sql = f'INSERT INTO docs ({columns}) VALUES ({items})'
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    con.commit()
+    cur.close()
+    con.close()
 
     return {'status': True}
 
