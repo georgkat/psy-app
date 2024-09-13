@@ -30,7 +30,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 config = {
-    'host': 'localhost',
+    'host': 'mariadb',
     'port': 3306,
     'user': 'root',
     'password': '',
