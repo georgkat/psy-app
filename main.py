@@ -310,7 +310,7 @@ def doctor_schedule(data: DocScheldure):
     token = data.session_token
     schedule = data.schedule
 
-    sql = f'SELECT user_id FROM tokens WHERE token = {token}'
+    sql = f'SELECT user_id FROM tokens WHERE token = "{token}"'
     con = mariadb.connect(**config)
     cur = con.cursor()
     cur.execute(sql)
@@ -322,11 +322,12 @@ def doctor_schedule(data: DocScheldure):
         return {'status': False,
                 'error': """user not auth-ed"""}
     if f:
-        doc_id = f
+        doc_id = f[0][0]
 
     sh_list = []
 
-    sql = f"DELETE FROM schedule WHERE doctor_id = {doc_id} AND client IS NULL"
+    sql = f'DELETE FROM schedule WHERE doctor_id = "{doc_id}" AND client IS NULL'
+    print(sql)
     con = mariadb.connect(**config)
     cur = con.cursor()
     cur.execute(sql)
