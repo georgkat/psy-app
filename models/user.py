@@ -1,6 +1,6 @@
 import string
 
-from datetime import datetime
+from datetime import date
 
 from typing import Optional
 
@@ -70,14 +70,15 @@ class UserClient(CoreModel):
 
 class DocRegister(CoreModel):
     doc_name: str
-    doc_date_of_birth: str
-    doc_gender: str
+    doc_date_of_birth: date # YYYY-MM-DD
+    doc_gender: int
     doc_edu: str
     doc_method: str
     doc_method_other: str
     doc_language: str
     doc_edu_additional: str
     doc_comunity: str
+    doc_practice_start: str
     doc_online_experience: str
     doc_customers_amount_current: str
     doc_therapy_length: str
@@ -96,11 +97,11 @@ class DocRegister(CoreModel):
     doc_question_1: str
     doc_question_2: str
     doc_contact: str
-    user_photo: list[str]
+    user_photo: Optional[list]
 
 class DocScheldure(CoreModel):
-    # token: Optional[str]
-    schedule: Optional[dict]
+    session_token: Optional[str]
+    schedule: Optional[list]
     # timezone: Optional[str]
 
 
@@ -136,7 +137,7 @@ class UserTherapist(CoreModel):
     user_therapist_offline_only_cases: str
 
 class UserTherapistFull(UserTherapist):
-    session_token: int  # генерится на бэке для подтверждения сессии
+    session_token: str  # генерится на бэке для подтверждения сессии
 
     user_therapist_language: str
     user_therapist_experience: str
@@ -153,23 +154,23 @@ class UserTherapistFull(UserTherapist):
 
 
 class SingleToken(CoreModel):
-    session_token: int
+    session_token: str
 
 
 class SelectTime(CoreModel):
-    session_token: int
+    session_token: str
     time_slot: int
 
 
 class ApproveTime(CoreModel):
-    session_token: int
+    session_token: str
     contract_token: int
     time_slot: int
     approved: bool
 
 
 class ReSelectTime(CoreModel):
-    session_token: int
+    session_token: str
     contract_token: int
     time_slot: int
 
@@ -178,7 +179,7 @@ class UserUpdate(CoreModel):
     """
     Users are allowed to update their email and/or username
     """
-    session_token: int  # генерится на бэке для подтверждения сессии
+    session_token: str  # генерится на бэке для подтверждения сессии
 
     user_email: EmailStr
     password: constr(min_length=7, max_length=100)

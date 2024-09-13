@@ -9,7 +9,9 @@ import datetime
 
 import mariadb
 import uuid
+import string
 from fastapi import FastAPI, applications, Request
+import random
 from json_actions import parse_doctor_register
 from models.actions import ActionUserLogin
 from models.user import (UserCreate,
@@ -28,7 +30,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 config = {
-    'host': 'mariadb',
+    'host': 'localhost',
     'port': 3306,
     'user': 'root',
     'password': '',
@@ -55,7 +57,8 @@ def swagger_monkey_patch(*args, **kwargs):
     return get_swagger_ui_html(
         *args, **kwargs,
         swagger_js_url="https://cdn.staticfile.net/swagger-ui/5.1.0/swagger-ui-bundle.min.js",
-        swagger_css_url="https://cdn.staticfile.net/swagger-ui/5.1.0/swagger-ui.min.css")
+        swagger_css_url="https://cdn.staticfile.net/swagger-ui/5.1.0/swagger-ui.min.css"
+    )
 
 applications.get_swagger_ui_html = swagger_monkey_patch
 
@@ -151,11 +154,73 @@ def register(data:UserCreate):
                 'error': 'registration error'}
 
 @app.post('/register_therapist')
+# TODO сделать генерацию пользователя
 def register_therapist(data: DocRegister):
-    columns = data.keys()
-    items = data.items()
+    mail = data.doc_email
+    password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
 
-    sql = f'INSERT INTO docs ({columns}) VALUES ({items})'
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(f"SELECT * FROM users WHERE email = '{mail}';")
+    f = cur.fetchall()
+    if f == []:
+        cur.execute(f"INSERT INTO users (email, password) VALUES ('{mail}', '{password}');")
+        con.commit()
+        cur.close()
+        con.close()
+    else:
+        cur.close()
+        con.close()
+        return {'status': False,
+                'error': 'user_already_registred'}
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(f"SELECT id FROM users WHERE email = '{mail}' AND password = '{password}';")
+    f = cur.fetchall()
+    con.commit()
+    cur.close()
+    con.close()
+
+    date = datetime.datetime.now()
+    token = uuid.uuid4()
+    user_id = f[0][0]
+    sql = f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');"
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    con.commit()
+    cur.close()
+    con.close()
+
+    doc_id = user_id
+    columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo'
+    # data.user_photo = [x.replace("'", '"') for x in data.user_photo]
+    # print(data.user_photo)
+
+
+    # save photos
+    photos = ', '.join([f"('{x}')" for x in data.user_photo])
+    print(photos)
+    sql = f'INSERT INTO images (img) VALUES {photos} RETURNING img_id;'
+    print(sql)
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    f = cur.fetchall()
+    print('photos added')
+    con.commit()
+    cur.close()
+    con.close()
+
+    photo_ids = ', '.join([str(x[0]) for x in f])
+    print(photo_ids)
+    data.user_photo = photo_ids
+
+    items = ', '.join([f"'{str(x)}'" for x in data.model_dump().values()])
+
+    sql = f"INSERT INTO doctors ({columns}) VALUES ({doc_id}, {items})"
+    print(sql)
 
     con = mariadb.connect(**config)
     cur = con.cursor()
@@ -164,7 +229,75 @@ def register_therapist(data: DocRegister):
     cur.close()
     con.close()
 
-    return {'status': True}
+    # take everything back with token
+    sql = f'SELECT doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"'
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    f = cur.fetchall()
+    con.commit()
+    cur.close()
+    con.close()
+
+    print('latest')
+    print(f)
+    doc_id, doc_photos_ids = f[0][0], f[0][29]
+    print(doc_id, doc_photos_ids)
+
+    for i in f:
+        print(i)
+
+    sql = f'SELECT img FROM images WHERE img_id IN ({doc_photos_ids})'
+    print(sql)
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    fph = cur.fetchall()
+    con.commit()
+    cur.close()
+    con.close()
+
+    fph = [ph[0] for ph in fph]
+
+    out = {'status': True,
+           'password': f'{password}',
+           'token': f'{token}',
+           'doc_name': f[0][1],
+           'doc_date_of_birth': f[0][1],
+           'doc_gender': f[0][1],
+           'doc_edu': f[0][1],
+           'doc_method': f[0][1],
+           'doc_method_other': f[0][1],
+           'doc_language': f[0][1],
+           'doc_edu_additional': f[0][1],
+           'doc_comunity': f[0][1],
+           'doc_practice_start': f[0][1],
+           'doc_online_experience': f[0][1],
+           'doc_customers_amount_current': f[0][1],
+           'doc_therapy_length': f[0][1],
+           'doc_personal_therapy': f[0][1],
+           'doc_supervision': f[0][1],
+           'doc_another_job': f[0][1],
+           'doc_customers_slots_available': f[0][1],
+           'doc_socials_links': f[0][1],
+           'doc_citizenship': f[0][1],
+           'doc_citizenship_other': f[0][1],
+           'doc_ref': f[0][1],
+           'doc_ref_other': f[0][1],
+           'doc_phone': f[0][1],
+           'doc_email': f[0][1],
+           'doc_additional_info': f[0][1],
+           'doc_question_1': f[0][1],
+           'doc_question_2': f[0][1],
+           'doc_contact': f[0][1],
+           'user_photo': fph}
+
+    print(out)
+
+    return out
+
 
 
 # @app.post('/create_schedule_table')
@@ -174,91 +307,83 @@ def register_therapist(data: DocRegister):
 @app.post('/doctor_schedule')
 def doctor_schedule(data: DocScheldure):
     # разбираю данные с фронта
-    token = data.token
+    token = data.session_token
     schedule = data.schedule
 
-    sh_dict = dict(schedule)
-    sh_list = []
-    sq_dict = {}
-
-    for key in sh_dict:
-        for item in sh_dict[key]:
-            sh_list.append(item)
-
-    # формирую словарик
-    for item in sh_list:
-        d = datetime.datetime.strptime(item, '%d.%m.%Y %H:%M')
-        day = f'{d.day}-{d.month}-{d.year}'
-        if day in sq_dict:
-            sq_dict[day][d.hour] = 'vacant'
-        else:
-            sq_dict[day] = [None] * 24
-
-    # sql part
-    sql = f'SELECT id FROM tokens WHERE token = {token}'
+    sql = f'SELECT user_id FROM tokens WHERE token = {token}'
     con = mariadb.connect(**config)
     cur = con.cursor()
     cur.execute(sql)
     f = cur.fetchall()
     cur.close()
     con.close()
+
     if not f:
         return {'status': False,
                 'error': """user not auth-ed"""}
     if f:
         doc_id = f
 
-    # чекаю есть ли в расписании доктор
-    sql = f'SELECT * FROM schedule WHERE doc_id = {doc_id}'
+    sh_list = []
+
+    sql = f"DELETE FROM schedule WHERE doctor_id = {doc_id} AND client IS NULL"
     con = mariadb.connect(**config)
     cur = con.cursor()
     cur.execute(sql)
-    f = cur.fetchall()
+    con.commit()
     cur.close()
     con.close()
-    # если нет добавляю доктора в расписание
-    if not f:
-        sql = f'INSERT INTO schedule (doc_id) values ({doc_id})'''
-        con = mariadb.connect(**config)
-        cur = con.cursor()
-        cur.execute(sql)
-        f = cur.fetchall()
-        cur.close()
-        con.close()
-        # и заполняю таблицу соответствующими данныем
-        for key in sq_dict.keys():
-            sql = f'UPDATE schedule SET {key} = {sq_dict[key]} WHERE doc_id = {doc_id}'''
-            con = mariadb.connect(**config)
-            cur = con.cursor()
-            cur.execute(sql)
-            f = cur.fetchall()
-            cur.close()
-            con.close()
-    else:
-        # и заполняю таблицу соответствующими данныем
-        for key in sq_dict.keys():
-            sql = f'UPDATE schedule SET {key} = {sq_dict[key]} WHERE doc_id = {doc_id}'''
-            con = mariadb.connect(**config)
-            cur = con.cursor()
-            cur.execute(sql)
-            f = cur.fetchall()
-            cur.close()
-            con.close()
 
+    to_sql = ''
+    to_sql_check = ''
+    if schedule:
+        for item in schedule:
+            date_time = datetime.datetime.strptime(item[0], '%d-%m-%Y %H:%M')
+            # date_time = datetime.datetime.strftime(date_time, '%d-%m-%Y %H:%M:%S')
+            print(date_time)
+            print(type(date_time))
+            if item[1]:
+                client_id = item[1]
+            else:
+                client_id = 'NULL'
+            sh_list.append([date_time, client_id])
 
-    # timezone = data.timezone
+            if to_sql:
+                to_sql = to_sql + f', ({doc_id}, "{date_time}", {client_id})'
+                to_sql_check = to_sql + f', ({doc_id}, {date_time})'
+            else:
+                to_sql = f'({doc_id}, "{date_time}", {client_id})'
+                to_sql_check = f'({doc_id}, {client_id})'
 
-    # print('TOKEN:')
-    # print(token)
-    print('SCHELDURE:')
-    print(sh_dict)
-    for k in sh_dict.keys():
-        print(k, sh_dict[k])
-    # print('TIMEZONE:')
-    # print(timezone)
-    print(data
-    )
-    return {'status': True}
+    # TODO check
+
+    sql = f'INSERT INTO schedule (doctor_id, date_time, client) values {to_sql}'
+    print(sql)
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    con.commit()
+    cur.close()
+    con.close()
+
+    sql = f'SELECT date_time FROM schedule WHERE doctor_id = {doc_id}'
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    fetch = cur.fetchall()
+    con.commit()
+    cur.close()
+    con.close()
+
+    print(fetch)
+
+    out = []
+    for item in fetch:
+        out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
+
+    # формирую словарик
+
+    return {'status': True, 'data': out}
 
 @app.post('/update_client')
 def client_update(data: UserClient):
@@ -271,20 +396,24 @@ def client_update(data: UserTherapist):
 @app.post('/get_available_slots')
 def get_available_slots(data: SingleToken):
     # sql part
-    sql = f'SELECT id FROM tokens WHERE token = {token}'
+
+    token = data.session_token
+
+    sql = f'SELECT user_id FROM tokens WHERE token = {token}'
     con = mariadb.connect(**config)
     cur = con.cursor()
     cur.execute(sql)
     f = cur.fetchall()
     cur.close()
     con.close()
+
     if not f:
         return {'status': False,
                 'error': """user not auth-ed"""}
     if f:
         doc_id = f
 
-    sql = f'SELECT * FROM calendar WHERE therapist_id = {f}'
+    sql = f'SELECT * FROM schedule WHERE doctor_id = {f}'
     con = mariadb.connect(**config)
     cur = con.cursor()
     cur.execute(sql)
