@@ -219,7 +219,7 @@ def register_therapist(data: DocRegister):
         print(photo_ids)
         data.user_photo = photo_ids
     else:
-        data.user_photo = None
+        data.user_photo = ''
 
     items = ', '.join([f"'{str(x)}'" for x in data.model_dump().values()])
 
