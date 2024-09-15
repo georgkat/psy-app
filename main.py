@@ -112,47 +112,6 @@ def login(data: ActionUserLogin):
             user_id = f2[0][0]
             print('userid', user_id)
             token = uuid.uuid4()
-            dt = datetime.datetime.now()
-            date = str(datetime.datetime.date(dt))
-            time = str(datetime.datetime.time(dt))
-            cur.execute(f"INSERT INTO tokens (user_id, token, date) VALUES ('{user_id}', '{token}', '{date}');")
-            con.commit()
-            cur.close()
-            con.close()
-            return {'status': True,
-                    'token': token,
-                    'error': ''}
-        else:
-            print('incorrect password')
-            print(f2)
-            cur.close()
-            con.close()
-            return {'status': False,
-                    'error': 'incorrect email/password'}
-    else:
-        print('incorrect email')
-        cur.close()
-        con.close()
-        return {'status': False,
-                'error': 'incorrect email/password'}
-
-@app.post("/login")
-def login(data: ActionUserLogin):
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
-    f = cur.fetchall()
-    print(f)
-    if f != []:
-        print('if1')
-        cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}' AND password = '{data.password}';")
-        f2 = cur.fetchall()
-        print(f2)
-        if f2 != []:
-            print('if2')
-            user_id = f2[0][0]
-            print('userid', user_id)
-            token = uuid.uuid4()
             cur.execute(f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');")
             con.commit()
             cur.close()
@@ -173,6 +132,7 @@ def login(data: ActionUserLogin):
         con.close()
         return {'status': False,
                 'error': 'incorrect email/password'}
+
 
 @app.post("/register")
 def register(data:UserCreate):
