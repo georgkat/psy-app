@@ -309,7 +309,7 @@ def register_therapist(data: DocRegister):
 
 
 @app.post('/get_doc_data')
-def get_doc_data(data: SingleToken):
+def get_docf_data(data: SingleToken):
     token = data.session_token
     columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo'
     sql = f'SELECT doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"'
@@ -395,6 +395,27 @@ def doctor_schedule(data: DocScheldure):
                 'error': """user not auth-ed"""}
     if f:
         doc_id = f[0][0]
+    # TODO Возврат timezone
+    if not data.schedule:
+        sql = f'SELECT date_time, client FROM schedule WHERE doctor_id = {doc_id}'
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        fetch = cur.fetchall()
+        con.commit()
+        cur.close()
+        con.close()
+
+        print(fetch)
+
+        out = []
+        for item in fetch:
+            out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
+
+        # формирую словарик
+
+        return {'status': True, 'schedule': out, 'timezone': timezone}
+
 
     sh_list = []
 
@@ -459,6 +480,7 @@ def doctor_schedule(data: DocScheldure):
     # формирую словарик
 
     return {'status': True, 'schedule': out, 'timezone': timezone}
+
 
 @app.post('/update_client')
 def client_update(data: UserClient):
