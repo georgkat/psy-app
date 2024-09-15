@@ -31,8 +31,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 config = {
-    # 'host': 'localhost',
-    'host': 'mariadb', # для деплоя с докера
+    'host': 'localhost',
+    # 'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
     'password': '',
@@ -410,15 +410,17 @@ def doctor_schedule(data: DocScheldure):
     to_sql = ''
     to_sql_check = ''
     if schedule:
+        print(schedule)
+        print(type(schedule))
         for item in schedule:
-            date_time = datetime.datetime.strptime(item[0], '%d-%m-%Y %H:%M')
+            date_time = datetime.datetime.strptime(item, '%d-%m-%Y %H:%M')
             # date_time = datetime.datetime.strftime(date_time, '%d-%m-%Y %H:%M:%S')
             print(date_time)
             print(type(date_time))
-            if item[1]:
-                client_id = item[1]
-            else:
-                client_id = 'NULL'
+            # if item[1]:
+            #     client_id = item[1]
+            # else:
+            client_id = 'NULL'
             sh_list.append([date_time, client_id])
 
             if to_sql:
