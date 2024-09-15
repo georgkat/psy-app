@@ -316,6 +316,9 @@ def doctor_schedule(data: DocScheldure):
     # разбираю данные с фронта
     token = data.session_token
     schedule = data.schedule
+    timezone = 0
+    if data.timezone:
+        timezone = data.timezone
 
     sql = f'SELECT user_id FROM tokens WHERE token = "{token}"'
     con = mariadb.connect(**config)
@@ -391,7 +394,7 @@ def doctor_schedule(data: DocScheldure):
 
     # формирую словарик
 
-    return {'status': True, 'data': out}
+    return {'status': True, 'schedule': out, 'timezone': timezone}
 
 @app.post('/update_client')
 def client_update(data: UserClient):

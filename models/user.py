@@ -102,7 +102,7 @@ class DocRegister(CoreModel):
 class DocScheldure(CoreModel):
     session_token: Optional[str]
     schedule: Optional[list]
-    # timezone: Optional[str]
+    timezone: Optional[str]
 
 
 class UserTherapist(CoreModel):
