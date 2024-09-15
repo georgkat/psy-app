@@ -311,9 +311,70 @@ def register_therapist(data: DocRegister):
 
 
 
-# @app.post('/create_schedule_table')
-# def create_schedule_table():
-#     sql = None
+@app.post('/get_doc_data')
+def get_doc_data(data: SingleToken):
+    token = SingleToken.session_token
+    columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo'
+    sql = f'SELECT doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"'
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    f = cur.fetchall()
+    con.commit()
+    cur.close()
+    con.close()
+
+    doc_id, doc_photos_ids = f[0][0], f[0][29]
+
+    if doc_photos_ids:
+        sql = f'SELECT img FROM images WHERE img_id IN ({doc_photos_ids})'
+        print(sql)
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        fph = cur.fetchall()
+        con.commit()
+        cur.close()
+        con.close()
+
+        fph = [ph[0] for ph in fph]
+    else:
+        fph = []
+
+    out = {'status': True,
+           'doc_name': f[0][1],
+           'doc_date_of_birth': f[0][2],
+           'doc_gender': f[0][3],
+           'doc_edu': f[0][4],
+           'doc_method': f[0][5],
+           'doc_method_other': f[0][6],
+           'doc_language': f[0][7],
+           'doc_edu_additional': f[0][8],
+           'doc_comunity': f[0][9],
+           'doc_practice_start': f[0][10],
+           'doc_online_experience': f[0][11],
+           'doc_customers_amount_current': f[0][12],
+           'doc_therapy_length': f[0][13],
+           'doc_personal_therapy': f[0][14],
+           'doc_supervision': f[0][15],
+           'doc_another_job': f[0][16],
+           'doc_customers_slots_available': f[0][17],
+           'doc_socials_links': f[0][18],
+           'doc_citizenship': f[0][19],
+           'doc_citizenship_other': f[0][20],
+           'doc_ref': f[0][21],
+           'doc_ref_other': f[0][22],
+           'doc_phone': f[0][23],
+           'doc_email': f[0][24],
+           'doc_additional_info': f[0][25],
+           'doc_question_1': f[0][26],
+           'doc_question_2': f[0][27],
+           'doc_contact': f[0][28],
+           'user_photo': fph}
+
+    return out
 
 @app.post('/doctor_schedule')
 def doctor_schedule(data: DocScheldure):
