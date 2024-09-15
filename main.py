@@ -454,7 +454,7 @@ def doctor_schedule(data: DocScheldure):
 
     out = []
     for item in fetch:
-        out.append([datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'), item[1]])
+        out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
 
     # формирую словарик
 
