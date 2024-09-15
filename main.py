@@ -30,7 +30,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 config = {
-    'host': 'mariadb',
+    'host': 'localhost',
+    # 'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
     'password': '',
@@ -200,7 +201,7 @@ def register_therapist(data: DocRegister):
 
 
     # save photos
-    photos = ', '.join([f"('{x}')" for x in data.user_photo])
+    photos = ', '.join([f"('{str(x)}')" for x in data.user_photo])
     print(photos)
     sql = f'INSERT INTO images (img) VALUES {photos} RETURNING img_id;'
     print(sql)

@@ -85,7 +85,7 @@ class DocRegister(CoreModel):
     doc_personal_therapy: str
     doc_supervision: str
     doc_another_job: str
-    oc_customers_slots_available: str
+    doc_customers_slots_available: str
     doc_socials_links: str
     doc_citizenship: str
     doc_citizenship_other: str
