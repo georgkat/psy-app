@@ -136,6 +136,43 @@ def login(data: ActionUserLogin):
         return {'status': False,
                 'error': 'incorrect email/password'}
 
+@app.post("/login")
+def login(data: ActionUserLogin):
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
+    f = cur.fetchall()
+    print(f)
+    if f != []:
+        print('if1')
+        cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}' AND password = '{data.password}';")
+        f2 = cur.fetchall()
+        print(f2)
+        if f2 != []:
+            print('if2')
+            user_id = f2[0][0]
+            print('userid', user_id)
+            token = uuid.uuid4()
+            cur.execute(f"INSERT INTO tokens (user_id, token, date) VALUES ('{user_id}', '{token}');")
+            con.commit()
+            cur.close()
+            con.close()
+            return {'status': True,
+                    'token': token,
+                    'error': ''}
+        else:
+            print('incorrect password')
+            print(f2)
+            cur.close()
+            con.close()
+            return {'status': False,
+                    'error': 'incorrect email/password'}
+    else:
+        print('incorrect email')
+        cur.close()
+        con.close()
+        return {'status': False,
+                'error': 'incorrect email/password'}
 
 @app.post("/register")
 def register(data:UserCreate):
@@ -313,7 +350,7 @@ def register_therapist(data: DocRegister):
 
 @app.post('/get_doc_data')
 def get_doc_data(data: SingleToken):
-    token = SingleToken.session_token
+    token = data.session_token
     columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo'
     sql = f'SELECT doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"'
 
