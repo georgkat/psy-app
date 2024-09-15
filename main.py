@@ -40,7 +40,7 @@ config = {
 
 app = FastAPI()
 
-origins = ["*"]
+origins = ['http://localhost:3000', 'https://localhost:3000', 'http://127.0.0.1:3000']
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -203,20 +203,23 @@ def register_therapist(data: DocRegister):
     # save photos
     photos = ', '.join([f"('{str(x)}')" for x in data.user_photo])
     print(photos)
-    sql = f'INSERT INTO images (img) VALUES {photos} RETURNING img_id;'
-    print(sql)
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    f = cur.fetchall()
-    print('photos added')
-    con.commit()
-    cur.close()
-    con.close()
+    if photos:
+        sql = f'INSERT INTO images (img) VALUES {photos} RETURNING img_id;'
+        print(sql)
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        f = cur.fetchall()
+        print('photos added')
+        con.commit()
+        cur.close()
+        con.close()
 
-    photo_ids = ', '.join([str(x[0]) for x in f])
-    print(photo_ids)
-    data.user_photo = photo_ids
+        photo_ids = ', '.join([str(x[0]) for x in f])
+        print(photo_ids)
+        data.user_photo = photo_ids
+    else:
+        data.user_photo = None
 
     items = ', '.join([f"'{str(x)}'" for x in data.model_dump().values()])
 
@@ -249,18 +252,21 @@ def register_therapist(data: DocRegister):
     for i in f:
         print(i)
 
-    sql = f'SELECT img FROM images WHERE img_id IN ({doc_photos_ids})'
-    print(sql)
+    if doc_photos_ids:
+        sql = f'SELECT img FROM images WHERE img_id IN ({doc_photos_ids})'
+        print(sql)
 
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    fph = cur.fetchall()
-    con.commit()
-    cur.close()
-    con.close()
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        fph = cur.fetchall()
+        con.commit()
+        cur.close()
+        con.close()
 
-    fph = [ph[0] for ph in fph]
+        fph = [ph[0] for ph in fph]
+    else:
+        fph = []
 
     out = {'status': True,
            'password': f'{password}',
