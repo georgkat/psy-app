@@ -374,7 +374,7 @@ def doctor_schedule(data: DocScheldure):
     cur.close()
     con.close()
 
-    sql = f'SELECT date_time FROM schedule WHERE doctor_id = {doc_id}'
+    sql = f'SELECT date_time, client FROM schedule WHERE doctor_id = {doc_id}'
     con = mariadb.connect(**config)
     cur = con.cursor()
     cur.execute(sql)
@@ -387,7 +387,7 @@ def doctor_schedule(data: DocScheldure):
 
     out = []
     for item in fetch:
-        out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
+        out.append([datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'), item[1]])
 
     # формирую словарик
 
