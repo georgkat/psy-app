@@ -31,7 +31,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 config = {
-    # 'host': 'localhost',
+    # 'host': 'localhost', # для сборки на пеке
     'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
@@ -80,14 +80,7 @@ def read_docs():
 
 @app.get("/")
 def root():
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute("DESCRIBE users")
-    cur.fetchall()
-    cur.close()
-    print('123')
-    print(cur)
-    return {"123": "345"}
+    return {"You should not be here": "!"}
 
 
 @app.get("/test/{item_id}")
@@ -106,10 +99,11 @@ def login(data: ActionUserLogin):
         print('if1')
         cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}' AND password = '{data.password}';")
         f2 = cur.fetchall()
-        print(f2)
+        # f2 : 0 user_id 1 email 2 password 3 therapist
         if f2 != []:
             print('if2')
             user_id = f2[0][0]
+            is_therapist = True if f2[0][3] == 1 else False
             print('userid', user_id)
             token = uuid.uuid4()
             cur.execute(f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');")
@@ -118,7 +112,8 @@ def login(data: ActionUserLogin):
             con.close()
             return {'status': True,
                     'token': token,
-                    'error': ''}
+                    'error': '',
+                    'is_therapist': is_therapist}
         else:
             print('incorrect password')
             print(f2)
@@ -163,8 +158,9 @@ def register_therapist(data: DocRegister):
         cur = con.cursor()
         cur.execute(f"SELECT * FROM users WHERE email = '{mail}';")
         f = cur.fetchall()
+        is_therapist = 1
         if f == []:
-            cur.execute(f"INSERT INTO users (email, password) VALUES ('{mail}', '{password}');")
+            cur.execute(f"INSERT INTO users (email, password, is_therapist) VALUES ('{mail}', '{password}', {is_therapist});")
             con.commit()
             cur.close()
             con.close()
