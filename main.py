@@ -221,17 +221,17 @@ def register_therapist(data: DocRegister):
         # DATA doc_method
         if data.doc_method:
             for code in data.doc_method:
-                additional_columns.append(f'doc_method_{code}')
+                additional_columns.append(f'doc_method_{int(code)}')
                 additional_items.append('1')
         # DATA doc_language
         if data.doc_language:
             for code in data.doc_language:
-                additional_columns.append(f'doc_language_{code}')
+                additional_columns.append(f'doc_language_{int(code)}')
                 additional_items.append('1')
         # DATA doc_edu_additional
         if data.doc_edu_additional:
             for code in data.doc_edu_additional:
-                additional_columns.append(f'doc_edu_additional_{code}')
+                additional_columns.append(f'doc_edu_additional_{int(code)}')
                 additional_items.append('1')
 
         additional_columns = ', '.join(additional_columns)
