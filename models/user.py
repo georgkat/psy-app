@@ -73,10 +73,10 @@ class DocRegister(CoreModel):
     doc_date_of_birth: date # YYYY-MM-DD
     doc_gender: int
     doc_edu: str
-    doc_method: str
+    doc_method: list
     doc_method_other: str
-    doc_language: str
-    doc_edu_additional: str
+    doc_language: list
+    doc_edu_additional: list
     doc_comunity: str
     doc_practice_start: str
     doc_online_experience: str

@@ -31,8 +31,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 config = {
-    # 'host': 'localhost', # для сборки на пеке
-    'host': 'mariadb', # для деплоя с докера
+    'host': 'localhost', # для сборки на пеке
+    # 'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
     'password': '',
@@ -190,7 +190,7 @@ def register_therapist(data: DocRegister):
         con.close()
 
         doc_id = user_id
-        columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo'
+        columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method_other, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo'
         # data.user_photo = [x.replace("'", '"') for x in data.user_photo]
         # print(data.user_photo)
 
@@ -216,7 +216,32 @@ def register_therapist(data: DocRegister):
         else:
             data.user_photo = ''
 
-        items = ', '.join([f"'{str(x)}'" for x in data.model_dump().values()])
+        additional_columns = []
+        additional_items = []
+        # DATA doc_method
+        if data.doc_method:
+            for code in data.doc_method:
+                additional_columns.append(f'doc_method_{code}')
+                additional_items.append('1')
+        # DATA doc_language
+        if data.doc_language:
+            for code in data.doc_language:
+                additional_columns.append(f'doc_language_{code}')
+                additional_items.append('1')
+        # DATA doc_edu_additional
+        if data.doc_edu_additional:
+            for code in data.doc_edu_additional:
+                additional_columns.append(f'doc_edu_additional_{code}')
+                additional_items.append('1')
+
+        additional_columns = ', '.join(additional_columns)
+        additional_items = ', '.join(additional_items)
+
+        items = [data.doc_name, data.doc_date_of_birth, data.doc_gender, data.doc_edu, data.doc_method_other, data.doc_comunity, data.doc_practice_start, data.doc_online_experience, data.doc_customers_amount_current, data.doc_therapy_length, data.doc_personal_therapy, data.doc_supervision, data.doc_another_job, data.doc_customers_slots_available, data.doc_socials_links, data.doc_citizenship, data.doc_citizenship_other, data.doc_ref, data.doc_ref_other, data.doc_phone, data.doc_email, data.doc_additional_info, data.doc_question_1, data.doc_question_2, data.doc_contact, data.user_photo]
+        items = ', '.join([f'"{str(x)}"' for x in items])
+
+        columns = columns + ', ' + additional_columns
+        items = items + ', ' + additional_items
 
         sql = f"INSERT INTO doctors ({columns}) VALUES ({doc_id}, {items})"
         print(sql)
@@ -229,7 +254,7 @@ def register_therapist(data: DocRegister):
         con.close()
 
         # take everything back with token
-        sql = f'SELECT doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"'
+        sql = f'SELECT doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method_other, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo, doc_method_0, doc_method_1, doc_method_2, doc_method_3, doc_method_4, doc_method_5, doc_method_6, doc_method_7, doc_method_8, doc_method_9, doc_language_0, doc_language_1, doc_language_2, doc_doc_edu_additional_0, doc_doc_edu_additional_1, doc_doc_edu_additional_2, doc_doc_edu_additional_3, doc_doc_edu_additional_4 FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"'
 
         con = mariadb.connect(**config)
         cur = con.cursor()
@@ -263,6 +288,29 @@ def register_therapist(data: DocRegister):
         else:
             fph = []
 
+        method_edu_language = f[0][27:]
+        doc_method = method_edu_language[0:10]
+        doc_language = method_edu_language[11:13]
+        doc_edu_additional = method_edu_language[14:]
+
+        doc_method_out = []
+        for index, x in enumerate(doc_method):
+            print(index, x)
+            if x:
+                doc_method_out.append(index)
+
+        doc_language_out = []
+        for index, x in enumerate(doc_language):
+            print(index, x)
+            if x:
+                doc_language_out.append(index)
+
+        doc_edu_additional_out = []
+        for index, x in enumerate(doc_edu_additional):
+            print(index, x)
+            if x:
+                doc_edu_additional_out.append(index)
+
         out = {'status': True,
                'password': f'{password}',
                'token': f'{token}',
@@ -270,10 +318,10 @@ def register_therapist(data: DocRegister):
                'doc_date_of_birth': f[0][2],
                'doc_gender': f[0][3],
                'doc_edu': f[0][4],
-               'doc_method': f[0][5],
+               'doc_method': doc_method_out,
                'doc_method_other': f[0][6],
-               'doc_language': f[0][7],
-               'doc_edu_additional': f[0][8],
+               'doc_language': doc_language_out,
+               'doc_edu_additional': doc_edu_additional_out,
                'doc_comunity': f[0][9],
                'doc_practice_start': f[0][10],
                'doc_online_experience': f[0][11],
@@ -308,7 +356,7 @@ def register_therapist(data: DocRegister):
 def get_docf_data(data: SingleToken):
     token = data.session_token
     columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo'
-    sql = f'SELECT doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"'
+    sql = f'SELECT doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo, doc_method_0, doc_method_1, doc_method_2, doc_method_3, doc_method_4, doc_method_5, doc_method_6, doc_method_7, doc_method_8, doc_method_9, doc_language_0, doc_language_1, doc_language_2, doc_doc_edu_additional_0, doc_doc_edu_additional_1, doc_doc_edu_additional_2, doc_doc_edu_additional_3, doc_doc_edu_additional_4 FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"'
 
     con = mariadb.connect(**config)
     cur = con.cursor()
@@ -336,15 +384,38 @@ def get_docf_data(data: SingleToken):
     else:
         fph = []
 
+    method_edu_language = f[0][27:]
+    doc_method = method_edu_language[0:10]
+    doc_language = method_edu_language[11:13]
+    doc_edu_additional = method_edu_language[14:]
+
+    doc_method_out = []
+    for index, x in enumerate(doc_method):
+        print(index, x)
+        if x:
+            doc_method_out.append(index)
+
+    doc_language_out = []
+    for index, x in enumerate(doc_language):
+        print(index, x)
+        if x:
+            doc_language_out.append(index)
+
+    doc_edu_additional_out = []
+    for index, x in enumerate(doc_edu_additional):
+        print(index, x)
+        if x:
+            doc_edu_additional_out.append(index)
+
     out = {'status': True,
            'doc_name': f[0][1],
            'doc_date_of_birth': f[0][2],
            'doc_gender': f[0][3],
            'doc_edu': f[0][4],
-           'doc_method': f[0][5],
+           'doc_method': doc_method_out,
            'doc_method_other': f[0][6],
-           'doc_language': f[0][7],
-           'doc_edu_additional': f[0][8],
+           'doc_language': doc_language_out,
+           'doc_edu_additional': doc_edu_additional_out,
            'doc_comunity': f[0][9],
            'doc_practice_start': f[0][10],
            'doc_online_experience': f[0][11],
