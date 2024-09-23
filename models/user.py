@@ -74,7 +74,7 @@ class DocRegister(CoreModel):
     doc_gender: int
     doc_edu: str
     doc_method: list
-    doc_method_other: str
+    doc_method_other: Optional[str] = '' # TODO REMOVE
     doc_language: list
     doc_edu_additional: list
     doc_comunity: str
