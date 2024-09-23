@@ -31,8 +31,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 config = {
-    'host': 'localhost', # для сборки на пеке
-    # 'host': 'mariadb', # для деплоя с докера
+    # 'host': 'localhost', # для сборки на пеке
+    'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
     'password': '',

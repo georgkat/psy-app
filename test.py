@@ -1,13 +1,7 @@
-import random
-
-some_args = {"one": 1, "two": 2}
-some_other_args = {'three': 3}
-
-print(some_args)
-
-some_args.update(some_other_args)
-
-print(some_args)
-
-x = [random.randint(1, 9) for n in range(0, 3)]
-print(tuple(x))
+l = [0, 0, 1, 1, 0]
+doc_method = []
+for index, x in enumerate(l):
+    print(index, x)
+    if x:
+        doc_method.append(index)
+print(doc_method)
