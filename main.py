@@ -34,10 +34,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 config = {
     # 'host': 'localhost', # для сборки на пеке
+    # 'host': '127.0.0.1' # для деплоя в прод
     'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
     'password': '',
+    # 'password': 'Ru3-H84-BPg-WkX'
     'database': 'testdb'
 }
 
