@@ -82,10 +82,20 @@ def read_docs():
 def root():
     return {"You should not be here": "!"}
 
-
-@app.get("/test/{item_id}")
-def test(item_id: str):
-    return {"item_id": item_id}
+# DEBUG DELITE
+@app.get("/make_admin")
+def make_admin():
+    email = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
+    password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
+    sql = f"INSERT INTO users (email, password, is_therapist, is_admin) VALUES ('{email}', '{password}', 0, 1)"
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    con.commit()
+    cur.close()
+    con.close()
+    return {"email": email,
+            "password": password}
 
 
 @app.post("/login")
@@ -609,7 +619,8 @@ def client_update(data: UserClient):
     return {'status': True}
 
 @app.post('/update_therapist')
-def client_update(data: UserWarning):
+def client_update(data: SingleToken):
+    pass
     '''
     "{
  doc_date_of_birth: """",
@@ -693,8 +704,6 @@ def refrash_data():
 
 @app.post('/login_admin')
 def login_admin(data: ActionUserLogin):
-    login = data.user_email
-    password = data.password
 
     con = mariadb.connect(**config)
     cur = con.cursor()

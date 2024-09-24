@@ -1,7 +1,6 @@
-l = [0, 0, 1, 1, 0]
-doc_method = []
-for index, x in enumerate(l):
-    print(index, x)
-    if x:
-        doc_method.append(index)
-print(doc_method)
+l = [x for x in range(0, 10)]
+print(l)
+
+print(l[0:5])
+print(l[5:7])
+print(l[7:])
