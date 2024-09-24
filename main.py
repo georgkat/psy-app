@@ -25,7 +25,8 @@ from models.user import (UserCreate,
                          ReSelectTime,
                          DocRegister,
                          DocScheldure,
-                         ApproveTherapistToken)
+                         ApproveTherapistToken,
+                         DocUpdate)
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -619,30 +620,98 @@ def client_update(data: UserClient):
     return {'status': True}
 
 @app.post('/update_therapist')
-def client_update(data: SingleToken):
-    pass
-    '''
-    "{
- doc_date_of_birth: """",
- doc_avatar: file,
- doc_language: [],
- doc_additional_info: """",
- doc_method: [],
- client_age: """",
- lgbtq: """",
- therapy_type: """",
- symptoms: [],
-}
+def client_update(data: DocUpdate):
+    token = data.session_token
 
+    sql = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    fetch = cur.fetchall()
+    con.commit()
+    cur.close()
+    con.close()
 
- card:  {
-   num: """",
-   name: """",
-   exp: """",
-   cvc: """"
-  }"
-    '''
-    return {'status': True}
+    doc_id = fetch[0][0]
+
+    additional_columns = []
+    additional_items = []
+
+    symptoms_columns = []
+    symptoms_items = []
+    # DATA doc_method
+    if str(data.doc_method):
+        for code in data.doc_method:
+            additional_columns.append(f'doc_method_{int(code)}')
+            additional_items.append('1')
+    # DATA doc_language
+    if str(data.doc_language):
+        for code in data.doc_language:
+            additional_columns.append(f'doc_language_{int(code)}')
+            additional_items.append('1')
+
+    if str(data.symptoms):
+        for code in data.symptoms:
+            symptoms_columns.append(f's_{int(code)}')
+            symptoms_items.append('1')
+
+    columns = ['doc_date_of_birth', 'client_age', 'lgbtq', 'therapy_type', 'doc_additional_info']
+    columns = columns + additional_columns
+    items = [data.doc_date_of_birth, data.client_age, data.lgbtq, data.therapy_type, data.doc_additional_info]
+    items = items + additional_items
+
+    set_list = []
+
+    print(columns)
+    print(items)
+    for i in range(len(columns)):
+        set_list.append(f'{columns[i]} = "{items[i]}"')
+
+    set_list = ' ,'.join(set_list)
+
+    sql = f'UPDATE doctors SET {set_list} WHERE doc_id = {doc_id}'
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    print(sql)
+    cur.execute(sql)
+    con.commit()
+    cur.close()
+    con.close()
+
+    sql = f'SELECT * FROM symptoms WHERE doc_id = {doc_id}'
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    f = cur.fetchall()
+    con.commit()
+    cur.close()
+    con.close()
+
+    if not f:
+        sql = f'INSERT INTO symptoms (doc_id, {", ".join(symptoms_columns)}) VALUES ({doc_id}, {", ".join(symptoms_items)})'
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        print(sql)
+        cur.execute(sql)
+        con.commit()
+        cur.close()
+        con.close()
+        return {'status': True}
+    else:
+        set_list = []
+        for i in range(len(symptoms_columns)):
+            set_list.append(f'{symptoms_columns[i]} = "{symptoms_items[i]}"')
+        set_list = ', '.join(set_list)
+        sql = f'UPDATE symptoms SET {set_list} WHERe doc_id = {doc_id}'
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        print(sql)
+        cur.execute(sql)
+        con.commit()
+        cur.close()
+        con.close()
+        return {'status': True}
+
 
 @app.post('/get_available_slots')
 def get_available_slots(data: SingleToken):

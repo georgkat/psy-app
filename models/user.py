@@ -99,6 +99,21 @@ class DocRegister(CoreModel):
     doc_contact: str
     user_photo: Optional[list]
 
+
+class DocUpdate(CoreModel):
+    session_token: str
+    doc_date_of_birth: date  # YYYY-MM-DD
+    avatar: Optional[list]
+    doc_language: list
+    doc_additional_info: str
+    doc_method: list
+    client_age: int
+    lgbtq: str
+    therapy_type: str
+    symptoms: list
+    card: dict
+
+
 class DocScheldure(CoreModel):
     session_token: Optional[str]
     schedule: Optional[list]
