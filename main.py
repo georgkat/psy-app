@@ -24,15 +24,16 @@ from models.user import (UserCreate,
                          SelectTime,
                          ReSelectTime,
                          DocRegister,
-                         DocScheldure)
+                         DocScheldure,
+                         ApproveTherapistToken)
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
 
 
 
 config = {
-    # 'host': 'localhost', # для сборки на пеке
-    'host': 'mariadb', # для деплоя с докера
+    'host': 'localhost', # для сборки на пеке
+    # 'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
     'password': '',
@@ -53,7 +54,6 @@ app.add_middleware(
 con = mariadb.connect(**config)
 cur = con.cursor()
 cur.execute("DESCRIBE users")
-print(cur)
 
 def swagger_monkey_patch(*args, **kwargs):
     return get_swagger_ui_html(
@@ -94,17 +94,13 @@ def login(data: ActionUserLogin):
     cur = con.cursor()
     cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
     f = cur.fetchall()
-    print(f)
     if f != []:
-        print('if1')
         cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}' AND password = '{data.password}';")
         f2 = cur.fetchall()
         # f2 : 0 user_id 1 email 2 password 3 therapist
         if f2 != []:
-            print('if2')
             user_id = f2[0][0]
             is_therapist = True if f2[0][3] == 1 else False
-            print('userid', user_id)
             token = uuid.uuid4()
             cur.execute(f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');")
             con.commit()
@@ -115,14 +111,11 @@ def login(data: ActionUserLogin):
                     'error': '',
                     'is_therapist': is_therapist}
         else:
-            print('incorrect password')
-            print(f2)
             cur.close()
             con.close()
             return {'status': False,
                     'error': 'incorrect email/password'}
     else:
-        print('incorrect email')
         cur.close()
         con.close()
         return {'status': False,
@@ -197,21 +190,17 @@ def register_therapist(data: DocRegister):
 
         # save photos
         photos = ', '.join([f"('{str(x)}')" for x in data.user_photo])
-        print(photos)
         if photos:
             sql = f'INSERT INTO images (img) VALUES {photos} RETURNING img_id;'
-            print(sql)
             con = mariadb.connect(**config)
             cur = con.cursor()
             cur.execute(sql)
             f = cur.fetchall()
-            print('photos added')
             con.commit()
             cur.close()
             con.close()
 
             photo_ids = ', '.join([str(x[0]) for x in f])
-            print(photo_ids)
             data.user_photo = photo_ids
         else:
             data.user_photo = ''
@@ -219,17 +208,17 @@ def register_therapist(data: DocRegister):
         additional_columns = []
         additional_items = []
         # DATA doc_method
-        if data.doc_method:
+        if str(data.doc_method):
             for code in data.doc_method:
                 additional_columns.append(f'doc_method_{int(code)}')
                 additional_items.append('1')
         # DATA doc_language
-        if data.doc_language:
+        if str(data.doc_language):
             for code in data.doc_language:
                 additional_columns.append(f'doc_language_{int(code)}')
                 additional_items.append('1')
         # DATA doc_edu_additional
-        if data.doc_edu_additional:
+        if str(data.doc_edu_additional):
             for code in data.doc_edu_additional:
                 additional_columns.append(f'doc_edu_additional_{int(code)}')
                 additional_items.append('1')
@@ -244,7 +233,6 @@ def register_therapist(data: DocRegister):
         items = items + ', ' + additional_items
 
         sql = f"INSERT INTO doctors ({columns}) VALUES ({doc_id}, {items})"
-        print(sql)
 
         con = mariadb.connect(**config)
         cur = con.cursor()
@@ -254,7 +242,53 @@ def register_therapist(data: DocRegister):
         con.close()
 
         # take everything back with token
-        sql = f'SELECT doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method_other, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo, doc_method_0, doc_method_1, doc_method_2, doc_method_3, doc_method_4, doc_method_5, doc_method_6, doc_method_7, doc_method_8, doc_method_9, doc_language_0, doc_language_1, doc_language_2, doc_edu_additional_0, doc_edu_additional_1, doc_edu_additional_2, doc_edu_additional_3, doc_edu_additional_4 FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"'
+        sql = (f'SELECT '                           # 0
+               f'doc_id, '                          # 1
+               f'doc_name, '                        # 2
+               f'doc_date_of_birth, '               # 3
+               f'doc_gender, '                      # 4
+               f'doc_edu, '                         # 5
+               f'doc_method_other, '                # 6
+               f'doc_comunity, '                    # 7
+               f'doc_practice_start, '              # 8
+               f'doc_online_experience, '           # 9
+               f'doc_customers_amount_current, '    # 10
+               f'doc_therapy_length, '              # 11
+               f'doc_personal_therapy, '            # 12
+               f'doc_supervision, '                 # 13
+               f'doc_another_job, '                 # 14
+               f'doc_customers_slots_available, '   # 15
+               f'doc_socials_links, '               # 16
+               f'doc_citizenship, '                 # 17
+               f'doc_citizenship_other, '           # 18
+               f'doc_ref, '                         # 19
+               f'doc_ref_other, '                   # 20
+               f'doc_phone, '                       # 21
+               f'doc_email, '                       # 22
+               f'doc_additional_info, '             # 23
+               f'doc_question_1, '                  # 24
+               f'doc_question_2, '                  # 25
+               f'doc_contact, '                     # 26
+               f'user_photo, '                      # 27
+               f'doc_method_0, '                    # 28
+               f'doc_method_1, '
+               f'doc_method_2, '
+               f'doc_method_3, '
+               f'doc_method_4, '
+               f'doc_method_5, '
+               f'doc_method_6, '
+               f'doc_method_7, '
+               f'doc_method_8, '
+               f'doc_method_9, '
+               f'doc_language_0, '
+               f'doc_language_1, '
+               f'doc_language_2, '
+               f'doc_edu_additional_0, '
+               f'doc_edu_additional_1, '
+               f'doc_edu_additional_2, '
+               f'doc_edu_additional_3, '
+               f'doc_edu_additional_4 '
+               f'FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"')
 
         con = mariadb.connect(**config)
         cur = con.cursor()
@@ -264,17 +298,10 @@ def register_therapist(data: DocRegister):
         cur.close()
         con.close()
 
-        print('latest')
-        print(f)
-        doc_id, doc_photos_ids = f[0][0], f[0][29]
-        print(doc_id, doc_photos_ids)
-
-        for i in f:
-            print(i)
+        doc_id, doc_photos_ids = f[0][0], f[0][27]
 
         if doc_photos_ids:
             sql = f'SELECT img FROM images WHERE img_id IN ({doc_photos_ids})'
-            print(sql)
 
             con = mariadb.connect(**config)
             cur = con.cursor()
@@ -290,24 +317,21 @@ def register_therapist(data: DocRegister):
 
         method_edu_language = f[0][27:]
         doc_method = method_edu_language[0:10]
-        doc_language = method_edu_language[11:13]
-        doc_edu_additional = method_edu_language[14:]
+        doc_language = method_edu_language[10:13]
+        doc_edu_additional = method_edu_language[13:]
 
         doc_method_out = []
         for index, x in enumerate(doc_method):
-            print(index, x)
             if x:
                 doc_method_out.append(index)
 
         doc_language_out = []
         for index, x in enumerate(doc_language):
-            print(index, x)
             if x:
                 doc_language_out.append(index)
 
         doc_edu_additional_out = []
         for index, x in enumerate(doc_edu_additional):
-            print(index, x)
             if x:
                 doc_edu_additional_out.append(index)
 
@@ -344,8 +368,6 @@ def register_therapist(data: DocRegister):
                'doc_contact': f[0][28],
                'user_photo': fph}
 
-        print(out)
-
         return out
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
@@ -355,8 +377,56 @@ def register_therapist(data: DocRegister):
 @app.post('/get_doc_data')
 def get_docf_data(data: SingleToken):
     token = data.session_token
-    columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo'
-    sql = f'SELECT doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method, doc_method_other, doc_language, doc_edu_additional, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo, doc_method_0, doc_method_1, doc_method_2, doc_method_3, doc_method_4, doc_method_5, doc_method_6, doc_method_7, doc_method_8, doc_method_9, doc_language_0, doc_language_1, doc_language_2, doc_edu_additional_0, doc_edu_additional_1, doc_edu_additional_2, doc_edu_additional_3, doc_edu_additional_4 FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"'
+    sql = (f'SELECT '
+           f'doc_id, '
+           f'doc_name, '
+           f'doc_date_of_birth, '
+           f'doc_gender, '
+           f'doc_edu, '
+           f'doc_method, '
+           f'doc_method_other, '
+           f'doc_language, '
+           f'doc_edu_additional, '
+           f'doc_comunity, '
+           f'doc_practice_start, '
+           f'doc_online_experience, '
+           f'doc_customers_amount_current, '
+           f'doc_therapy_length, '
+           f'doc_personal_therapy, '
+           f'doc_supervision, '
+           f'doc_another_job, '
+           f'doc_customers_slots_available, '
+           f'doc_socials_links, '
+           f'doc_citizenship, '
+           f'doc_citizenship_other, '
+           f'doc_ref, '
+           f'doc_ref_other, '
+           f'doc_phone, '
+           f'doc_email, '
+           f'doc_additional_info, '
+           f'doc_question_1, '
+           f'doc_question_2, '
+           f'doc_contact, '
+           f'user_photo, '
+           f'doc_method_0, '
+           f'doc_method_1, '
+           f'doc_method_2, '
+           f'doc_method_3, '
+           f'doc_method_4, '
+           f'doc_method_5, '
+           f'doc_method_6, '
+           f'doc_method_7, '
+           f'doc_method_8, '
+           f'doc_method_9, '
+           f'doc_language_0, '
+           f'doc_language_1, '
+           f'doc_language_2, '
+           f'doc_edu_additional_0, '
+           f'doc_edu_additional_1, '
+           f'doc_edu_additional_2, '
+           f'doc_edu_additional_3, '
+           f'doc_edu_additional_4 '
+           f'FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"')
 
     con = mariadb.connect(**config)
     cur = con.cursor()
@@ -370,7 +440,6 @@ def get_docf_data(data: SingleToken):
 
     if doc_photos_ids:
         sql = f'SELECT img FROM images WHERE img_id IN ({doc_photos_ids})'
-        print(sql)
 
         con = mariadb.connect(**config)
         cur = con.cursor()
@@ -384,26 +453,23 @@ def get_docf_data(data: SingleToken):
     else:
         fph = []
 
-    method_edu_language = f[0][27:]
+    method_edu_language = f[0][30:]
     doc_method = method_edu_language[0:10]
-    doc_language = method_edu_language[11:13]
-    doc_edu_additional = method_edu_language[14:]
+    doc_language = method_edu_language[10:13]
+    doc_edu_additional = method_edu_language[13:]
 
     doc_method_out = []
     for index, x in enumerate(doc_method):
-        print(index, x)
         if x:
             doc_method_out.append(index)
 
     doc_language_out = []
     for index, x in enumerate(doc_language):
-        print(index, x)
         if x:
             doc_language_out.append(index)
 
     doc_edu_additional_out = []
     for index, x in enumerate(doc_edu_additional):
-        print(index, x)
         if x:
             doc_edu_additional_out.append(index)
 
@@ -472,9 +538,6 @@ def doctor_schedule(data: DocScheldure):
         con.commit()
         cur.close()
         con.close()
-
-        print(fetch)
-
         out = []
         for item in fetch:
             out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
@@ -487,7 +550,6 @@ def doctor_schedule(data: DocScheldure):
     sh_list = []
 
     sql = f'DELETE FROM schedule WHERE doctor_id = "{doc_id}" AND client IS NULL'
-    print(sql)
     con = mariadb.connect(**config)
     cur = con.cursor()
     cur.execute(sql)
@@ -498,13 +560,9 @@ def doctor_schedule(data: DocScheldure):
     to_sql = ''
     to_sql_check = ''
     if schedule:
-        print(schedule)
-        print(type(schedule))
         for item in schedule:
             date_time = datetime.datetime.strptime(item, '%d-%m-%Y %H:%M')
             # date_time = datetime.datetime.strftime(date_time, '%d-%m-%Y %H:%M:%S')
-            print(date_time)
-            print(type(date_time))
             # if item[1]:
             #     client_id = item[1]
             # else:
@@ -521,7 +579,6 @@ def doctor_schedule(data: DocScheldure):
     # TODO check
 
     sql = f'INSERT INTO schedule (doctor_id, date_time, client) values {to_sql}'
-    print(sql)
     con = mariadb.connect(**config)
     cur = con.cursor()
     cur.execute(sql)
@@ -538,8 +595,6 @@ def doctor_schedule(data: DocScheldure):
     cur.close()
     con.close()
 
-    print(fetch)
-
     out = []
     for item in fetch:
         out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
@@ -554,7 +609,28 @@ def client_update(data: UserClient):
     return {'status': True}
 
 @app.post('/update_therapist')
-def client_update(data: UserTherapist):
+def client_update(data: UserWarning):
+    '''
+    "{
+ doc_date_of_birth: """",
+ doc_avatar: file,
+ doc_language: [],
+ doc_additional_info: """",
+ doc_method: [],
+ client_age: """",
+ lgbtq: """",
+ therapy_type: """",
+ symptoms: [],
+}
+
+
+ card:  {
+   num: """",
+   name: """",
+   exp: """",
+   cvc: """"
+  }"
+    '''
     return {'status': True}
 
 @app.post('/get_available_slots')
@@ -614,3 +690,97 @@ def change_slot(data: ReSelectTime):
 @app.get('/refrash')
 def refrash_data():
     return {'status': True, 'data': None}
+
+@app.post('/login_admin')
+def login_admin(data: ActionUserLogin):
+    login = data.user_email
+    password = data.password
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
+    f = cur.fetchall()
+    if f != []:
+        cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}' AND password = '{data.password} AND is_admin = 1';")
+        f2 = cur.fetchall()
+        # f2 : 0 user_id 1 email 2 password 3 therapist
+        if f2 != []:
+            user_id = f2[0][0]
+            is_therapist = True if f2[0][3] == 1 else False
+            token = uuid.uuid4()
+            cur.execute(f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');")
+            con.commit()
+            cur.close()
+            con.close()
+            return {'status': True,
+                    'token': token,
+                    'error': '',
+                    'is_admin': True}
+        else:
+            cur.close()
+            con.close()
+            return {'status': False,
+                    'error': 'incorrect email/password'}
+    else:
+        cur.close()
+        con.close()
+        return {'status': False,
+                'error': 'incorrect email/password'}
+
+@app.post('/approve_therapist')
+def approve_therapist(data: ApproveTherapistToken):
+    token = data.session_token
+    doc_id = data.doc_id
+
+    sql = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    f = cur.fetchall()
+    con.commit()
+    cur.close()
+
+    if f:
+        sql = f"UPDATE doctors SET approved = 1 WHERE doc_id = {doc_id}"
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        con.commit()
+        cur.close()
+
+        return {'status': True}
+    return {'status': False,
+            'error': 'No such admin, or admin not registred'}
+
+
+@app.post('/list_therapists')
+def list_therapists(data: SingleToken):
+    token = data.session_token
+
+    sql = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    f = cur.fetchall()
+    con.commit()
+    cur.close()
+
+    out = []
+    if f:
+        sql = 'SELECT doc_id, doc_name, doc_gender, email, doc_date_of_birth FROM users JOIN doctors ON doc_id = users.id'
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        res = cur.fetchall()
+        con.commit()
+        cur.close()
+        for row in res:
+            out.append({'doc_id': row[0],
+                        'doc_name': row[1],
+                        'doc_gender': row[2],
+                        'email': row[3],
+                        'doc_date_of_birth': row[4]})
+        return {'status': True,
+                'list': out}

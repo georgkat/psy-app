@@ -156,6 +156,10 @@ class UserTherapistFull(UserTherapist):
 class SingleToken(CoreModel):
     session_token: str
 
+class ApproveTherapistToken(CoreModel):
+    session_token: str
+    doc_id: int
+
 
 class SelectTime(CoreModel):
     session_token: str
