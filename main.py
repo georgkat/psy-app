@@ -33,9 +33,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 config = {
-    # 'host': 'localhost', # для сборки на пеке
+    'host': 'localhost', # для сборки на пеке
     # 'host': '127.0.0.1' # для деплоя в прод
-    'host': 'mariadb', # для деплоя с докера
+    # 'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
     'password': '',
@@ -45,7 +45,7 @@ config = {
 
 app = FastAPI()
 
-origins = ['http://localhost:3000', 'https://localhost:3000', 'http://127.0.0.1:3000', 'http://0.0.0.0:3000']
+origins = ['http://localhost:3000', 'https://localhost:3000', 'http://127.0.0.1:3000', 'http://0.0.0.0:3000', 'http://www.speakyourmind.help/*']
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
