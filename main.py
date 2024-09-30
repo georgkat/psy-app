@@ -37,19 +37,19 @@ from email.mime.text import MIMEText
 # no_reply password = BPW-XGN-r7g-p8v
 
 config = {
-    'host': 'localhost', # для сборки на пеке
-    # 'host': '127.0.0.1' # для деплоя в прод
+    # 'host': 'localhost', # для сборки на пеке
+    'host': '127.0.0.1', # для деплоя в прод
     # 'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
-    'password': '',
-    # 'password': 'Ru3-H84-BPg-WkX'
+    # 'password': '',
+    'password': 'Ru3-H84-BPg-WkX',
     'database': 'testdb'
 }
 
 app = FastAPI()
 
-origins = ['http://localhost:3000', 'https://localhost:3000', 'http://127.0.0.1:3000', 'http://0.0.0.0:3000', 'http://www.speakyourmind.help/*']
+origins = ['http://localhost:3000', 'https://localhost:3000', 'http://127.0.0.1:3000', 'http://0.0.0.0:3000', 'http://www.speakyourmind.help/*', 'http://www.speakyourmind.help/']
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
