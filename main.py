@@ -33,9 +33,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 config = {
-    'host': 'localhost', # для сборки на пеке
+    # 'host': 'localhost', # для сборки на пеке
     # 'host': '127.0.0.1' # для деплоя в прод
-    # 'host': 'mariadb', # для деплоя с докера
+    'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
     'password': '',
@@ -201,10 +201,10 @@ def register_therapist(data: DocRegister):
         # save photos
         img_data = []
         for item in data.user_photo:
-            img_data.append((item['data'], item['name'], item['type']))
+            img_data.append(str((item['data'], item['name'], item['type'])))
 
         if img_data:
-            sql = f'INSERT INTO images (data, name, type) VALUES {img_data} RETURNING img_id;'
+            sql = f'INSERT INTO images (data, name, type) VALUES {", ".join(img_data)} RETURNING img_id;'
             con = mariadb.connect(**config)
             cur = con.cursor()
             cur.execute(sql)
@@ -217,6 +217,18 @@ def register_therapist(data: DocRegister):
             data.user_photo = photo_ids
         else:
             data.user_photo = ''
+
+        # doc_edu part
+        # doc_edu_list = []
+        # for line in data.doc_edu:
+        #     doc_edu_list.append((line['year'],
+        #                          line['university'],
+        #                          line['faculty'],
+        #                          line['degree']))
+
+        # method
+        # language
+        # doc_edu_additional
 
         additional_columns = []
         additional_items = []
@@ -256,51 +268,51 @@ def register_therapist(data: DocRegister):
 
         # take everything back with token
         sql = (f'SELECT '                           # 0
-               f'doc_id, '                          # 1
-               f'doc_name, '                        # 2
-               f'doc_date_of_birth, '               # 3
-               f'doc_gender, '                      # 4
-               f'doc_edu, '                         # 5
-               f'doc_method_other, '                # 6
-               f'doc_comunity, '                    # 7
-               f'doc_practice_start, '              # 8
-               f'doc_online_experience, '           # 9
-               f'doc_customers_amount_current, '    # 10
-               f'doc_therapy_length, '              # 11
-               f'doc_personal_therapy, '            # 12
-               f'doc_supervision, '                 # 13
-               f'doc_another_job, '                 # 14
-               f'doc_customers_slots_available, '   # 15
-               f'doc_socials_links, '               # 16
-               f'doc_citizenship, '                 # 17
-               f'doc_citizenship_other, '           # 18
-               f'doc_ref, '                         # 19
-               f'doc_ref_other, '                   # 20
-               f'doc_phone, '                       # 21
-               f'doc_email, '                       # 22
-               f'doc_additional_info, '             # 23
-               f'doc_question_1, '                  # 24
-               f'doc_question_2, '                  # 25
-               f'doc_contact, '                     # 26
-               f'user_photo, '                      # 27
-               f'doc_method_0, '                    # 28
-               f'doc_method_1, '
-               f'doc_method_2, '
-               f'doc_method_3, '
-               f'doc_method_4, '
-               f'doc_method_5, '
-               f'doc_method_6, '
-               f'doc_method_7, '
-               f'doc_method_8, '
-               f'doc_method_9, '
-               f'doc_language_0, '
-               f'doc_language_1, '
-               f'doc_language_2, '
-               f'doc_edu_additional_0, '
-               f'doc_edu_additional_1, '
-               f'doc_edu_additional_2, '
-               f'doc_edu_additional_3, '
-               f'doc_edu_additional_4 '
+               f'doc_id, '                          # 0
+               f'doc_name, '                        # 1
+               f'doc_date_of_birth, '               # 2
+               f'doc_gender, '                      # 3
+               f'doc_edu, '                         # 4
+               f'doc_method_other, '                # 5
+               f'doc_comunity, '                    # 6
+               f'doc_practice_start, '              # 7
+               f'doc_online_experience, '           # 8
+               f'doc_customers_amount_current, '    # 9
+               f'doc_therapy_length, '              # 10
+               f'doc_personal_therapy, '            # 11
+               f'doc_supervision, '                 # 12
+               f'doc_another_job, '                 # 13
+               f'doc_customers_slots_available, '   # 14
+               f'doc_socials_links, '               # 15
+               f'doc_citizenship, '                 # 16
+               f'doc_citizenship_other, '           # 17
+               f'doc_ref, '                         # 18
+               f'doc_ref_other, '                   # 19
+               f'doc_phone, '                       # 20
+               f'doc_email, '                       # 21
+               f'doc_additional_info, '             # 22
+               f'doc_question_1, '                  # 23
+               f'doc_question_2, '                  # 24
+               f'doc_contact, '                     # 25
+               f'user_photo, '                      # 26
+               f'doc_method_0, '                    # 27
+               f'doc_method_1, '                    # 28
+               f'doc_method_2, '                    # 29
+               f'doc_method_3, '                    # 30
+               f'doc_method_4, '                    # 31
+               f'doc_method_5, '                    # 32
+               f'doc_method_6, '                    # 33
+               f'doc_method_7, '                    # 34
+               f'doc_method_8, '                    # 35
+               f'doc_method_9, '                    # 36
+               f'doc_language_0, '                  # 37
+               f'doc_language_1, '                  # 38
+               f'doc_language_2, '                  # 39
+               f'doc_edu_additional_0, '            # 40
+               f'doc_edu_additional_1, '            # 41
+               f'doc_edu_additional_2, '            # 42
+               f'doc_edu_additional_3, '            # 43
+               f'doc_edu_additional_4 '             # 44
                f'FROM doctors JOIN tokens ON doctors.doc_id = tokens.user_id WHERE token = "{token}"')
 
         con = mariadb.connect(**config)
@@ -311,20 +323,22 @@ def register_therapist(data: DocRegister):
         cur.close()
         con.close()
 
-        doc_id, doc_photos_ids = f[0][0], f[0][27]
+        doc_id, doc_photos_ids = f[0][0], f[0][26]
+        print(doc_photos_ids)
 
         if doc_photos_ids:
-            sql = f'SELECT (data, name, type) FROM images WHERE img_id IN ({doc_photos_ids})'
+            sql = f'SELECT data, name, type FROM images WHERE img_id IN ({doc_photos_ids})'
 
             con = mariadb.connect(**config)
             cur = con.cursor()
+            print(sql)
             cur.execute(sql)
             fph = cur.fetchall()
             con.commit()
             cur.close()
             con.close()
 
-            fph = [ph[0] for ph in fph]
+            fph = [{'data': ph[0], 'name': ph[1], 'type': ph[2]} for ph in fph]
         else:
             fph = []
 
@@ -359,26 +373,26 @@ def register_therapist(data: DocRegister):
                #'doc_method_other': f[0][6],
                'doc_language': doc_language_out,
                'doc_edu_additional': doc_edu_additional_out,
-               'doc_comunity': f[0][9],
-               'doc_practice_start': f[0][10],
-               'doc_online_experience': f[0][11],
-               'doc_customers_amount_current': f[0][12],
-               'doc_therapy_length': f[0][13],
-               'doc_personal_therapy': f[0][14],
-               'doc_supervision': f[0][15],
-               'doc_another_job': f[0][16],
-               'doc_customers_slots_available': f[0][17],
-               'doc_socials_links': f[0][18],
-               'doc_citizenship': f[0][19],
-               'doc_citizenship_other': f[0][20],
-               'doc_ref': f[0][21],
-               'doc_ref_other': f[0][22],
-               'doc_phone': f[0][23],
-               'doc_email': f[0][24],
-               'doc_additional_info': f[0][25],
-               'doc_question_1': f[0][26],
-               'doc_question_2': f[0][27],
-               'doc_contact': f[0][28],
+               'doc_comunity': f[0][6],
+               'doc_practice_start': f[0][7],
+               'doc_online_experience': f[0][8],
+               'doc_customers_amount_current': f[0][9],
+               'doc_therapy_length': f[0][10],
+               'doc_personal_therapy': f[0][11],
+               'doc_supervision': f[0][25],
+               'doc_another_job': f[0][13],
+               'doc_customers_slots_available': f[0][14],
+               'doc_socials_links': f[0][15],
+               'doc_citizenship': f[0][16],
+               'doc_citizenship_other': f[0][17],
+               'doc_ref': f[0][18],
+               'doc_ref_other': f[0][19],
+               'doc_phone': f[0][20],
+               'doc_email': f[0][21],
+               'doc_additional_info': f[0][22],
+               'doc_question_1': f[0][23],
+               'doc_question_2': f[0][24],
+               'doc_contact': f[0][25],
                'user_photo': fph}
 
         return out
