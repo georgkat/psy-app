@@ -86,9 +86,9 @@ def root():
     return {"You should not be here": "!"}
 
 # DEBUG DELITE
-@app.get("/make_admin")
+@app.post("/make_admin")
 def make_admin():
-    email = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
+    email = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)]) + '@' + 'admin.adm'
     password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
     sql = f"INSERT INTO users (email, password, is_therapist, is_admin) VALUES ('{email}', '{password}', 0, 1)"
     con = mariadb.connect(**config)
@@ -197,14 +197,14 @@ def register_therapist(data: DocRegister):
 
         doc_id = user_id
         columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method_other, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo'
-        # data.user_photo = [x.replace("'", '"') for x in data.user_photo]
-        # print(data.user_photo)
-
 
         # save photos
-        photos = ', '.join([f"('{str(x)}')" for x in data.user_photo])
-        if photos:
-            sql = f'INSERT INTO images (img) VALUES {photos} RETURNING img_id;'
+        img_data = []
+        for item in data.user_photo:
+            img_data.append((item['data'], item['name'], item['type']))
+
+        if img_data:
+            sql = f'INSERT INTO images (data, name, type) VALUES {img_data} RETURNING img_id;'
             con = mariadb.connect(**config)
             cur = con.cursor()
             cur.execute(sql)
@@ -314,7 +314,7 @@ def register_therapist(data: DocRegister):
         doc_id, doc_photos_ids = f[0][0], f[0][27]
 
         if doc_photos_ids:
-            sql = f'SELECT img FROM images WHERE img_id IN ({doc_photos_ids})'
+            sql = f'SELECT (data, name, type) FROM images WHERE img_id IN ({doc_photos_ids})'
 
             con = mariadb.connect(**config)
             cur = con.cursor()

@@ -111,7 +111,7 @@ class DocUpdate(CoreModel):
     lgbtq: str
     therapy_type: str
     symptoms: list
-    card: dict
+    card: Optional[dict]
 
 
 class DocScheldure(CoreModel):
