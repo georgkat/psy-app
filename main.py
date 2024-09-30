@@ -466,17 +466,18 @@ def get_docf_data(data: SingleToken):
     doc_id, doc_photos_ids = f[0][0], f[0][29]
 
     if doc_photos_ids:
-        sql = f'SELECT img FROM images WHERE img_id IN ({doc_photos_ids})'
+        sql = f'SELECT data, name, type FROM images WHERE img_id IN ({doc_photos_ids})'
 
         con = mariadb.connect(**config)
         cur = con.cursor()
+        print(sql)
         cur.execute(sql)
         fph = cur.fetchall()
         con.commit()
         cur.close()
         con.close()
 
-        fph = [ph[0] for ph in fph]
+        fph = [{'data': ph[0], 'name': ph[1], 'type': ph[2]} for ph in fph]
     else:
         fph = []
 
