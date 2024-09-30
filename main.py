@@ -30,12 +30,16 @@ from models.user import (UserCreate,
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
 
-
+# EMAIL IMPORTS
+from smtplib import SMTP_SSL as smtp
+from email.mime.text import MIMEText
+# email password = pQ6-c8K-Wph-Z2p
+# no_reply password = BPW-XGN-r7g-p8v
 
 config = {
-    # 'host': 'localhost', # для сборки на пеке
+    'host': 'localhost', # для сборки на пеке
     # 'host': '127.0.0.1' # для деплоя в прод
-    'host': 'mariadb', # для деплоя с докера
+    # 'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
     'password': '',
@@ -77,6 +81,27 @@ def db_connection(sql: str):
     con.close()
 
 
+def send_email_func(to_addr, sender = '', noreply = True, author = None, password = None, subject = '', content = ''):
+    if noreply:
+        try:
+            password = 'BPW-XGN-r7g-p8v'
+            text_subtype = 'plain'
+            msg = MIMEText(content, text_subtype)
+            msg['Subject'] = subject
+            msg['From'] = 'no_reply@speakyourmind.help'  # some SMTP servers will do this automatically, not all
+            SMTPserver = ('mail.speakyourmind.help', 465)
+            conn = smtp(host='mail.speakyourmind.help', port=465)
+            conn.set_debuglevel(False)
+            conn.login('no_reply@speakyourmind.help', password)
+            try:
+                conn.sendmail('no_reply@speakyourmind.help', to_addr, msg.as_string())
+            finally:
+                conn.quit()
+        except:
+            raise Exception
+
+
+
 @app.get("/doc")
 def read_docs():
     return get_swagger_ui_html(openapi_url="/openapi.json")
@@ -84,6 +109,12 @@ def read_docs():
 @app.get("/")
 def root():
     return {"You should not be here": "!"}
+
+
+@app.post("/send_email")
+def send_email():
+    send_email_func(to_addr='georgkat@yandex.ru', subject='OK', content='OK OK OKJ')
+    return {'ok': 'ok'}
 
 # DEBUG DELITE
 @app.post("/make_admin")
@@ -361,6 +392,11 @@ def register_therapist(data: DocRegister):
         for index, x in enumerate(doc_edu_additional):
             if x:
                 doc_edu_additional_out.append(index)
+
+        subj = "Speak your mind password"
+        cont = f'''Hello, {data.doc_name}!\nYour first one time password is {password}!\nSincerely yours, SPEAK YOUR MIND team!'''
+
+        send_email_func(to_addr=data.doc_email, subject=subj, content=cont)
 
         out = {'status': True,
                'password': f'{password}',
