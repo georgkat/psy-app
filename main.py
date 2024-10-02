@@ -132,6 +132,22 @@ def make_admin():
             "password": password}
 
 
+@app.post("/logout")
+def logout(data: SingleToken):
+    """
+    Logout user/therapist/admin
+    """
+    token = data.session_token
+    sql = f"DELETE FROM tokens WHERE token = '{token}'"
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql)
+    con.commit()
+    cur.close()
+    con.close()
+    return {"status": True}
+
+
 @app.post("/login")
 def login(data: ActionUserLogin):
     con = mariadb.connect(**config)
