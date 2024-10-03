@@ -72,7 +72,7 @@ class DocRegister(CoreModel):
     doc_name: str
     doc_date_of_birth: date # YYYY-MM-DD
     doc_gender: int
-    doc_edu: list
+    doc_edu: str
     doc_method: list
     doc_method_other: Optional[str] = '' # TODO REMOVE
     doc_language: list
