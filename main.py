@@ -38,12 +38,12 @@ from email.mime.text import MIMEText
 
 config = {
     # 'host': 'localhost', # для сборки на пеке
-    # 'host': '127.0.0.1', # для деплоя в прод
-    'host': 'mariadb', # для деплоя с докера
+    'host': '127.0.0.1', # для деплоя в прод
+    # 'host': 'mariadb', # для деплоя с докера
     'port': 3306,
     'user': 'root',
-    'password': '',
-    # 'password': 'Ru3-H84-BPg-WkX',
+    # 'password': '',
+    'password': 'Ru3-H84-BPg-WkX',
     'database': 'testdb'
 }
 
@@ -290,6 +290,8 @@ def register_therapist(data: DocRegister):
             for code in data.doc_method:
                 sql_method.append(f'm_{int(code)}')
                 sql_method_items.append('1')
+                print(sql_method)
+                print(sql_method_items)
             sql_method = ', '.join([f'{str(x)}' for x in sql_method])
             sql_method_items = ', '.join([f'{str(x)}' for x in sql_method_items])
         # DATA doc_language
@@ -321,17 +323,20 @@ def register_therapist(data: DocRegister):
         sql = (f"INSERT INTO doctors ({columns}) VALUES ({doc_id}, {items});")
         cur.execute(sql)
         sql = (f"INSERT INTO methods (doc_id, {sql_method}) VALUES ({doc_id}, {sql_method_items});")
+        print(sql)
         cur.execute(sql)
         sql = (f"INSERT INTO languages (doc_id, {sql_language}) VALUES ({doc_id}, {sql_language_items});")
+        print(sql)
         cur.execute(sql)
         sql = (f"INSERT INTO educations (doc_id, {sql_edu}) VALUES ({doc_id}, {sql_edu_items});")
+        print(sql)
         cur.execute(sql)
         con.commit()
         cur.close()
         con.close()
 
         # take everything back with token
-        sql = (f'SELECT '                           # 0
+        sql = (f'SELECT '                           
                f'doctors.doc_id, '                          # 0
                f'doc_name, '                        # 1
                f'doc_date_of_birth, '               # 2
@@ -359,24 +364,30 @@ def register_therapist(data: DocRegister):
                f'doc_question_2, '                  # 24
                f'doc_contact, '                     # 25
                f'user_photo, '                      # 26
-               f'm_0, '                    # 27
-               f'm_1, '                    # 28
-               f'm_2, '                    # 29
-               f'm_3, '                    # 30
-               f'm_4, '                    # 31
-               f'm_5, '                    # 32
-               f'm_6, '                    # 33
-               f'm_7, '                    # 34
-               f'm_8, '                    # 35
-               f'm_9, '                    # 36
-               f'l_0, '                  # 37
-               f'l_1, '                  # 38
-               f'l_2, '                  # 39
-               f'e_0, '            # 40
-               f'e_1, '            # 41
-               f'e_2, '            # 42
-               f'e_3, '            # 43
-               f'e_4 '             # 44
+               f'm_0, '                    # 27 0
+               f'm_1, '                    # 28 1
+               f'm_2, '                    # 29 2
+               f'm_3, '                    # 30 3
+               f'm_4, '                    # 31 4
+               f'm_5, '                    # 32 5
+               f'm_6, '                    # 33 6
+               f'm_7, '                    # 34 7
+               f'm_8, '                    # 35 8
+               f'm_9, '                    # 36 9
+               f'm_10, '                    # 36 10
+               f'm_11, '                    # 36 11
+               f'm_12, '                    # 36 12
+               f'm_13, '                    # 36 13
+               f'm_14, '                    # 36 14
+               f'm_15, '                    # 36 15
+               f'l_0, '                    # 37  16
+               f'l_1, '                    # 38  17
+               f'l_2, '                    # 39  18
+               f'e_0, '                    # 40  19
+               f'e_1, '                    # 41  20
+               f'e_2, '                    # 42  21
+               f'e_3, '                    # 43  22
+               f'e_4 '                     # 44  23
                f'FROM doctors '
                f'JOIN tokens ON doctors.doc_id = tokens.user_id '
                f'JOIN languages ON doctors.doc_id = languages.doc_id '
@@ -393,6 +404,7 @@ def register_therapist(data: DocRegister):
         con.close()
 
         doc_id, doc_photos_ids = f[0][0], f[0][26]
+        print(f[0])
         print(doc_photos_ids)
 
         if doc_photos_ids:
@@ -411,10 +423,11 @@ def register_therapist(data: DocRegister):
         else:
             fph = []
 
-        method_edu_language = f[0][27:]
-        doc_method = method_edu_language[0:10]
-        doc_language = method_edu_language[10:13]
-        doc_edu_additional = method_edu_language[13:]
+        method_edu_language = f[0][28:]
+        print(method_edu_language)
+        doc_method = method_edu_language[0:15]
+        doc_language = method_edu_language[15:17]
+        doc_edu_additional = method_edu_language[18:]
 
         doc_method_out = []
         for index, x in enumerate(doc_method):
@@ -506,24 +519,24 @@ def get_docf_data(data: SingleToken):
            f'doc_question_2, '  # 24
            f'doc_contact, '  # 25
            f'user_photo, '  # 26
-           f'm_0, '  # 27
-           f'm_1, '  # 28
-           f'm_2, '  # 29
-           f'm_3, '  # 30
-           f'm_4, '  # 31
-           f'm_5, '  # 32
-           f'm_6, '  # 33
-           f'm_7, '  # 34
-           f'm_8, '  # 35
-           f'm_9, '  # 36
-           f'l_0, '  # 37
-           f'l_1, '  # 38
-           f'l_2, '  # 39
-           f'e_0, '  # 40
-           f'e_1, '  # 41
-           f'e_2, '  # 42
-           f'e_3, '  # 43
-           f'e_4 '  # 44
+           f'm_0, '  # 27 0
+           f'm_1, '  # 28 1
+           f'm_2, '  # 29 2
+           f'm_3, '  # 30 3
+           f'm_4, '  # 31 4
+           f'm_5, '  # 32 5
+           f'm_6, '  # 33 6
+           f'm_7, '  # 34 7
+           f'm_8, '  # 35 8
+           f'm_9, '  # 36 9
+           f'l_0, '  # 37 10
+           f'l_1, '  # 38 11
+           f'l_2, '  # 39 12
+           f'e_0, '  # 40 13
+           f'e_1, '  # 41 14
+           f'e_2, '  # 42 15
+           f'e_3, '  # 43 16
+           f'e_4 '  # 44  17
            f'FROM doctors '
            f'JOIN tokens ON doctors.doc_id = tokens.user_id '
            f'JOIN languages ON doctors.doc_id = languages.doc_id '
