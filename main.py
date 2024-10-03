@@ -336,58 +336,58 @@ def register_therapist(data: DocRegister):
         con.close()
 
         # take everything back with token
-        sql = (f'SELECT '                           
-               f'doctors.doc_id, '                          # 0
-               f'doc_name, '                        # 1
-               f'doc_date_of_birth, '               # 2
-               f'doc_gender, '                      # 3
-               f'doc_edu, '                         # 4
-               f'doc_method_other, '                # 5
-               f'doc_comunity, '                    # 6
-               f'doc_practice_start, '              # 7
-               f'doc_online_experience, '           # 8
-               f'doc_customers_amount_current, '    # 9
-               f'doc_therapy_length, '              # 10
-               f'doc_personal_therapy, '            # 11
-               f'doc_supervision, '                 # 12
-               f'doc_another_job, '                 # 13
-               f'doc_customers_slots_available, '   # 14
-               f'doc_socials_links, '               # 15
-               f'doc_citizenship, '                 # 16
-               f'doc_citizenship_other, '           # 17
-               f'doc_ref, '                         # 18
-               f'doc_ref_other, '                   # 19
-               f'doc_phone, '                       # 20
-               f'doc_email, '                       # 21
-               f'doc_additional_info, '             # 22
-               f'doc_question_1, '                  # 23
-               f'doc_question_2, '                  # 24
-               f'doc_contact, '                     # 25
-               f'user_photo, '                      # 26
-               f'm_0, '                    # 27 0
-               f'm_1, '                    # 28 1
-               f'm_2, '                    # 29 2
-               f'm_3, '                    # 30 3
-               f'm_4, '                    # 31 4
-               f'm_5, '                    # 32 5
-               f'm_6, '                    # 33 6
-               f'm_7, '                    # 34 7
-               f'm_8, '                    # 35 8
-               f'm_9, '                    # 36 9
-               f'm_10, '                    # 36 10
-               f'm_11, '                    # 36 11
-               f'm_12, '                    # 36 12
-               f'm_13, '                    # 36 13
-               f'm_14, '                    # 36 14
-               f'm_15, '                    # 36 15
-               f'l_0, '                    # 37  16
-               f'l_1, '                    # 38  17
-               f'l_2, '                    # 39  18
-               f'e_0, '                    # 40  19
-               f'e_1, '                    # 41  20
-               f'e_2, '                    # 42  21
-               f'e_3, '                    # 43  22
-               f'e_4 '                     # 44  23
+        sql = (f'SELECT '
+               f'doctors.doc_id, '  # 0
+               f'doc_name, '  # 1
+               f'doc_date_of_birth, '  # 2
+               f'doc_gender, '  # 3
+               f'doc_edu, '  # 4
+               f'doc_method_other, '  # 5
+               f'doc_comunity, '  # 6
+               f'doc_practice_start, '  # 7
+               f'doc_online_experience, '  # 8
+               f'doc_customers_amount_current, '  # 9
+               f'doc_therapy_length, '  # 10
+               f'doc_personal_therapy, '  # 11
+               f'doc_supervision, '  # 12
+               f'doc_another_job, '  # 13
+               f'doc_customers_slots_available, '  # 14
+               f'doc_socials_links, '  # 15
+               f'doc_citizenship, '  # 16
+               f'doc_citizenship_other, '  # 17
+               f'doc_ref, '  # 18
+               f'doc_ref_other, '  # 19
+               f'doc_phone, '  # 20
+               f'doc_email, '  # 21
+               f'doc_additional_info, '  # 22
+               f'doc_question_1, '  # 23
+               f'doc_question_2, '  # 24
+               f'doc_contact, '  # 25
+               f'user_photo, '  # 26
+               f'm_0, '  # 27 0
+               f'm_1, '  # 28 1
+               f'm_2, '  # 29 2
+               f'm_3, '  # 30 3
+               f'm_4, '  # 31 4
+               f'm_5, '  # 32 5
+               f'm_6, '  # 33 6
+               f'm_7, '  # 34 7
+               f'm_8, '  # 35 8
+               f'm_9, '  # 36 9
+               f'm_10, '  # 36 10
+               f'm_11, '  # 36 11
+               f'm_12, '  # 36 12
+               f'm_13, '  # 36 13
+               f'm_14, '  # 36 14
+               f'm_15, '  # 36 15
+               f'l_0, '  # 37  16
+               f'l_1, '  # 38  17
+               f'l_2, '  # 39  18
+               f'e_0, '  # 40  19
+               f'e_1, '  # 41  20
+               f'e_2, '  # 42  21
+               f'e_3, '  # 43  22
+               f'e_4 '  # 44  23
                f'FROM doctors '
                f'JOIN tokens ON doctors.doc_id = tokens.user_id '
                f'JOIN languages ON doctors.doc_id = languages.doc_id '
@@ -570,10 +570,11 @@ def get_docf_data(data: SingleToken):
     else:
         fph = []
 
-    method_edu_language = f[0][27:]
-    doc_method = method_edu_language[0:10]
-    doc_language = method_edu_language[10:13]
-    doc_edu_additional = method_edu_language[13:]
+    method_edu_language = f[0][28:]
+    print(method_edu_language)
+    doc_method = method_edu_language[0:15]
+    doc_language = method_edu_language[15:17]
+    doc_edu_additional = method_edu_language[18:]
 
     doc_method_out = []
     for index, x in enumerate(doc_method):
