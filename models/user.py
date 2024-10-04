@@ -51,6 +51,22 @@ class UserCreate(CoreModel):
     # def password_is_valid(cls, password: str) -> str:
     #     return validate_password(password)
 
+class UserLogin(CoreModel):
+    """
+    Email and password are required for registering a new user
+    Returns user_id, sends data on e-mail
+    """
+    user_email: EmailStr
+    password: constr(min_length=9, max_length=100)
+
+    # @validator("username", pre=True)
+    # def username_is_valid(cls, username: str) -> str:
+    #     return validate_username(username)
+    #
+    # @validator("password", pre=True)
+    # def password_is_valid(cls, password: str) -> str:
+    #     return validate_password(password)
+
 
 
 class UserClient(CoreModel):

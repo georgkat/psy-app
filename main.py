@@ -9,12 +9,14 @@ import datetime
 import mariadb
 import uuid
 import string
+import traceback # for debug
 from fastapi import FastAPI, applications, Request, HTTPException
 from pydantic import ValidationError
 import random
 from json_actions import parse_doctor_register
 from models.actions import ActionUserLogin
 from models.user import (UserCreate,
+                         UserLogin,
                          UserUpdate,
                          UserClient,
                          UserTherapist,
@@ -174,58 +176,67 @@ def logout(data: SingleToken):
 
 @app.post("/login")
 def login(data: ActionUserLogin):
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
-    f = cur.fetchall()
-    if f != []:
-        cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}' AND password = '{data.password}';")
-        f2 = cur.fetchall()
-        # f2 : 0 user_id 1 email 2 password 3 therapist
-        if f2 != []:
-            user_id = f2[0][0]
-            is_therapist = True if f2[0][3] == 1 else False
-            token = uuid.uuid4()
-            cur.execute(f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');")
-            con.commit()
-            cur.close()
-            con.close()
-            return {'status': True,
-                    'token': token,
-                    'error': '',
-                    'is_therapist': is_therapist}
+    try:
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
+        f = cur.fetchall()
+        if f != []:
+            cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}' AND password = '{data.password}';")
+            f2 = cur.fetchall()
+            # f2 : 0 user_id 1 email 2 password 3 therapist
+            if f2 != []:
+                user_id = f2[0][0]
+                is_therapist = True if f2[0][3] == 1 else False
+                token = uuid.uuid4()
+                cur.execute(f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');")
+                con.commit()
+                cur.close()
+                con.close()
+                return {'status': True,
+                        'token': token,
+                        'error': '',
+                        'is_therapist': is_therapist}
+            else:
+                cur.close()
+                con.close()
+                return {'status': False,
+                        'error': 'incorrect email/password'}
         else:
             cur.close()
             con.close()
             return {'status': False,
                     'error': 'incorrect email/password'}
-    else:
-        cur.close()
-        con.close()
+    except Exception as e:
         return {'status': False,
-                'error': 'incorrect email/password'}
+                'error': f'/login error: {e} {traceback.extract_stack()}'}
 
 
 @app.post("/register")
 def register(data:UserCreate):
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
-    f = cur.fetchall()
-    if f == []:
-        cur.execute(f"INSERT INTO users (email, password) VALUES ('{data.user_email}', '{data.password}') RETURNING id;")
+    try:
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
+        a = 0 / 0
         f = cur.fetchall()
-        client_id = f[0][0]
-        cur.execute(f"INSERT INTO clients (client_id, name) VALUES ('{client_id}', '{data.user_name}');")
-        con.commit()
-        cur.close()
-        con.close()
-        return {'status': True}
-    else:
-        cur.close()
-        con.close()
+        if f == []:
+            cur.execute(f"INSERT INTO users (email, password) VALUES ('{data.user_email}', '{data.password}') RETURNING id;")
+            f = cur.fetchall()
+            client_id = f[0][0]
+            cur.execute(f"INSERT INTO clients (client_id, name) VALUES ('{client_id}', '{data.user_name}');")
+            con.commit()
+            cur.close()
+            con.close()
+            return {'status': True}
+        else:
+            cur.close()
+            con.close()
+            return {'status': False,
+                    'error': 'registration error, user exists'}
+    except Exception as e:
         return {'status': False,
-                'error': 'registration error, user exists'}
+                'error': f'/register error: {e} {traceback.extract_stack()}'}
 
 @app.post('/register_therapist')
 # TODO сделать генерацию пользователя
@@ -239,33 +250,18 @@ def register_therapist(data: DocRegister):
         f = cur.fetchall()
         is_therapist = 1
         if f == []:
-            cur.execute(f"INSERT INTO users (email, password, is_therapist) VALUES ('{mail}', '{password}', {is_therapist});")
-            con.commit()
-            cur.close()
-            con.close()
+            cur.execute(f"INSERT INTO users (email, password, is_therapist) VALUES ('{mail}', '{password}', {is_therapist}) RETURNING id;")
+            user_id = cur.fetchall()[0][0]
+            print(f'WE GOT AN ID {user_id}')
         else:
             cur.close()
             con.close()
             return {'status': False,
-                    'error': 'user_already_registred'}
-
-        con = mariadb.connect(**config)
-        cur = con.cursor()
-        cur.execute(f"SELECT id FROM users WHERE email = '{mail}' AND password = '{password}';")
-        f = cur.fetchall()
-        con.commit()
-        cur.close()
-        con.close()
+                    'error': 'register_therapist error: user_already_registred'}
 
         token = uuid.uuid4()
-        user_id = f[0][0]
         sql = f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');"
-        con = mariadb.connect(**config)
-        cur = con.cursor()
         cur.execute(sql)
-        con.commit()
-        cur.close()
-        con.close()
 
         doc_id = user_id
         columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method_other, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo'
@@ -277,14 +273,8 @@ def register_therapist(data: DocRegister):
 
         if img_data:
             sql = f'INSERT INTO images (data, name, type) VALUES {", ".join(img_data)} RETURNING img_id;'
-            con = mariadb.connect(**config)
-            cur = con.cursor()
             cur.execute(sql)
             f = cur.fetchall()
-            con.commit()
-            cur.close()
-            con.close()
-
             photo_ids = ', '.join([str(x[0]) for x in f])
             data.user_photo = photo_ids
         else:
@@ -353,8 +343,6 @@ def register_therapist(data: DocRegister):
         # sql = (f"INSERT INTO languages (doc_id, {sql_language}) VALUES ({doc_id}, {sql_language_items});")
         # sql = (f"INSERT INTO education (doc_id, {sql_edu}) VALUES ({doc_id}, {sql_edu_items});")
 
-        con = mariadb.connect(**config)
-        cur = con.cursor()
         sql = f"INSERT INTO doctors ({columns}) VALUES ({doc_id}, {items});"
         cur.execute(sql)
         sql = f"INSERT INTO methods (doc_id, {sql_method}) VALUES ({doc_id}, {sql_method_items});"
@@ -452,7 +440,6 @@ def register_therapist(data: DocRegister):
 
         if doc_photos_ids:
             sql = f'SELECT data, name, type FROM images WHERE img_id IN ({doc_photos_ids})'
-
             con = mariadb.connect(**config)
             cur = con.cursor()
             print(sql)
@@ -544,7 +531,11 @@ def register_therapist(data: DocRegister):
 
         return out
     except ValidationError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        return {'status': False,
+                'error': f'register_therapist error: validation error, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'}
+    except Exception as e:
+        return {'status': False,
+                'error': f'register_therapist error: validation error, {traceback.extract_stack()}'}
 
 
 
