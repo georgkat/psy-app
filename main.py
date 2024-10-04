@@ -541,191 +541,251 @@ def register_therapist(data: DocRegister):
 
 @app.post('/get_doc_data')
 def get_docf_data(data: SingleToken):
-    token = data.session_token
-    sql = (f'SELECT '  # 0
-           f'doctors.doc_id, '  # 0
-           f'doc_name, '  # 1
-           f'doc_date_of_birth, '  # 2
-           f'doc_gender, '  # 3
-           f'doc_edu, '  # 4
-           f'doc_method_other, '  # 5
-           f'doc_comunity, '  # 6
-           f'doc_practice_start, '  # 7
-           f'doc_online_experience, '  # 8
-           f'doc_customers_amount_current, '  # 9
-           f'doc_therapy_length, '  # 10
-           f'doc_personal_therapy, '  # 11
-           f'doc_supervision, '  # 12
-           f'doc_another_job, '  # 13
-           f'doc_customers_slots_available, '  # 14
-           f'doc_socials_links, '  # 15
-           f'doc_citizenship, '  # 16
-           f'doc_citizenship_other, '  # 17
-           f'doc_ref, '  # 18
-           f'doc_ref_other, '  # 19
-           f'doc_phone, '  # 20
-           f'doc_email, '  # 21
-           f'doc_additional_info, '  # 22
-           f'doc_question_1, '  # 23
-           f'doc_question_2, '  # 24
-           f'doc_contact, '  # 25
-           f'user_photo, '  # 26
-           f'm_0, '  # 27 0
-           f'm_1, '  # 28 1
-           f'm_2, '  # 29 2
-           f'm_3, '  # 30 3
-           f'm_4, '  # 31 4
-           f'm_5, '  # 32 5
-           f'm_6, '  # 33 6
-           f'm_7, '  # 34 7
-           f'm_8, '  # 35 8
-           f'm_9, '  # 36 9
-           f'm_10, '  # 36 10
-           f'm_11, '  # 36 11
-           f'm_12, '  # 36 12
-           f'm_13, '  # 36 13
-           f'm_14, '  # 36 14
-           f'm_15, '  # 36 15
-           f'l_0, '  # 37  16
-           f'l_1, '  # 38  17
-           f'l_2, '  # 39  18
-           f'e_0, '  # 40  19
-           f'e_1, '  # 41  20
-           f'e_2, '  # 42  21
-           f'e_3, '  # 43  22
-           f'e_4 '  # 44  23
-           f'FROM doctors '
-           f'JOIN tokens ON doctors.doc_id = tokens.user_id '
-           f'JOIN languages ON doctors.doc_id = languages.doc_id '
-           f'JOIN methods ON doctors.doc_id = methods.doc_id '
-           f'JOIN educations ON doctors.doc_id = educations.doc_id '
-           f'WHERE token = "{token}"')
-
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    f = cur.fetchall()
-    con.commit()
-    cur.close()
-    con.close()
-
-    doc_id, doc_photos_ids = f[0][0], f[0][26]
-
-    if doc_photos_ids:
-        sql = f'SELECT data, name, type FROM images WHERE img_id IN ({doc_photos_ids})'
+    try:
+        token = data.session_token
+        sql = (f'SELECT '  # 0
+               f'doctors.doc_id, '  # 0
+               f'doc_name, '  # 1
+               f'doc_date_of_birth, '  # 2
+               f'doc_gender, '  # 3
+               f'doc_edu, '  # 4
+               f'doc_method_other, '  # 5
+               f'doc_comunity, '  # 6
+               f'doc_practice_start, '  # 7
+               f'doc_online_experience, '  # 8
+               f'doc_customers_amount_current, '  # 9
+               f'doc_therapy_length, '  # 10
+               f'doc_personal_therapy, '  # 11
+               f'doc_supervision, '  # 12
+               f'doc_another_job, '  # 13
+               f'doc_customers_slots_available, '  # 14
+               f'doc_socials_links, '  # 15
+               f'doc_citizenship, '  # 16
+               f'doc_citizenship_other, '  # 17
+               f'doc_ref, '  # 18
+               f'doc_ref_other, '  # 19
+               f'doc_phone, '  # 20
+               f'doc_email, '  # 21
+               f'doc_additional_info, '  # 22
+               f'doc_question_1, '  # 23
+               f'doc_question_2, '  # 24
+               f'doc_contact, '  # 25
+               f'user_photo, '  # 26
+               f'm_0, '  # 27 0
+               f'm_1, '  # 28 1
+               f'm_2, '  # 29 2
+               f'm_3, '  # 30 3
+               f'm_4, '  # 31 4
+               f'm_5, '  # 32 5
+               f'm_6, '  # 33 6
+               f'm_7, '  # 34 7
+               f'm_8, '  # 35 8
+               f'm_9, '  # 36 9
+               f'm_10, '  # 36 10
+               f'm_11, '  # 36 11
+               f'm_12, '  # 36 12
+               f'm_13, '  # 36 13
+               f'm_14, '  # 36 14
+               f'm_15, '  # 36 15
+               f'l_0, '  # 37  16
+               f'l_1, '  # 38  17
+               f'l_2, '  # 39  18
+               f'e_0, '  # 40  19
+               f'e_1, '  # 41  20
+               f'e_2, '  # 42  21
+               f'e_3, '  # 43  22
+               f'e_4 '  # 44  23
+               f'FROM doctors '
+               f'JOIN tokens ON doctors.doc_id = tokens.user_id '
+               f'JOIN languages ON doctors.doc_id = languages.doc_id '
+               f'JOIN methods ON doctors.doc_id = methods.doc_id '
+               f'JOIN educations ON doctors.doc_id = educations.doc_id '
+               f'WHERE token = "{token}"')
 
         con = mariadb.connect(**config)
         cur = con.cursor()
-        print(sql)
         cur.execute(sql)
-        fph = cur.fetchall()
+        f = cur.fetchall()
         con.commit()
         cur.close()
         con.close()
 
-        fph = [{'data': ph[0], 'name': ph[1], 'type': ph[2]} for ph in fph]
-    else:
-        fph = []
+        doc_id, doc_photos_ids = f[0][0], f[0][26]
 
-    # DOC EDU MAIN
-    print('DOC EDU MAIN')
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    sql = f'SELECT * FROM educations_main WHERE doc_id = {doc_id}'
-    cur.execute(sql)
-    fetch_edu_main = cur.fetchall()
-    con.commit()
-    cur.close()
-    con.close()
+        if doc_photos_ids:
+            sql = f'SELECT data, name, type FROM images WHERE img_id IN ({doc_photos_ids})'
 
-    doc_edu = []
-    for item in fetch_edu_main:
-        doc_edu.append({"year": item[1],
-                        "university": item[2],
-                        "faculty": item[3],
-                        "degree": item[4]})
+            con = mariadb.connect(**config)
+            cur = con.cursor()
+            print(sql)
+            cur.execute(sql)
+            fph = cur.fetchall()
+            con.commit()
+            cur.close()
+            con.close()
 
-    method_edu_language = f[0][27:]
-    print(method_edu_language)
-    doc_method = method_edu_language[0:16]
-    print(doc_method)
-    doc_language = method_edu_language[16:19]
-    print(doc_language)
-    doc_edu_additional = method_edu_language[19:]
-    print(doc_edu_additional)
+            fph = [{'data': ph[0], 'name': ph[1], 'type': ph[2]} for ph in fph]
+        else:
+            fph = []
 
-    doc_method_out = []
-    for index, x in enumerate(doc_method):
-        if x:
-            doc_method_out.append(index)
+        # DOC EDU MAIN
+        print('DOC EDU MAIN')
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        sql = f'SELECT * FROM educations_main WHERE doc_id = {doc_id}'
+        cur.execute(sql)
+        fetch_edu_main = cur.fetchall()
+        con.commit()
+        cur.close()
+        con.close()
 
-    doc_language_out = []
-    for index, x in enumerate(doc_language):
-        if x:
-            doc_language_out.append(index)
+        doc_edu = []
+        for item in fetch_edu_main:
+            doc_edu.append({"year": item[1],
+                            "university": item[2],
+                            "faculty": item[3],
+                            "degree": item[4]})
 
-    doc_edu_additional_out = []
-    for index, x in enumerate(doc_edu_additional):
-        if x:
-            doc_edu_additional_out.append(index)
+        method_edu_language = f[0][27:]
+        print(method_edu_language)
+        doc_method = method_edu_language[0:16]
+        print(doc_method)
+        doc_language = method_edu_language[16:19]
+        print(doc_language)
+        doc_edu_additional = method_edu_language[19:]
+        print(doc_edu_additional)
 
-    out = {'status': True,
-           'doc_name': f[0][1],
-           'doc_date_of_birth': f[0][2],
-           'doc_gender': f[0][3],
-           'doc_edu': doc_edu,
-           'doc_method': doc_method_out,
-           # 'doc_method_other': f[0][6],
-           'doc_language': doc_language_out,
-           'doc_edu_additional': doc_edu_additional_out,
-           'doc_comunity': f[0][6],
-           'doc_practice_start': f[0][7],
-           'doc_online_experience': f[0][8],
-           'doc_customers_amount_current': f[0][9],
-           'doc_therapy_length': f[0][10],
-           'doc_personal_therapy': f[0][11],
-           'doc_supervision': f[0][12],
-           'doc_another_job': f[0][13],
-           'doc_customers_slots_available': f[0][14],
-           'doc_socials_links': f[0][15],
-           'doc_citizenship': f[0][16],
-           'doc_citizenship_other': f[0][17],
-           'doc_ref': f[0][18],
-           'doc_ref_other': f[0][19],
-           'doc_phone': f[0][20],
-           'doc_email': f[0][21],
-           'doc_additional_info': f[0][22],
-           'doc_question_1': f[0][23],
-           'doc_question_2': f[0][24],
-           'doc_contact': f[0][25],
-           'user_photo': fph}
+        doc_method_out = []
+        for index, x in enumerate(doc_method):
+            if x:
+                doc_method_out.append(index)
 
-    return out
+        doc_language_out = []
+        for index, x in enumerate(doc_language):
+            if x:
+                doc_language_out.append(index)
+
+        doc_edu_additional_out = []
+        for index, x in enumerate(doc_edu_additional):
+            if x:
+                doc_edu_additional_out.append(index)
+
+        out = {'status': True,
+               'doc_name': f[0][1],
+               'doc_date_of_birth': f[0][2],
+               'doc_gender': f[0][3],
+               'doc_edu': doc_edu,
+               'doc_method': doc_method_out,
+               # 'doc_method_other': f[0][6],
+               'doc_language': doc_language_out,
+               'doc_edu_additional': doc_edu_additional_out,
+               'doc_comunity': f[0][6],
+               'doc_practice_start': f[0][7],
+               'doc_online_experience': f[0][8],
+               'doc_customers_amount_current': f[0][9],
+               'doc_therapy_length': f[0][10],
+               'doc_personal_therapy': f[0][11],
+               'doc_supervision': f[0][12],
+               'doc_another_job': f[0][13],
+               'doc_customers_slots_available': f[0][14],
+               'doc_socials_links': f[0][15],
+               'doc_citizenship': f[0][16],
+               'doc_citizenship_other': f[0][17],
+               'doc_ref': f[0][18],
+               'doc_ref_other': f[0][19],
+               'doc_phone': f[0][20],
+               'doc_email': f[0][21],
+               'doc_additional_info': f[0][22],
+               'doc_question_1': f[0][23],
+               'doc_question_2': f[0][24],
+               'doc_contact': f[0][25],
+               'user_photo': fph}
+        return out
+    except Exception:
+        return {'status': False,
+                'error': f'get_doc_data error: {traceback.extract_stack()}'}
 
 @app.post('/doctor_schedule')
 def doctor_schedule(data: DocScheldure):
-    # разбираю данные с фронта
-    token = data.session_token
-    schedule = data.schedule
-    timezone = 0
-    if data.timezone:
-        timezone = data.timezone
+    try:
+        # разбираю данные с фронта
+        token = data.session_token
+        schedule = data.schedule
+        timezone = 0
+        if data.timezone:
+            timezone = data.timezone
 
-    sql = f'SELECT user_id FROM tokens WHERE token = "{token}"'
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    f = cur.fetchall()
-    cur.close()
-    con.close()
+        sql = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        f = cur.fetchall()
+        cur.close()
+        con.close()
 
-    if not f:
-        return {'status': False,
-                'error': """user not auth-ed"""}
-    if f:
-        doc_id = f[0][0]
-    # TODO Возврат timezone
-    if not data.schedule:
+        if not f:
+            return {'status': False,
+                    'error': """user not auth-ed"""}
+        if f:
+            doc_id = f[0][0]
+        # TODO Возврат timezone
+        if not data.schedule:
+            sql = f'SELECT date_time, client FROM schedule WHERE doctor_id = {doc_id}'
+            con = mariadb.connect(**config)
+            cur = con.cursor()
+            cur.execute(sql)
+            fetch = cur.fetchall()
+            con.commit()
+            cur.close()
+            con.close()
+            out = []
+            for item in fetch:
+                out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
+
+            # формирую словарик
+
+            return {'status': True, 'schedule': out, 'timezone': timezone}
+
+
+        sh_list = []
+
+        sql = f'DELETE FROM schedule WHERE doctor_id = "{doc_id}" AND client IS NULL'
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        con.commit()
+        cur.close()
+        con.close()
+
+        to_sql = ''
+        to_sql_check = ''
+        if schedule:
+            for item in schedule:
+                date_time = datetime.datetime.strptime(item, '%d-%m-%Y %H:%M')
+                # date_time = datetime.datetime.strftime(date_time, '%d-%m-%Y %H:%M:%S')
+                # if item[1]:
+                #     client_id = item[1]
+                # else:
+                client_id = 'NULL'
+                sh_list.append([date_time, client_id])
+
+                if to_sql:
+                    to_sql = to_sql + f', ({doc_id}, "{date_time}", {client_id})'
+                    to_sql_check = to_sql + f', ({doc_id}, {date_time})'
+                else:
+                    to_sql = f'({doc_id}, "{date_time}", {client_id})'
+                    to_sql_check = f'({doc_id}, {client_id})'
+
+        # TODO check
+
+        sql = f'INSERT INTO schedule (doctor_id, date_time, client) values {to_sql}'
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        con.commit()
+        cur.close()
+        con.close()
+
         sql = f'SELECT date_time, client FROM schedule WHERE doctor_id = {doc_id}'
         con = mariadb.connect(**config)
         cur = con.cursor()
@@ -734,6 +794,7 @@ def doctor_schedule(data: DocScheldure):
         con.commit()
         cur.close()
         con.close()
+
         out = []
         for item in fetch:
             out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
@@ -741,63 +802,10 @@ def doctor_schedule(data: DocScheldure):
         # формирую словарик
 
         return {'status': True, 'schedule': out, 'timezone': timezone}
+    except Exception:
+        return {'status': False,
+                'error': f'doctor_schedule error: {traceback.extract_stack()}'}
 
-
-    sh_list = []
-
-    sql = f'DELETE FROM schedule WHERE doctor_id = "{doc_id}" AND client IS NULL'
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    con.commit()
-    cur.close()
-    con.close()
-
-    to_sql = ''
-    to_sql_check = ''
-    if schedule:
-        for item in schedule:
-            date_time = datetime.datetime.strptime(item, '%d-%m-%Y %H:%M')
-            # date_time = datetime.datetime.strftime(date_time, '%d-%m-%Y %H:%M:%S')
-            # if item[1]:
-            #     client_id = item[1]
-            # else:
-            client_id = 'NULL'
-            sh_list.append([date_time, client_id])
-
-            if to_sql:
-                to_sql = to_sql + f', ({doc_id}, "{date_time}", {client_id})'
-                to_sql_check = to_sql + f', ({doc_id}, {date_time})'
-            else:
-                to_sql = f'({doc_id}, "{date_time}", {client_id})'
-                to_sql_check = f'({doc_id}, {client_id})'
-
-    # TODO check
-
-    sql = f'INSERT INTO schedule (doctor_id, date_time, client) values {to_sql}'
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    con.commit()
-    cur.close()
-    con.close()
-
-    sql = f'SELECT date_time, client FROM schedule WHERE doctor_id = {doc_id}'
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    fetch = cur.fetchall()
-    con.commit()
-    cur.close()
-    con.close()
-
-    out = []
-    for item in fetch:
-        out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
-
-    # формирую словарик
-
-    return {'status': True, 'schedule': out, 'timezone': timezone}
 
 
 @app.post('/update_client')
@@ -805,89 +813,57 @@ def client_update(data: UserClient):
     return {'status': True}
 
 @app.post('/update_therapist')
-def client_update(data: DocUpdate):
-    token = data.session_token
+def update_therapist(data: DocUpdate):
+    try:
+        token = data.session_token
 
-    sql = f'SELECT user_id FROM tokens WHERE token = "{token}"'
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    fetch = cur.fetchall()
-    con.commit()
-    cur.close()
-    con.close()
-
-    doc_id = fetch[0][0]
-
-    additional_columns = []
-    additional_items = []
-
-    symptoms_columns = []
-    symptoms_items = []
-    # DATA doc_method
-    if str(data.doc_method):
-        for code in data.doc_method:
-            additional_columns.append(f'doc_method_{int(code)}')
-            additional_items.append('1')
-    # DATA doc_language
-    if str(data.doc_language):
-        for code in data.doc_language:
-            additional_columns.append(f'doc_language_{int(code)}')
-            additional_items.append('1')
-
-    if str(data.symptoms):
-        for code in data.symptoms:
-            symptoms_columns.append(f's_{int(code)}')
-            symptoms_items.append('1')
-
-    columns = ['doc_date_of_birth', 'client_age', 'lgbtq', 'therapy_type', 'doc_additional_info']
-    columns = columns + additional_columns
-    items = [data.doc_date_of_birth, data.client_age, data.lgbtq, data.therapy_type, data.doc_additional_info]
-    items = items + additional_items
-
-    set_list = []
-
-    print(columns)
-    print(items)
-    for i in range(len(columns)):
-        set_list.append(f'{columns[i]} = "{items[i]}"')
-
-    set_list = ' ,'.join(set_list)
-
-    sql = f'UPDATE doctors SET {set_list} WHERE doc_id = {doc_id}'
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    print(sql)
-    cur.execute(sql)
-    con.commit()
-    cur.close()
-    con.close()
-
-    sql = f'SELECT * FROM symptoms WHERE doc_id = {doc_id}'
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    f = cur.fetchall()
-    con.commit()
-    cur.close()
-    con.close()
-
-    if not f:
-        sql = f'INSERT INTO symptoms (doc_id, {", ".join(symptoms_columns)}) VALUES ({doc_id}, {", ".join(symptoms_items)})'
+        sql = f'SELECT user_id FROM tokens WHERE token = "{token}"'
         con = mariadb.connect(**config)
         cur = con.cursor()
-        print(sql)
         cur.execute(sql)
+        fetch = cur.fetchall()
         con.commit()
         cur.close()
         con.close()
-        return {'status': True}
-    else:
+
+        doc_id = fetch[0][0]
+
+        additional_columns = []
+        additional_items = []
+
+        symptoms_columns = []
+        symptoms_items = []
+        # DATA doc_method
+        if str(data.doc_method):
+            for code in data.doc_method:
+                additional_columns.append(f'doc_method_{int(code)}')
+                additional_items.append('1')
+        # DATA doc_language
+        if str(data.doc_language):
+            for code in data.doc_language:
+                additional_columns.append(f'doc_language_{int(code)}')
+                additional_items.append('1')
+
+        if str(data.symptoms):
+            for code in data.symptoms:
+                symptoms_columns.append(f's_{int(code)}')
+                symptoms_items.append('1')
+
+        columns = ['doc_date_of_birth', 'client_age', 'lgbtq', 'therapy_type', 'doc_additional_info']
+        columns = columns + additional_columns
+        items = [data.doc_date_of_birth, data.client_age, data.lgbtq, data.therapy_type, data.doc_additional_info]
+        items = items + additional_items
+
         set_list = []
-        for i in range(len(symptoms_columns)):
-            set_list.append(f'{symptoms_columns[i]} = "{symptoms_items[i]}"')
-        set_list = ', '.join(set_list)
-        sql = f'UPDATE symptoms SET {set_list} WHERe doc_id = {doc_id}'
+
+        print(columns)
+        print(items)
+        for i in range(len(columns)):
+            set_list.append(f'{columns[i]} = "{items[i]}"')
+
+        set_list = ' ,'.join(set_list)
+
+        sql = f'UPDATE doctors SET {set_list} WHERE doc_id = {doc_id}'
         con = mariadb.connect(**config)
         cur = con.cursor()
         print(sql)
@@ -895,50 +871,88 @@ def client_update(data: DocUpdate):
         con.commit()
         cur.close()
         con.close()
-        return {'status': True}
+
+        sql = f'SELECT * FROM symptoms WHERE doc_id = {doc_id}'
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        f = cur.fetchall()
+        con.commit()
+        cur.close()
+        con.close()
+
+        if not f:
+            sql = f'INSERT INTO symptoms (doc_id, {", ".join(symptoms_columns)}) VALUES ({doc_id}, {", ".join(symptoms_items)})'
+            con = mariadb.connect(**config)
+            cur = con.cursor()
+            print(sql)
+            cur.execute(sql)
+            con.commit()
+            cur.close()
+            con.close()
+            return {'status': True}
+        else:
+            set_list = []
+            for i in range(len(symptoms_columns)):
+                set_list.append(f'{symptoms_columns[i]} = "{symptoms_items[i]}"')
+            set_list = ', '.join(set_list)
+            sql = f'UPDATE symptoms SET {set_list} WHERe doc_id = {doc_id}'
+            con = mariadb.connect(**config)
+            cur = con.cursor()
+            print(sql)
+            cur.execute(sql)
+            con.commit()
+            cur.close()
+            con.close()
+            return {'status': True}
+    except Exception:
+        return {'status': False,
+                'error': f'update_therapist error: {traceback.extract_stack()}'}
 
 
 @app.post('/get_available_slots')
 def get_available_slots(data: SingleToken):
-    # sql part
+    try:
+        # sql part
+        token = data.session_token
 
-    token = data.session_token
+        sql = f'SELECT user_id FROM tokens WHERE token = {token}'
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        f = cur.fetchall()
+        cur.close()
+        con.close()
 
-    sql = f'SELECT user_id FROM tokens WHERE token = {token}'
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    f = cur.fetchall()
-    cur.close()
-    con.close()
+        if not f:
+            return {'status': False,
+                    'error': """user not auth-ed"""}
+        if f:
+            doc_id = f
 
-    if not f:
-        return {'status': False,
-                'error': """user not auth-ed"""}
-    if f:
-        doc_id = f
+        sql = f'SELECT * FROM schedule WHERE doctor_id = {f}'
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        ff = cur.fetchall()
+        cur.close()
+        con.close()
 
-    sql = f'SELECT * FROM schedule WHERE doctor_id = {f}'
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    ff = cur.fetchall()
-    cur.close()
-    con.close()
+        sh_dict = {}
+        sh_list = []
 
-    sh_dict = {}
-    sh_list = []
+        for key in ff:
+            if key == 'doc_id':
+                pass
+            else:
+                for i, data in ff[key]:
+                    if data:
+                        sh_list.append(f'{key} {i}:00')
+                sh_dict[key] = copy.copy(sh_list)
 
-    for key in ff:
-        if key == 'doc_id':
-            pass
-        else:
-            for i, data in ff[key]:
-                if data:
-                    sh_list.append(f'{key} {i}:00')
-            sh_dict[key] = copy.copy(sh_list)
-
-    return {'status': True, 'slots': sh_list}
+        return {'status': True, 'slots': sh_list}
+    except Exception:
+        return {'status': False, 'error': f'get_available_slots error: {traceback.extract_stack()}'}
 
 @app.post('/select_slot')
 def select_slot_client(data: SelectTime):
@@ -958,94 +972,106 @@ def refrash_data():
 
 @app.post('/login_admin')
 def login_admin(data: ActionUserLogin):
-    print(data.user_email)
-    print(data.password)
+    try:
+        print(data.user_email)
+        print(data.password)
 
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
-    f = cur.fetchall()
-    if f != []:
-        cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}' AND password = '{data.password}' AND is_admin = 1;")
-        f2 = cur.fetchall()
-        # f2 : 0 user_id 1 email 2 password 3 therapist
-        if f2 != []:
-            user_id = f2[0][0]
-            is_therapist = True if f2[0][3] == 1 else False
-            token = uuid.uuid4()
-            cur.execute(f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');")
-            con.commit()
-            cur.close()
-            con.close()
-            return {'status': True,
-                    'token': token,
-                    'error': '',
-                    'is_admin': True}
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
+        f = cur.fetchall()
+        if f != []:
+            cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}' AND password = '{data.password}' AND is_admin = 1;")
+            f2 = cur.fetchall()
+            # f2 : 0 user_id 1 email 2 password 3 therapist
+            if f2 != []:
+                user_id = f2[0][0]
+                is_therapist = True if f2[0][3] == 1 else False
+                token = uuid.uuid4()
+                cur.execute(f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');")
+                con.commit()
+                cur.close()
+                con.close()
+                return {'status': True,
+                        'token': token,
+                        'error': '',
+                        'is_admin': True}
+            else:
+                cur.close()
+                con.close()
+                return {'status': False,
+                        'error': 'login_admin error: incorrect email/password'}
         else:
             cur.close()
             con.close()
             return {'status': False,
-                    'error': 'incorrect email/password'}
-    else:
-        cur.close()
-        con.close()
+                    'error': 'login_admin error: incorrect email/password'}
+    except Exception:
         return {'status': False,
-                'error': 'incorrect email/password'}
+                'error': f'login_admin error: {traceback.extract_stack()}'}
 
 @app.post('/approve_therapist')
 def approve_therapist(data: ApproveTherapistToken):
-    token = data.session_token
-    doc_id = data.doc_id
+    try:
+        token = data.session_token
+        doc_id = data.doc_id
 
-    sql = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
+        sql = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
 
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    f = cur.fetchall()
-    con.commit()
-    cur.close()
-
-    if f:
-        sql = f"UPDATE doctors SET approved = 1 WHERE doc_id = {doc_id}"
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
+        f = cur.fetchall()
         con.commit()
         cur.close()
 
-        return {'status': True}
-    return {'status': False,
-            'error': 'No such admin, or admin not registred'}
+        if f:
+            sql = f"UPDATE doctors SET approved = 1 WHERE doc_id = {doc_id}"
+            con = mariadb.connect(**config)
+            cur = con.cursor()
+            cur.execute(sql)
+            con.commit()
+            cur.close()
+
+            return {'status': True}
+        return {'status': False,
+                'error': 'approve_therapist error: no such admin, or admin not logged in'}
+    except Exception:
+        return {'status': False,
+                'error': f'approve_therapist error: {traceback.extract_stack()}'}
 
 
 @app.post('/list_therapists')
 def list_therapists(data: SingleToken):
-    token = data.session_token
+    try:
+        token = data.session_token
 
-    sql = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
+        sql = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
 
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    f = cur.fetchall()
-    con.commit()
-    cur.close()
-
-    out = []
-    if f:
-        sql = 'SELECT doc_id, doc_name, doc_gender, email, registred_date FROM users JOIN doctors ON doc_id = users.id'
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
-        res = cur.fetchall()
+        f = cur.fetchall()
         con.commit()
         cur.close()
-        for row in res:
-            out.append({'doc_id': row[0],
-                        'doc_name': row[1],
-                        'doc_gender': row[2],
-                        'email': row[3],
-                        'registred_date': row[4]})
-        return {'status': True,
-                'list': out}
+
+        out = []
+        if f:
+            sql = 'SELECT doc_id, doc_name, doc_gender, email, registred_date FROM users JOIN doctors ON doc_id = users.id'
+            con = mariadb.connect(**config)
+            cur = con.cursor()
+            cur.execute(sql)
+            res = cur.fetchall()
+            con.commit()
+            cur.close()
+            for row in res:
+                out.append({'doc_id': row[0],
+                            'doc_name': row[1],
+                            'doc_gender': row[2],
+                            'email': row[3],
+                            'registred_date': row[4]})
+            return {'status': True,
+                    'list': out}
+    except Exception:
+        return {'status': False,
+                'error': f'list_therapist error: {traceback.extract_stack()}'}
