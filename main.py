@@ -36,16 +36,31 @@ from email.mime.text import MIMEText
 # email password = pQ6-c8K-Wph-Z2p
 # no_reply password = BPW-XGN-r7g-p8v
 
-config = {
-    # 'host': 'localhost', # для сборки на пеке
-    'host': '127.0.0.1', # для деплоя в прод
-    # 'host': 'mariadb', # для деплоя с докера
+config_pc = {
+    'host': 'localhost', # для сборки на пеке
     'port': 3306,
     'user': 'root',
-    # 'password': '',
+    'password': '',
+    'database': 'testdb'
+}
+
+config_dock = {
+    'host': 'mariadb', # для деплоя с докера
+    'port': 3306,
+    'user': 'root',
+    'password': '',
+    'database': 'testdb'
+}
+
+config_serv = {
+    'host': '127.0.0.1', # для деплоя в прод
+    'port': 3306,
+    'user': 'root',
     'password': 'Ru3-H84-BPg-WkX',
     'database': 'testdb'
 }
+
+configs = [config_serv, config_dock, config_pc]
 
 app = FastAPI()
 
@@ -59,9 +74,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-con = mariadb.connect(**config)
-cur = con.cursor()
-cur.execute("DESCRIBE users")
+print('** DB connection config **')
+for current_config in configs:
+    config = current_config
+    try:
+        print(f'! Trying {config}')
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute("DESCRIBE users")
+        print(f'+ Success!')
+        print(f'Using {config}')
+    except:
+        print('- Fail')
+        config = {}
+if config == {}:
+    print('** DB connection failed **')
+print('** DB connection config complete **')
 
 def swagger_monkey_patch(*args, **kwargs):
     return get_swagger_ui_html(
@@ -72,7 +100,6 @@ def swagger_monkey_patch(*args, **kwargs):
 
 applications.get_swagger_ui_html = swagger_monkey_patch
 
-
 def db_connection(sql: str):
     con = mariadb.connect(**config)
     cur = con.cursor()
@@ -80,7 +107,6 @@ def db_connection(sql: str):
     con.commit()
     cur.close()
     con.close()
-
 
 def send_email_func(to_addr, sender = '', noreply = True, author = None, password = None, subject = '', content = ''):
     if noreply:
@@ -101,8 +127,6 @@ def send_email_func(to_addr, sender = '', noreply = True, author = None, passwor
         except:
             raise Exception
 
-
-
 @app.get("/doc")
 def read_docs():
     return get_swagger_ui_html(openapi_url="/openapi.json")
@@ -111,13 +135,12 @@ def read_docs():
 def root():
     return {"You should not be here": "!"}
 
-
 @app.post("/send_email")
 def send_email():
     send_email_func(to_addr='georgkat@yandex.ru', subject='OK', content='OK OK OKJ')
     return {'ok': 'ok'}
 
-# DEBUG DELITE
+# DEBUG DELETE THIS FUNC
 @app.post("/make_admin")
 def make_admin():
     email = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)]) + '@' + 'admin.adm'
@@ -199,7 +222,7 @@ def register(data:UserCreate):
         cur.close()
         con.close()
         return {'status': False,
-                'error': 'registration error'}
+                'error': 'registration error, user exists'}
 
 @app.post('/register_therapist')
 # TODO сделать генерацию пользователя
@@ -207,7 +230,6 @@ def register_therapist(data: DocRegister):
     try:
         mail = data.doc_email
         password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
-
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(f"SELECT * FROM users WHERE email = '{mail}';")
@@ -232,7 +254,6 @@ def register_therapist(data: DocRegister):
         cur.close()
         con.close()
 
-        date = datetime.datetime.now()
         token = uuid.uuid4()
         user_id = f[0][0]
         sql = f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');"
@@ -281,9 +302,11 @@ def register_therapist(data: DocRegister):
         sql_method = []
         sql_language = []
         sql_edu = []
+        sql_edu_main = []
         sql_method_items = []
         sql_language_items = []
         sql_edu_items = []
+        sql_edu_main_items = []
 
         # DATA doc_method
         if str(data.doc_method):
@@ -308,6 +331,15 @@ def register_therapist(data: DocRegister):
                 sql_edu_items.append('1')
             sql_edu = ', '.join([f'{str(x)}' for x in sql_edu])
             sql_edu_items = ', '.join([f'{str(x)}' for x in sql_edu_items])
+        # DATA doc_edu MAIN
+        if str(data.doc_edu):
+            print(data.doc_edu)
+            for line in data.doc_edu:
+                print(line)
+                sql_edu_main_items.append(f'''({doc_id}, {line['year']}, "{line['university']}", "{line['faculty']}", "{line['degree']}")''')
+                print(sql_edu_main_items)
+            print(sql_edu_main_items)
+            sql_edu_main_items = ', '.join([x for x in sql_edu_main_items])
 
 
         items = [data.doc_name, data.doc_date_of_birth, data.doc_gender, data.doc_edu, data.doc_method_other, data.doc_comunity, data.doc_practice_start, data.doc_online_experience, data.doc_customers_amount_current, data.doc_therapy_length, data.doc_personal_therapy, data.doc_supervision, data.doc_another_job, data.doc_customers_slots_available, data.doc_socials_links, data.doc_citizenship, data.doc_citizenship_other, data.doc_ref, data.doc_ref_other, data.doc_phone, data.doc_email, data.doc_additional_info, data.doc_question_1, data.doc_question_2, data.doc_contact, data.user_photo]
@@ -320,15 +352,18 @@ def register_therapist(data: DocRegister):
 
         con = mariadb.connect(**config)
         cur = con.cursor()
-        sql = (f"INSERT INTO doctors ({columns}) VALUES ({doc_id}, {items});")
+        sql = f"INSERT INTO doctors ({columns}) VALUES ({doc_id}, {items});"
         cur.execute(sql)
-        sql = (f"INSERT INTO methods (doc_id, {sql_method}) VALUES ({doc_id}, {sql_method_items});")
+        sql = f"INSERT INTO methods (doc_id, {sql_method}) VALUES ({doc_id}, {sql_method_items});"
         print(sql)
         cur.execute(sql)
-        sql = (f"INSERT INTO languages (doc_id, {sql_language}) VALUES ({doc_id}, {sql_language_items});")
+        sql = f"INSERT INTO languages (doc_id, {sql_language}) VALUES ({doc_id}, {sql_language_items});"
         print(sql)
         cur.execute(sql)
-        sql = (f"INSERT INTO educations (doc_id, {sql_edu}) VALUES ({doc_id}, {sql_edu_items});")
+        sql = f"INSERT INTO educations (doc_id, {sql_edu}) VALUES ({doc_id}, {sql_edu_items});"
+        print(sql)
+        cur.execute(sql)
+        sql = f"INSERT INTO educations_main (doc_id, year, university, faculty, degree) VALUES {sql_edu_main_items};"
         print(sql)
         cur.execute(sql)
         con.commit()
@@ -390,15 +425,20 @@ def register_therapist(data: DocRegister):
                f'e_4 '  # 44  23
                f'FROM doctors '
                f'JOIN tokens ON doctors.doc_id = tokens.user_id '
+               f'JOIN methods ON doctors.doc_id = methods.doc_id '
                f'JOIN languages ON doctors.doc_id = languages.doc_id '
-               f'JOIN methods ON doctors.doc_id = languages.doc_id '
-               f'JOIN educations ON doctors.doc_id = languages.doc_id '
+               f'JOIN educations ON doctors.doc_id = educations.doc_id '
                f'WHERE token = "{token}"')
 
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
         f = cur.fetchall()
+        d = cur.description
+        print('______________________________')
+        for i, x in enumerate(d):
+            print(f'{i} / {x[0]} / {f[0][i]}')
+        print('______________________________')
         con.commit()
         cur.close()
         con.close()
@@ -423,11 +463,14 @@ def register_therapist(data: DocRegister):
         else:
             fph = []
 
-        method_edu_language = f[0][28:]
+        method_edu_language = f[0][27:]
         print(method_edu_language)
-        doc_method = method_edu_language[0:15]
-        doc_language = method_edu_language[15:17]
-        doc_edu_additional = method_edu_language[18:]
+        doc_method = method_edu_language[0:16]
+        print(doc_method)
+        doc_language = method_edu_language[16:19]
+        print(doc_language)
+        doc_edu_additional = method_edu_language[19:]
+        print(doc_edu_additional)
 
         doc_method_out = []
         for index, x in enumerate(doc_method):
@@ -444,6 +487,24 @@ def register_therapist(data: DocRegister):
             if x:
                 doc_edu_additional_out.append(index)
 
+        # DOC EDU MAIN
+        print('DOC EDU MAIN')
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        sql = f'SELECT * FROM educations_main WHERE doc_id = {doc_id}'
+        cur.execute(sql)
+        fetch_edu_main = cur.fetchall()
+        con.commit()
+        cur.close()
+        con.close()
+
+        doc_edu = []
+        for item in fetch_edu_main:
+            doc_edu.append({"year": item[1],
+                            "university": item[2],
+                            "faculty": item[3],
+                            "degree": item[4]})
+
         subj = "Speak your mind password"
         cont = f'''Hello, {data.doc_name}!\nYour first one time password is {password}!\nSincerely yours, SPEAK YOUR MIND team!'''
 
@@ -455,7 +516,7 @@ def register_therapist(data: DocRegister):
                'doc_name': f[0][1],
                'doc_date_of_birth': f[0][2],
                'doc_gender': f[0][3],
-               'doc_edu': f[0][4],
+               'doc_edu': doc_edu,
                'doc_method': doc_method_out,
                #'doc_method_other': f[0][6],
                'doc_language': doc_language_out,
