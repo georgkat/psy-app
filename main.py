@@ -213,7 +213,10 @@ def register(data:UserCreate):
     cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
     f = cur.fetchall()
     if f == []:
-        cur.execute(f"INSERT INTO users (email, password) VALUES ('{data.user_email}', '{data.password}');")
+        cur.execute(f"INSERT INTO users (email, password) VALUES ('{data.user_email}', '{data.password}') RETURNING id;")
+        f = cur.fetchall()
+        client_id = f[0][0]
+        cur.execute(f"INSERT INTO clients (client_id, name) VALUES ('{client_id}', '{data.user_name}');")
         con.commit()
         cur.close()
         con.close()

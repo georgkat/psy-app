@@ -75,6 +75,32 @@ LOCK TABLES `cards` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `clients`
+--
+
+DROP TABLE IF EXISTS `clients`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `clients` (
+  `client_id` int(11) NOT NULL,
+  `name` text DEFAULT NULL,
+  PRIMARY KEY (`client_id`),
+  CONSTRAINT `cli_id` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `clients`
+--
+
+LOCK TABLES `clients` WRITE;
+/*!40000 ALTER TABLE `clients` DISABLE KEYS */;
+INSERT INTO `clients` VALUES
+(210,'Vasyan');
+/*!40000 ALTER TABLE `clients` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `doctors`
 --
 
@@ -178,7 +204,8 @@ INSERT INTO `doctors` VALUES
 (203,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ssssss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
 (204,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sssssss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
 (205,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sssssss1sfs1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(206,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ssssssss1sfs1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+(206,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ssssssss1sfs1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+(207,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sssыsssss1sfs1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `doctors` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -238,7 +265,8 @@ INSERT INTO `educations` VALUES
 (203,1,0,1,0,0),
 (204,1,0,1,0,0),
 (205,1,0,1,0,0),
-(206,1,0,1,0,0);
+(206,1,0,1,0,0),
+(207,1,0,1,0,0);
 /*!40000 ALTER TABLE `educations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -300,7 +328,9 @@ INSERT INTO `educations_main` VALUES
 (205,1990,'hoggwards','griffindor','B'),
 (205,1995,'hoggwards','hoggwards','M'),
 (206,1990,'hoggwards','griffindor','B'),
-(206,1995,'hoggwards','hoggwards','M');
+(206,1995,'hoggwards','hoggwards','M'),
+(207,1990,'hoggwards','griffindor','B'),
+(207,1995,'hoggwards','hoggwards','M');
 /*!40000 ALTER TABLE `educations_main` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -403,7 +433,8 @@ INSERT INTO `languages` VALUES
 (203,1,0,1),
 (204,1,0,1),
 (205,1,0,1),
-(206,1,0,1);
+(206,1,0,1),
+(207,1,0,1);
 /*!40000 ALTER TABLE `languages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -475,7 +506,8 @@ INSERT INTO `methods` VALUES
 (203,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
 (204,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
 (205,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(206,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+(206,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+(207,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `methods` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -633,7 +665,8 @@ INSERT INTO `tokens` VALUES
 (203,'fb57031a-d754-4807-ac4d-17e1c1b75a7f','2024-10-04 16:47:44'),
 (204,'14af2254-7e42-41ed-adfa-f9cb8489c202','2024-10-04 16:48:20'),
 (205,'f968dbf9-7a23-4c16-a0e5-c9ae1cd307f1','2024-10-04 16:49:30'),
-(206,'4336a69f-07d1-477e-944c-37188277d732','2024-10-04 16:50:07');
+(206,'4336a69f-07d1-477e-944c-37188277d732','2024-10-04 16:50:07'),
+(207,'7ef4c468-687a-49db-8ddf-878b07b9b73c','2024-10-04 16:55:18');
 /*!40000 ALTER TABLE `tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -652,7 +685,7 @@ CREATE TABLE `users` (
   `is_admin` tinyint(4) DEFAULT 0,
   `registred_date` datetime DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=207 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=211 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -714,7 +747,10 @@ INSERT INTO `users` VALUES
 (203,'51s4ssssss1ss1s','j0P7U9A7',1,0,'2024-10-04 16:47:44'),
 (204,'51s4sssssss1ss1s','o2M9O1b5',1,0,'2024-10-04 16:48:20'),
 (205,'51s4sssssss1sfs1s','s3T7H6j1',1,0,'2024-10-04 16:49:30'),
-(206,'51s4ssssssss1sfs1s','t4V3S3Z1',1,0,'2024-10-04 16:50:07');
+(206,'51s4ssssssss1sfs1s','t4V3S3Z1',1,0,'2024-10-04 16:50:07'),
+(207,'51s4sssыsssss1sfs1s','Z6c9P2i3',1,0,'2024-10-04 16:55:18'),
+(208,'user@example.com','stringstr',0,0,'2024-10-04 17:33:07'),
+(210,'user@enxam1ple.com','stringstr',0,0,'2024-10-04 17:40:15');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -727,4 +763,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2024-10-04 16:50:53
+-- Dump completed on 2024-10-04 17:40:54

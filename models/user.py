@@ -39,6 +39,7 @@ class UserCreate(CoreModel):
     Email and password are required for registering a new user
     Returns user_id, sends data on e-mail
     """
+    user_name: str
     user_email: EmailStr
     password: constr(min_length=9, max_length=100)
 
