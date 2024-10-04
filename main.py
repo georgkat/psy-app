@@ -1,4 +1,3 @@
-# TODO - LOGIN
 # TODO - REGISTRATION
 # TODO - CABINET USER
 # TODO
@@ -84,6 +83,7 @@ for current_config in configs:
         cur.execute("DESCRIBE users")
         print(f'+ Success!')
         print(f'Using {config}')
+        break
     except:
         print('- Fail')
         config = {}
