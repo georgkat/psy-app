@@ -464,13 +464,9 @@ def register_therapist(data: DocRegister):
             fph = []
 
         method_edu_language = f[0][27:]
-        print(method_edu_language)
         doc_method = method_edu_language[0:16]
-        print(doc_method)
         doc_language = method_edu_language[16:19]
-        print(doc_language)
         doc_edu_additional = method_edu_language[19:]
-        print(doc_edu_additional)
 
         doc_method_out = []
         for index, x in enumerate(doc_method):
@@ -590,19 +586,25 @@ def get_docf_data(data: SingleToken):
            f'm_7, '  # 34 7
            f'm_8, '  # 35 8
            f'm_9, '  # 36 9
-           f'l_0, '  # 37 10
-           f'l_1, '  # 38 11
-           f'l_2, '  # 39 12
-           f'e_0, '  # 40 13
-           f'e_1, '  # 41 14
-           f'e_2, '  # 42 15
-           f'e_3, '  # 43 16
-           f'e_4 '  # 44  17
+           f'm_10, '  # 36 10
+           f'm_11, '  # 36 11
+           f'm_12, '  # 36 12
+           f'm_13, '  # 36 13
+           f'm_14, '  # 36 14
+           f'm_15, '  # 36 15
+           f'l_0, '  # 37  16
+           f'l_1, '  # 38  17
+           f'l_2, '  # 39  18
+           f'e_0, '  # 40  19
+           f'e_1, '  # 41  20
+           f'e_2, '  # 42  21
+           f'e_3, '  # 43  22
+           f'e_4 '  # 44  23
            f'FROM doctors '
            f'JOIN tokens ON doctors.doc_id = tokens.user_id '
            f'JOIN languages ON doctors.doc_id = languages.doc_id '
-           f'JOIN methods ON doctors.doc_id = languages.doc_id '
-           f'JOIN educations ON doctors.doc_id = languages.doc_id '
+           f'JOIN methods ON doctors.doc_id = methods.doc_id '
+           f'JOIN educations ON doctors.doc_id = educations.doc_id '
            f'WHERE token = "{token}"')
 
     con = mariadb.connect(**config)
@@ -631,11 +633,32 @@ def get_docf_data(data: SingleToken):
     else:
         fph = []
 
-    method_edu_language = f[0][28:]
+    # DOC EDU MAIN
+    print('DOC EDU MAIN')
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    sql = f'SELECT * FROM educations_main WHERE doc_id = {doc_id}'
+    cur.execute(sql)
+    fetch_edu_main = cur.fetchall()
+    con.commit()
+    cur.close()
+    con.close()
+
+    doc_edu = []
+    for item in fetch_edu_main:
+        doc_edu.append({"year": item[1],
+                        "university": item[2],
+                        "faculty": item[3],
+                        "degree": item[4]})
+
+    method_edu_language = f[0][27:]
     print(method_edu_language)
-    doc_method = method_edu_language[0:15]
-    doc_language = method_edu_language[15:17]
-    doc_edu_additional = method_edu_language[18:]
+    doc_method = method_edu_language[0:16]
+    print(doc_method)
+    doc_language = method_edu_language[16:19]
+    print(doc_language)
+    doc_edu_additional = method_edu_language[19:]
+    print(doc_edu_additional)
 
     doc_method_out = []
     for index, x in enumerate(doc_method):
@@ -656,7 +679,7 @@ def get_docf_data(data: SingleToken):
            'doc_name': f[0][1],
            'doc_date_of_birth': f[0][2],
            'doc_gender': f[0][3],
-           'doc_edu': f[0][4],
+           'doc_edu': doc_edu,
            'doc_method': doc_method_out,
            # 'doc_method_other': f[0][6],
            'doc_language': doc_language_out,
