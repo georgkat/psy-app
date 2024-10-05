@@ -156,6 +156,10 @@ def make_admin():
     con.commit()
     cur.close()
     con.close()
+
+    print({"email": email,
+            "password": password})
+
     return {"email": email,
             "password": password}
 
@@ -173,6 +177,8 @@ def logout(data: SingleToken):
     con.commit()
     cur.close()
     con.close()
+
+    print({"status": True})
     return {"status": True}
 
 
@@ -530,12 +536,16 @@ def register_therapist(data: DocRegister):
                'doc_question_2': f[0][24],
                'doc_contact': f[0][25],
                'user_photo': fph}
-
+        print(out)
         return out
     except ValidationError as e:
+        print({'status': False,
+                'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'})
         return {'status': False,
                 'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'}
     except Exception as e:
+        print({'status': False,
+                'error': f'register_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'register_therapist error: {e}, {traceback.extract_stack()}'}
 
@@ -702,8 +712,11 @@ def get_docf_data(data: SingleToken):
                'doc_question_2': f[0][24],
                'doc_contact': f[0][25],
                'user_photo': fph}
+        print(out)
         return out
     except Exception as e:
+        print({'status': False,
+                'error': f'get_doc_data error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'get_doc_data error: {e}, {traceback.extract_stack()}'}
 
@@ -726,6 +739,8 @@ def doctor_schedule(data: DocScheldure):
         con.close()
 
         if not f:
+            print({'status': False,
+                    'error': """doctor_schedule error: user not auth-ed"""})
             return {'status': False,
                     'error': """doctor_schedule error: user not auth-ed"""}
         if f:
@@ -745,7 +760,7 @@ def doctor_schedule(data: DocScheldure):
                 out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
 
             # формирую словарик
-
+            print({'status': True, 'schedule': out, 'timezone': timezone})
             return {'status': True, 'schedule': out, 'timezone': timezone}
 
 
@@ -802,9 +817,11 @@ def doctor_schedule(data: DocScheldure):
             out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
 
         # формирую словарик
-
+        print({'status': True, 'schedule': out, 'timezone': timezone})
         return {'status': True, 'schedule': out, 'timezone': timezone}
     except Exception as e:
+        print({'status': False,
+                'error': f'doctor_schedule error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'doctor_schedule error: {e}, {traceback.extract_stack()}'}
 
@@ -892,6 +909,7 @@ def update_therapist(data: DocUpdate):
             con.commit()
             cur.close()
             con.close()
+            print({'status': True})
             return {'status': True}
         else:
             set_list = []
@@ -906,8 +924,11 @@ def update_therapist(data: DocUpdate):
             con.commit()
             cur.close()
             con.close()
+            print({'status': True})
             return {'status': True}
     except Exception as e:
+        print({'status': False,
+                'error': f'update_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'update_therapist error: {e}, {traceback.extract_stack()}'}
 
@@ -927,6 +948,10 @@ def get_available_slots(data: SingleToken):
         con.close()
 
         if not f:
+            print(
+                {'status': False,
+                 'error': """get_available_slots error: user not auth-ed"""}
+            )
             return {'status': False,
                     'error': """get_available_slots error: user not auth-ed"""}
         if f:
@@ -951,9 +976,10 @@ def get_available_slots(data: SingleToken):
                     if data:
                         sh_list.append(f'{key} {i}:00')
                 sh_dict[key] = copy.copy(sh_list)
-
+        print({'status': True, 'slots': sh_list})
         return {'status': True, 'slots': sh_list}
     except Exception as e:
+        print({'status': False, 'error': f'get_available_slots error: {e}, {traceback.extract_stack()}'})
         return {'status': False, 'error': f'get_available_slots error: {e}, {traceback.extract_stack()}'}
 
 @app.post('/select_slot')
@@ -994,20 +1020,29 @@ def login_admin(data: ActionUserLogin):
                 con.commit()
                 cur.close()
                 con.close()
+                print({'status': True,
+                        'token': token,
+                        'is_admin': True})
                 return {'status': True,
                         'token': token,
                         'is_admin': True}
             else:
                 cur.close()
                 con.close()
+                print({'status': False,
+                        'error': 'login_admin error: incorrect email/password'})
                 return {'status': False,
                         'error': 'login_admin error: incorrect email/password'}
         else:
             cur.close()
             con.close()
+            print({'status': False,
+                    'error': 'login_admin error: incorrect email/password'})
             return {'status': False,
                     'error': 'login_admin error: incorrect email/password'}
     except Exception as e:
+        print({'status': False,
+                'error': f'login_admin error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'login_admin error: {e}, {traceback.extract_stack()}'}
 
@@ -1033,11 +1068,15 @@ def approve_therapist(data: ApproveTherapistToken):
             cur.execute(sql)
             con.commit()
             cur.close()
-
+            print({'status': True})
             return {'status': True}
+        print({'status': False,
+                'error': 'approve_therapist error: no such admin, or admin not logged in'})
         return {'status': False,
                 'error': 'approve_therapist error: no such admin, or admin not logged in'}
     except Exception as e:
+        print({'status': False,
+                'error': f'approve_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'approve_therapist error: {e}, {traceback.extract_stack()}'}
 
@@ -1071,8 +1110,12 @@ def list_therapists(data: SingleToken):
                             'doc_gender': row[2],
                             'email': row[3],
                             'registred_date': row[4]})
+            print({'status': True,
+                    'list': out})
             return {'status': True,
                     'list': out}
     except Exception as e:
+        print({'status': False,
+                'error': f'list_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'list_therapist error: {e}, {traceback.extract_stack()}'}
