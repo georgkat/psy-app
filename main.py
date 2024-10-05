@@ -535,7 +535,7 @@ def register_therapist(data: DocRegister):
                 'error': f'register_therapist error: validation error, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'}
     except Exception as e:
         return {'status': False,
-                'error': f'register_therapist error: validation error, {traceback.extract_stack()}'}
+                'error': f'register_therapist error: {traceback.extract_stack()}'}
 
 
 
