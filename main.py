@@ -201,12 +201,12 @@ def login(data: ActionUserLogin):
                 cur.close()
                 con.close()
                 return {'status': False,
-                        'error': 'incorrect email/password'}
+                        'error': 'login error: incorrect email/password'}
         else:
             cur.close()
             con.close()
             return {'status': False,
-                    'error': 'incorrect email/password'}
+                    'error': 'login error: incorrect email/password'}
     except Exception as e:
         return {'status': False,
                 'error': f'/login error: {e} {traceback.extract_stack()}'}
@@ -532,10 +532,10 @@ def register_therapist(data: DocRegister):
         return out
     except ValidationError as e:
         return {'status': False,
-                'error': f'register_therapist error: validation error, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'}
+                'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'}
     except Exception as e:
         return {'status': False,
-                'error': f'register_therapist error: {traceback.extract_stack()}'}
+                'error': f'register_therapist error: {e}, {traceback.extract_stack()}'}
 
 
 
@@ -701,9 +701,9 @@ def get_docf_data(data: SingleToken):
                'doc_contact': f[0][25],
                'user_photo': fph}
         return out
-    except Exception:
+    except Exception as e:
         return {'status': False,
-                'error': f'get_doc_data error: {traceback.extract_stack()}'}
+                'error': f'get_doc_data error: {e}, {traceback.extract_stack()}'}
 
 @app.post('/doctor_schedule')
 def doctor_schedule(data: DocScheldure):
@@ -725,7 +725,7 @@ def doctor_schedule(data: DocScheldure):
 
         if not f:
             return {'status': False,
-                    'error': """user not auth-ed"""}
+                    'error': """doctor_schedule error: user not auth-ed"""}
         if f:
             doc_id = f[0][0]
         # TODO Возврат timezone
@@ -802,9 +802,9 @@ def doctor_schedule(data: DocScheldure):
         # формирую словарик
 
         return {'status': True, 'schedule': out, 'timezone': timezone}
-    except Exception:
+    except Exception as e:
         return {'status': False,
-                'error': f'doctor_schedule error: {traceback.extract_stack()}'}
+                'error': f'doctor_schedule error: {e}, {traceback.extract_stack()}'}
 
 
 
@@ -905,9 +905,9 @@ def update_therapist(data: DocUpdate):
             cur.close()
             con.close()
             return {'status': True}
-    except Exception:
+    except Exception as e:
         return {'status': False,
-                'error': f'update_therapist error: {traceback.extract_stack()}'}
+                'error': f'update_therapist error: {e}, {traceback.extract_stack()}'}
 
 
 @app.post('/get_available_slots')
@@ -926,7 +926,7 @@ def get_available_slots(data: SingleToken):
 
         if not f:
             return {'status': False,
-                    'error': """user not auth-ed"""}
+                    'error': """get_available_slots error: user not auth-ed"""}
         if f:
             doc_id = f
 
@@ -951,8 +951,8 @@ def get_available_slots(data: SingleToken):
                 sh_dict[key] = copy.copy(sh_list)
 
         return {'status': True, 'slots': sh_list}
-    except Exception:
-        return {'status': False, 'error': f'get_available_slots error: {traceback.extract_stack()}'}
+    except Exception as e:
+        return {'status': False, 'error': f'get_available_slots error: {e}, {traceback.extract_stack()}'}
 
 @app.post('/select_slot')
 def select_slot_client(data: SelectTime):
@@ -994,7 +994,6 @@ def login_admin(data: ActionUserLogin):
                 con.close()
                 return {'status': True,
                         'token': token,
-                        'error': '',
                         'is_admin': True}
             else:
                 cur.close()
@@ -1006,9 +1005,9 @@ def login_admin(data: ActionUserLogin):
             con.close()
             return {'status': False,
                     'error': 'login_admin error: incorrect email/password'}
-    except Exception:
+    except Exception as e:
         return {'status': False,
-                'error': f'login_admin error: {traceback.extract_stack()}'}
+                'error': f'login_admin error: {e}, {traceback.extract_stack()}'}
 
 @app.post('/approve_therapist')
 def approve_therapist(data: ApproveTherapistToken):
@@ -1036,9 +1035,9 @@ def approve_therapist(data: ApproveTherapistToken):
             return {'status': True}
         return {'status': False,
                 'error': 'approve_therapist error: no such admin, or admin not logged in'}
-    except Exception:
+    except Exception as e:
         return {'status': False,
-                'error': f'approve_therapist error: {traceback.extract_stack()}'}
+                'error': f'approve_therapist error: {e}, {traceback.extract_stack()}'}
 
 
 @app.post('/list_therapists')
@@ -1072,6 +1071,6 @@ def list_therapists(data: SingleToken):
                             'registred_date': row[4]})
             return {'status': True,
                     'list': out}
-    except Exception:
+    except Exception as e:
         return {'status': False,
-                'error': f'list_therapist error: {traceback.extract_stack()}'}
+                'error': f'list_therapist error: {e}, {traceback.extract_stack()}'}
