@@ -203,7 +203,6 @@ def login(data: ActionUserLogin):
                 con.close()
                 return {'status': True,
                         'token': token,
-                        'error': '',
                         'is_therapist': is_therapist}
             else:
                 cur.close()
