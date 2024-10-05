@@ -91,6 +91,8 @@ for current_config in configs:
         config = {}
 if config == {}:
     print('** DB connection failed **')
+cur.close()
+con.close()
 print('** DB connection config complete **')
 
 def swagger_monkey_patch(*args, **kwargs):
