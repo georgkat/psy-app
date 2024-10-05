@@ -225,7 +225,6 @@ def register(data:UserCreate):
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
-        a = 0 / 0
         f = cur.fetchall()
         if f == []:
             cur.execute(f"INSERT INTO users (email, password) VALUES ('{data.user_email}', '{data.password}') RETURNING id;")
