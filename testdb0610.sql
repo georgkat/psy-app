@@ -96,8 +96,64 @@ CREATE TABLE `clients` (
 LOCK TABLES `clients` WRITE;
 /*!40000 ALTER TABLE `clients` DISABLE KEYS */;
 INSERT INTO `clients` VALUES
-(210,'Vasyan');
+(210,'Vasyan'),
+(211,'*');
 /*!40000 ALTER TABLE `clients` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `doc_symptoms`
+--
+
+DROP TABLE IF EXISTS `doc_symptoms`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `doc_symptoms` (
+  `doc_id` int(11) NOT NULL,
+  `s_0` tinyint(1) DEFAULT 0,
+  `s_1` tinyint(1) DEFAULT 0,
+  `s_2` tinyint(1) DEFAULT 0,
+  `s_3` tinyint(1) DEFAULT 0,
+  `s_4` tinyint(1) DEFAULT 0,
+  `s_5` tinyint(1) DEFAULT 0,
+  `s_6` tinyint(1) DEFAULT 0,
+  `s_7` tinyint(1) DEFAULT 0,
+  `s_8` tinyint(1) DEFAULT 0,
+  `s_9` tinyint(1) DEFAULT 0,
+  `s_10` tinyint(1) DEFAULT 0,
+  `s_11` tinyint(1) DEFAULT 0,
+  `s_12` tinyint(1) DEFAULT 0,
+  `s_13` tinyint(1) DEFAULT 0,
+  `s_14` tinyint(1) DEFAULT 0,
+  `s_15` tinyint(1) DEFAULT 0,
+  `s_16` tinyint(1) DEFAULT 0,
+  `s_17` tinyint(1) DEFAULT 0,
+  `s_18` tinyint(1) DEFAULT 0,
+  `s_19` tinyint(1) DEFAULT 0,
+  `s_20` tinyint(1) DEFAULT 0,
+  `s_21` tinyint(1) DEFAULT 0,
+  `s_22` tinyint(1) DEFAULT 0,
+  `s_23` tinyint(1) DEFAULT 0,
+  `s_24` tinyint(1) DEFAULT 0,
+  `s_25` tinyint(1) DEFAULT 0,
+  `s_26` tinyint(1) DEFAULT 0,
+  `s_27` tinyint(1) DEFAULT 0,
+  `s_28` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`doc_id`),
+  CONSTRAINT `doc_id` FOREIGN KEY (`doc_id`) REFERENCES `doctors` (`doc_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `doc_symptoms`
+--
+
+LOCK TABLES `doc_symptoms` WRITE;
+/*!40000 ALTER TABLE `doc_symptoms` DISABLE KEYS */;
+INSERT INTO `doc_symptoms` VALUES
+(223,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+(225,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+/*!40000 ALTER TABLE `doc_symptoms` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -137,30 +193,11 @@ CREATE TABLE `doctors` (
   `doc_question_2` text DEFAULT NULL,
   `doc_contact` text DEFAULT NULL,
   `user_photo` text DEFAULT NULL,
-  `client_age` text DEFAULT NULL,
-  `lgbtq` text DEFAULT NULL,
-  `therapy_type` text DEFAULT NULL,
+  `doc_client_age` int(1) DEFAULT 0,
+  `doc_lgbtq` int(1) DEFAULT 0,
+  `doc_therapy_type` int(1) DEFAULT 0,
   `doc_phone` varchar(20) DEFAULT NULL,
   `approved` tinyint(1) DEFAULT 1 COMMENT '0 / 1',
-  `doc_method_0` tinyint(1) DEFAULT 0,
-  `doc_method_1` tinyint(1) DEFAULT 0,
-  `doc_method_2` tinyint(1) DEFAULT 0,
-  `doc_method_3` tinyint(1) DEFAULT 0,
-  `doc_method_4` tinyint(1) DEFAULT 0,
-  `doc_method_5` tinyint(1) DEFAULT 0,
-  `doc_method_6` tinyint(1) DEFAULT 0,
-  `doc_method_7` tinyint(1) DEFAULT 0,
-  `doc_method_8` tinyint(1) DEFAULT 0,
-  `doc_method_9` tinyint(1) DEFAULT 0,
-  `doc_method_10` tinyint(1) DEFAULT 0,
-  `doc_language_0` tinyint(1) DEFAULT 0 COMMENT 'ru',
-  `doc_language_1` tinyint(1) DEFAULT 0 COMMENT 'hun',
-  `doc_language_2` tinyint(1) DEFAULT 0 COMMENT 'en',
-  `doc_edu_additional_0` tinyint(1) DEFAULT 0 COMMENT 'ru',
-  `doc_edu_additional_1` tinyint(1) DEFAULT 0 COMMENT 'ru',
-  `doc_edu_additional_2` tinyint(1) DEFAULT 0 COMMENT 'ru',
-  `doc_edu_additional_3` tinyint(1) DEFAULT 0 COMMENT 'ru',
-  `doc_edu_additional_4` tinyint(1) DEFAULT 0 COMMENT 'ru',
   PRIMARY KEY (`doc_id`),
   UNIQUE KEY `doc_id_UNIQUE` (`doc_id`),
   CONSTRAINT `testdb_doc_user` FOREIGN KEY (`doc_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
@@ -174,38 +211,43 @@ CREATE TABLE `doctors` (
 LOCK TABLES `doctors` WRITE;
 /*!40000 ALTER TABLE `doctors` DISABLE KEYS */;
 INSERT INTO `doctors` VALUES
-(166,'string','2024-10-03',0,'string',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','test12@test.ts','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(167,'string','2024-10-03',0,'string',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','test13@test.ts','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(168,'string','2024-10-03',0,'string',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','test43@test.ts','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(169,'string','2024-10-03',0,'string',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','test21@test.ts','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(170,'string','2024-10-03',0,'[{\'year\': \'str\', \'university\': \'str\', \'faculty\': \'str\', \'degree\': \'str\'}, {\'year\': \'str\', \'university\': \'str\', \'faculty\': \'str\', \'degree\': \'str\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','0-string112','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(172,'ываываы','1980-01-15',0,'[{\'year\': \'2000\', \'university\': \'ывапывапыв\', \'faculty\': \'ыекцуе\', \'degree\': \'кевке\'}, {\'year\': \'2001\', \'university\': \'вапвап\', \'faculty\': \'вапвапв\', \'degree\': \'вапвап\'}]',NULL,'',NULL,NULL,'ываываы','09 2002','20','','0','','20','20','yes','yes','впвапваа','5-15','вкпквпкввк','0','test-doc-22@test.ru','rgdrtgrdt','drgrdgdr','drgdrgr','doc_contact_email','',NULL,NULL,NULL,'6165516516',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(173,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','samuel@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(174,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','samuedl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(175,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sasmuedl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(176,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sasmueыdl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(177,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sassmueыdl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(179,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sasssmuseыdl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(180,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sassssmuseыdl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(181,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sasssdsmuseыdl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(190,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','53s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(191,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','54s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(192,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','541s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(193,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','5141s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(194,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51411s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(195,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','514s11s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(196,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4s11s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(197,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ss11s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(198,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ss1s1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(199,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sss1s1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(200,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(201,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ssss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(202,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sssss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(203,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ssssss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(204,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sssssss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(205,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sssssss1sfs1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(206,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ssssssss1sfs1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(207,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sssыsssss1sfs1s','string','string','string','string','',NULL,NULL,NULL,'string',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+(166,'string','2024-10-03',0,'string',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','test12@test.ts','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(167,'string','2024-10-03',0,'string',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','test13@test.ts','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(168,'string','2024-10-03',0,'string',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','test43@test.ts','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(169,'string','2024-10-03',0,'string',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','test21@test.ts','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(170,'string','2024-10-03',0,'[{\'year\': \'str\', \'university\': \'str\', \'faculty\': \'str\', \'degree\': \'str\'}, {\'year\': \'str\', \'university\': \'str\', \'faculty\': \'str\', \'degree\': \'str\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','0-string112','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(172,'ываываы','1980-01-15',0,'[{\'year\': \'2000\', \'university\': \'ывапывапыв\', \'faculty\': \'ыекцуе\', \'degree\': \'кевке\'}, {\'year\': \'2001\', \'university\': \'вапвап\', \'faculty\': \'вапвапв\', \'degree\': \'вапвап\'}]',NULL,'',NULL,NULL,'ываываы','09 2002','20','','0','','20','20','yes','yes','впвапваа','5-15','вкпквпкввк','0','test-doc-22@test.ru','rgdrtgrdt','drgrdgdr','drgdrgr','doc_contact_email','',NULL,NULL,NULL,'6165516516',1),
+(173,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','samuel@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1),
+(174,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','samuedl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1),
+(175,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sasmuedl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1),
+(176,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sasmueыdl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1),
+(177,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sassmueыdl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1),
+(179,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sasssmuseыdl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1),
+(180,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sassssmuseыdl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1),
+(181,'Doc Simons','2112-09-01',0,'2003 - Moscow State University - Faculty of Psychology, Clinical Psychology - Bachelor.\n',NULL,'',NULL,NULL,'If you do, please specify?\n\n','01 1990','15','','2','','15','15','yes','yes','How are your interests and priorities distributed?\n\n','1-10','mediua','2','sasssdsmuseыdl@docs.com','Tell us about yourself in free form.*\n\n','What things do you find unacceptable in the psychotherapeutic process? Why?*\n\n','What do you think you can\'t work with online? Why?*\n\n','doc_contact_whatsapp','',NULL,NULL,NULL,'1 234-567-8910',1),
+(190,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','53s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(191,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','54s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(192,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','541s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(193,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','5141s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(194,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51411s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(195,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','514s11s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(196,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4s11s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(197,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ss11s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(198,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ss1s1s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(199,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sss1s1s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(200,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(201,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ssss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(202,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sssss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(203,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ssssss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(204,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sssssss1ss1s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(205,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sssssss1sfs1s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(206,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4ssssssss1sfs1s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(207,'string','2024-10-04',0,'[{\'year\': \'1990\', \'university\': \'hoggwards\', \'faculty\': \'griffindor\', \'degree\': \'B\'}, {\'year\': \'1995\', \'university\': \'hoggwards\', \'faculty\': \'hoggwards\', \'degree\': \'M\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','51s4sssыsssss1sfs1s','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(216,'string','2024-10-04',0,'[{\'year\': 1999, \'university\': \'MUS\', \'faculty\': \'FUS\', \'degree\': \'Bc\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','1f','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(220,'string','2024-10-05',0,'[{\'year\': 1234, \'university\': \'a\', \'faculty\': \'b\', \'degree\': \'c\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','stddring','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(222,'string','2024-10-05',0,'[{\'year\': 1234, \'university\': \'a\', \'faculty\': \'b\', \'degree\': \'c\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','stddrfаing','string','string','string','string','',NULL,NULL,NULL,'string',1),
+(223,'string','2024-10-06',0,'[{\'year\': 0, \'university\': \'U\', \'faculty\': \'F\', \'degree\': \'D\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','stringgggg','blablablablablablabla','string','string','string','',1,1,2,'string',1),
+(225,'string','2024-10-06',0,'[{\'year\': 0, \'university\': \'U\', \'faculty\': \'F\', \'degree\': \'D\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','stringggggg','blablablablablablabla','string','string','string','',1,1,2,'string',1);
 /*!40000 ALTER TABLE `doctors` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -266,7 +308,12 @@ INSERT INTO `educations` VALUES
 (204,1,0,1,0,0),
 (205,1,0,1,0,0),
 (206,1,0,1,0,0),
-(207,1,0,1,0,0);
+(207,1,0,1,0,0),
+(216,0,1,0,0,0),
+(220,0,0,0,1,0),
+(222,0,0,0,1,0),
+(223,0,0,0,1,0),
+(225,0,0,0,1,0);
 /*!40000 ALTER TABLE `educations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -330,7 +377,12 @@ INSERT INTO `educations_main` VALUES
 (206,1990,'hoggwards','griffindor','B'),
 (206,1995,'hoggwards','hoggwards','M'),
 (207,1990,'hoggwards','griffindor','B'),
-(207,1995,'hoggwards','hoggwards','M');
+(207,1995,'hoggwards','hoggwards','M'),
+(216,1999,'MUS','FUS','Bc'),
+(220,1234,'a','b','c'),
+(222,1234,'a','b','c'),
+(223,0,'U','F','D'),
+(225,0,'U','F','D');
 /*!40000 ALTER TABLE `educations_main` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -434,7 +486,12 @@ INSERT INTO `languages` VALUES
 (204,1,0,1),
 (205,1,0,1),
 (206,1,0,1),
-(207,1,0,1);
+(207,1,0,1),
+(216,0,1,0),
+(220,0,0,1),
+(222,0,0,1),
+(223,0,0,1),
+(225,0,0,1);
 /*!40000 ALTER TABLE `languages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -507,7 +564,12 @@ INSERT INTO `methods` VALUES
 (204,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
 (205,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
 (206,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(207,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+(207,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+(216,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+(220,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+(222,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+(223,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+(225,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `methods` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -538,57 +600,6 @@ INSERT INTO `schedule` VALUES
 (95,'82','2024-09-15 01:00:00',NULL),
 (96,'82','2024-09-15 03:00:00',NULL);
 /*!40000 ALTER TABLE `schedule` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `symptoms`
---
-
-DROP TABLE IF EXISTS `symptoms`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `symptoms` (
-  `doc_id` int(11) NOT NULL,
-  `s_1` tinyint(1) DEFAULT 0,
-  `s_2` tinyint(1) DEFAULT 0,
-  `s_3` tinyint(1) DEFAULT 0,
-  `s_4` tinyint(1) DEFAULT 0,
-  `s_5` tinyint(1) DEFAULT 0,
-  `s_6` tinyint(1) DEFAULT 0,
-  `s_7` tinyint(1) DEFAULT 0,
-  `s_8` tinyint(1) DEFAULT 0,
-  `s_9` tinyint(1) DEFAULT 0,
-  `s_10` tinyint(1) DEFAULT 0,
-  `s_11` tinyint(1) DEFAULT 0,
-  `s_12` tinyint(1) DEFAULT 0,
-  `s_13` tinyint(1) DEFAULT 0,
-  `s_14` tinyint(1) DEFAULT 0,
-  `s_15` tinyint(1) DEFAULT 0,
-  `s_16` tinyint(1) DEFAULT 0,
-  `s_17` tinyint(1) DEFAULT 0,
-  `s_18` tinyint(1) DEFAULT 0,
-  `s_19` tinyint(1) DEFAULT 0,
-  `s_20` tinyint(1) DEFAULT 0,
-  `s_21` tinyint(1) DEFAULT 0,
-  `s_22` tinyint(1) DEFAULT 0,
-  `s_23` tinyint(1) DEFAULT 0,
-  `s_24` tinyint(1) DEFAULT 0,
-  `s_25` tinyint(1) DEFAULT 0,
-  `s_26` tinyint(1) DEFAULT 0,
-  `s_27` tinyint(1) DEFAULT 0,
-  `s_28` tinyint(1) DEFAULT 0,
-  PRIMARY KEY (`doc_id`),
-  CONSTRAINT `doc_id` FOREIGN KEY (`doc_id`) REFERENCES `doctors` (`doc_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `symptoms`
---
-
-LOCK TABLES `symptoms` WRITE;
-/*!40000 ALTER TABLE `symptoms` DISABLE KEYS */;
-/*!40000 ALTER TABLE `symptoms` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -666,7 +677,15 @@ INSERT INTO `tokens` VALUES
 (204,'14af2254-7e42-41ed-adfa-f9cb8489c202','2024-10-04 16:48:20'),
 (205,'f968dbf9-7a23-4c16-a0e5-c9ae1cd307f1','2024-10-04 16:49:30'),
 (206,'4336a69f-07d1-477e-944c-37188277d732','2024-10-04 16:50:07'),
-(207,'7ef4c468-687a-49db-8ddf-878b07b9b73c','2024-10-04 16:55:18');
+(207,'7ef4c468-687a-49db-8ddf-878b07b9b73c','2024-10-04 16:55:18'),
+(212,'1d4a6779-abe6-42bd-9a25-0819d809e68d','2024-10-04 23:10:00'),
+(213,'871533f1-bf9d-4029-a74b-c32a1a4cdc04','2024-10-04 23:13:07'),
+(216,'49ec9944-5a2d-4aad-baad-b7fa4b5fd930','2024-10-04 23:17:01'),
+(210,'f1bba50a-3547-46b4-9173-44948aedfeae','2024-10-05 12:52:01'),
+(220,'c19f00f7-a09b-46cc-afe7-30b7f2d73832','2024-10-05 13:13:04'),
+(222,'9fa55755-9fe1-4470-8e89-b2653ffa2145','2024-10-05 13:26:21'),
+(223,'bb2dcec3-deb7-46b5-acc5-398f1cc739b8','2024-10-06 14:39:33'),
+(225,'7bf51794-87ae-413c-a472-06d3fcb650bf','2024-10-06 15:31:11');
 /*!40000 ALTER TABLE `tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -685,7 +704,7 @@ CREATE TABLE `users` (
   `is_admin` tinyint(4) DEFAULT 0,
   `registred_date` datetime DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=211 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=226 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -750,7 +769,15 @@ INSERT INTO `users` VALUES
 (206,'51s4ssssssss1sfs1s','t4V3S3Z1',1,0,'2024-10-04 16:50:07'),
 (207,'51s4sssыsssss1sfs1s','Z6c9P2i3',1,0,'2024-10-04 16:55:18'),
 (208,'user@example.com','stringstr',0,0,'2024-10-04 17:33:07'),
-(210,'user@enxam1ple.com','stringstr',0,0,'2024-10-04 17:40:15');
+(210,'user@enxam1ple.com','stringstr',0,0,'2024-10-04 17:40:15'),
+(211,'a@a.a','*********',0,0,'2024-10-04 22:37:52'),
+(212,'string','d3u9y1Q8',1,0,'2024-10-04 23:10:00'),
+(213,'1','N1R6H8Y7',1,0,'2024-10-04 23:13:07'),
+(216,'1f','R0I5L8A2',1,0,'2024-10-04 23:17:01'),
+(220,'stddring','K4f2o9u9',1,0,'2024-10-05 13:13:04'),
+(222,'stddrfаing','A6z9i0U5',1,0,'2024-10-05 13:26:21'),
+(223,'stringgggg','M5t4X4o2',1,0,'2024-10-06 14:39:33'),
+(225,'stringggggg','n0C6V1z0',1,0,'2024-10-06 15:31:11');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -763,4 +790,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2024-10-04 17:40:54
+-- Dump completed on 2024-10-06 15:32:47

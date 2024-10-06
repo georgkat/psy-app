@@ -363,6 +363,9 @@ def register_therapist(data: DocRegister):
         sql = f"INSERT INTO educations_main (doc_id, year, university, faculty, degree) VALUES {sql_edu_main_items};"
         print(sql)
         cur.execute(sql)
+        sql = f"INSERT INTO doc_symptoms (doc_id) VALUES ({doc_id});"
+        print(sql)
+        cur.execute(sql)
         con.commit()
         cur.close()
         con.close()
@@ -591,31 +594,70 @@ def get_docf_data(data: SingleToken):
                f'm_7, '  # 34 7
                f'm_8, '  # 35 8
                f'm_9, '  # 36 9
-               f'm_10, '  # 36 10
-               f'm_11, '  # 36 11
-               f'm_12, '  # 36 12
-               f'm_13, '  # 36 13
-               f'm_14, '  # 36 14
-               f'm_15, '  # 36 15
-               f'l_0, '  # 37  16
-               f'l_1, '  # 38  17
-               f'l_2, '  # 39  18
-               f'e_0, '  # 40  19
-               f'e_1, '  # 41  20
-               f'e_2, '  # 42  21
-               f'e_3, '  # 43  22
-               f'e_4 '  # 44  23
+               f'm_10, '  # 37 10
+               f'm_11, '  # 38 11
+               f'm_12, '  # 39 12
+               f'm_13, '  # 40 13
+               f'm_14, '  # 41 14
+               f'm_15, '  # 42 15
+               f'l_0, '  # 43  16
+               f'l_1, '  # 44  17
+               f'l_2, '  # 45  18
+               f'e_0, '  # 46  19
+               f'e_1, '  # 47  20
+               f'e_2, '  # 48  21
+               f'e_3, '  # 49  22
+               f'e_4, '  # 50  23
+               f's_0, '  # 51  24
+               f's_1, '  # 52  25
+               f's_2, '  # 53  25
+               f's_3, '  # 54  25
+               f's_4, '  # 55  25
+               f's_5, '  # 56  25
+               f's_6, '  # 57  25
+               f's_7, '  # 58  25
+               f's_8, '  # 59  25
+               f's_9, '  # 60  25
+               f's_10, '  # 61  26
+               f's_11, '  # 62  27
+               f's_12, '  # 63  28
+               f's_13, '  # 64  29
+               f's_14, '  # 65  30
+               f's_15, '  # 66  31
+               f's_16, '  # 67  32
+               f's_17, '  # 68  33
+               f's_18, '  # 69  34
+               f's_19, '  # 70  35
+               f's_20, '  # 71  36
+               f's_21, '  # 72  37
+               f's_22, '  # 73  38
+               f's_23, '  # 74  39
+               f's_24, '  # 75  40
+               f's_25, '  # 76  41
+               f's_26, '  # 77  42
+               f's_27, '  # 78  43
+               f's_28, '  # 79  44
+               
+               f'doc_client_age, '  # 80
+               f'doc_lgbtq, '  # 81
+               f'doc_therapy_type '  # 82
                f'FROM doctors '
                f'JOIN tokens ON doctors.doc_id = tokens.user_id '
                f'JOIN languages ON doctors.doc_id = languages.doc_id '
                f'JOIN methods ON doctors.doc_id = methods.doc_id '
                f'JOIN educations ON doctors.doc_id = educations.doc_id '
+               f'JOIN doc_symptoms ON doctors.doc_id = doc_symptoms.doc_id '
                f'WHERE token = "{token}"')
 
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
         f = cur.fetchall()
+        d = cur.description
+        print('______________________________')
+        for i, x in enumerate(d):
+            print(f'{i} / {x[0]} / {f[0][i]}')
+        print('______________________________')
         con.commit()
         cur.close()
         con.close()
@@ -656,14 +698,16 @@ def get_docf_data(data: SingleToken):
                             "faculty": item[3],
                             "degree": item[4]})
 
-        method_edu_language = f[0][27:]
-        print(method_edu_language)
-        doc_method = method_edu_language[0:16]
+        method_edu_language_sym = f[0][27:79]
+        print(method_edu_language_sym)
+        doc_method = method_edu_language_sym[0:16]
         print(doc_method)
-        doc_language = method_edu_language[16:19]
+        doc_language = method_edu_language_sym[16:19]
         print(doc_language)
-        doc_edu_additional = method_edu_language[19:]
+        doc_edu_additional = method_edu_language_sym[19:24]
         print(doc_edu_additional)
+        doc_symptoms = method_edu_language_sym[24:]
+        print(doc_symptoms)
 
         doc_method_out = []
         for index, x in enumerate(doc_method):
@@ -679,6 +723,12 @@ def get_docf_data(data: SingleToken):
         for index, x in enumerate(doc_edu_additional):
             if x:
                 doc_edu_additional_out.append(index)
+
+        doc_symptoms_out = []
+        for index, x in enumerate(doc_symptoms):
+            if x:
+                doc_symptoms_out.append(index)
+
 
         out = {'status': True,
                'doc_name': f[0][1],
@@ -709,6 +759,10 @@ def get_docf_data(data: SingleToken):
                'doc_question_1': f[0][23],
                'doc_question_2': f[0][24],
                'doc_contact': f[0][25],
+               'doc_client_age': f[0][51],
+               'doc_lgbtq': f[0][52],
+               'doc_therapy_type': f[0][53],
+               'doc_symptoms': doc_symptoms_out,
                'user_photo': fph}
         print(out)
         return out
@@ -845,31 +899,39 @@ def update_therapist(data: DocUpdate):
 
         doc_id = fetch[0][0]
 
-        additional_columns = []
-        additional_items = []
+        sql_method = []
+        sql_method_items = []
+        sql_language = []
+        sql_language_items = []
+        sql_edu = []
+        sql_edu_items = []
+        sql_sympthoms = []
+        sql_sympthoms_items = []
 
-        symptoms_columns = []
-        symptoms_items = []
         # DATA doc_method
         if str(data.doc_method):
             for code in data.doc_method:
-                additional_columns.append(f'doc_method_{int(code)}')
-                additional_items.append('1')
+                sql_method.append(f'm_{int(code)}')
+                sql_method_items.append('1')
+                print(sql_method)
+                print(sql_method_items)
+            sql_method = ', '.join([f'{str(x)}' for x in sql_method])
+            sql_method_items = ', '.join([f'{str(x)}' for x in sql_method_items])
         # DATA doc_language
         if str(data.doc_language):
             for code in data.doc_language:
-                additional_columns.append(f'doc_language_{int(code)}')
-                additional_items.append('1')
+                sql_language.append(f'l_{int(code)}')
+                sql_language_items.append('1')
+            sql_language = ', '.join([f'{str(x)}' for x in sql_language])
+            sql_language_items = ', '.join([f'{str(x)}' for x in sql_language_items])
 
         if str(data.symptoms):
             for code in data.symptoms:
-                symptoms_columns.append(f's_{int(code)}')
-                symptoms_items.append('1')
+                sql_sympthoms.append(f's_{int(code)}')
+                sql_sympthoms_items.append('1')
 
-        columns = ['doc_date_of_birth', 'client_age', 'lgbtq', 'therapy_type', 'doc_additional_info']
-        columns = columns + additional_columns
-        items = [data.doc_date_of_birth, data.client_age, data.lgbtq, data.therapy_type, data.doc_additional_info]
-        items = items + additional_items
+        columns = ['doc_date_of_birth', 'doc_client_age', 'doc_lgbtq', 'doc_therapy_type', 'doc_additional_info']
+        items = [data.doc_date_of_birth, data.doc_client_age, data.doc_lgbtq, data.doc_therapy_type, data.doc_additional_info]
 
         set_list = []
 
@@ -889,7 +951,7 @@ def update_therapist(data: DocUpdate):
         cur.close()
         con.close()
 
-        sql = f'SELECT * FROM symptoms WHERE doc_id = {doc_id}'
+        sql = f'SELECT * FROM doc_symptoms WHERE doc_id = {doc_id}'
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
@@ -899,7 +961,7 @@ def update_therapist(data: DocUpdate):
         con.close()
 
         if not f:
-            sql = f'INSERT INTO symptoms (doc_id, {", ".join(symptoms_columns)}) VALUES ({doc_id}, {", ".join(symptoms_items)})'
+            sql = f'INSERT INTO doc_symptoms (doc_id, {", ".join(sql_sympthoms)}) VALUES ({doc_id}, {", ".join(sql_sympthoms_items)})'
             con = mariadb.connect(**config)
             cur = con.cursor()
             print(sql)
@@ -910,14 +972,11 @@ def update_therapist(data: DocUpdate):
             print({'status': True})
             return {'status': True}
         else:
-            set_list = []
-            for i in range(len(symptoms_columns)):
-                set_list.append(f'{symptoms_columns[i]} = "{symptoms_items[i]}"')
-            set_list = ', '.join(set_list)
-            sql = f'UPDATE symptoms SET {set_list} WHERe doc_id = {doc_id}'
             con = mariadb.connect(**config)
             cur = con.cursor()
-            print(sql)
+            sql = f'DELETE FROM doc_symptoms WHERE doc_id = {doc_id}'
+            cur.execute(sql)
+            sql = f'INSERT INTO doc_symptoms (doc_id, {", ".join(sql_sympthoms)}) VALUES ({doc_id}, {", ".join(sql_sympthoms_items)})'
             cur.execute(sql)
             con.commit()
             cur.close()

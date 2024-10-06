@@ -120,15 +120,15 @@ class DocRegister(CoreModel):
 class DocUpdate(CoreModel):
     session_token: str
     doc_date_of_birth: date  # YYYY-MM-DD
-    avatar: Optional[list]
+
     doc_language: list
     doc_additional_info: str
     doc_method: list
-    client_age: int
-    lgbtq: str
-    therapy_type: str
+    doc_client_age: int
+    doc_lgbtq: int
+    doc_therapy_type: int
     symptoms: list
-    doctor_card: Optional[dict]
+
 
 
 class DocScheldure(CoreModel):
