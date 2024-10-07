@@ -947,6 +947,7 @@ def update_therapist(data: DocUpdate):
         cur = con.cursor()
         print(sql)
         cur.execute(sql)
+        con.commit()
 
         sql = f'SELECT * FROM doc_symptoms WHERE doc_id = {doc_id}'
         con = mariadb.connect(**config)
