@@ -759,9 +759,9 @@ def get_docf_data(data: SingleToken):
                'doc_question_1': f[0][23],
                'doc_question_2': f[0][24],
                'doc_contact': f[0][25],
-               'doc_client_age': f[0][51],
-               'doc_lgbtq': f[0][52],
-               'doc_therapy_type': f[0][53],
+               'doc_client_age': f[0][80],
+               'doc_lgbtq': f[0][81],
+               'doc_therapy_type': f[0][82],
                'doc_symptoms': doc_symptoms_out,
                'user_photo': fph}
         print(out)
@@ -961,6 +961,7 @@ def update_therapist(data: DocUpdate):
         con.close()
 
         if not f:
+            print(964)
             sql = f'INSERT INTO doc_symptoms (doc_id, {", ".join(sql_sympthoms)}) VALUES ({doc_id}, {", ".join(sql_sympthoms_items)})'
             con = mariadb.connect(**config)
             cur = con.cursor()
@@ -972,12 +973,15 @@ def update_therapist(data: DocUpdate):
             print({'status': True})
             return {'status': True}
         else:
+            print(975)
+            print(doc_id)
             con = mariadb.connect(**config)
             cur = con.cursor()
             sql = f'DELETE FROM doc_symptoms WHERE doc_id = {doc_id}'
             cur.execute(sql)
-            sql = f'INSERT INTO doc_symptoms (doc_id, {", ".join(sql_sympthoms)}) VALUES ({doc_id}, {", ".join(sql_sympthoms_items)})'
-            cur.execute(sql)
+            if sql_sympthoms_items:
+                sql = f'INSERT INTO doc_symptoms (doc_id, {", ".join(sql_sympthoms)}) VALUES ({doc_id}, {", ".join(sql_sympthoms_items)})'
+                cur.execute(sql)
             con.commit()
             cur.close()
             con.close()
