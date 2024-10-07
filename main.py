@@ -698,7 +698,7 @@ def get_docf_data(data: SingleToken):
                             "faculty": item[3],
                             "degree": item[4]})
 
-        method_edu_language_sym = f[0][27:79]
+        method_edu_language_sym = f[0][27:80]
         print(method_edu_language_sym)
         doc_method = method_edu_language_sym[0:16]
         print(doc_method)
