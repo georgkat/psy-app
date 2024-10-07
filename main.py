@@ -947,15 +947,23 @@ def update_therapist(data: DocUpdate):
         cur = con.cursor()
         print(sql)
         cur.execute(sql)
-        con.commit()
-        cur.close()
-        con.close()
 
         sql = f'SELECT * FROM doc_symptoms WHERE doc_id = {doc_id}'
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
         f = cur.fetchall()
+        con.commit()
+        cur.close()
+        con.close()
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        sql = f"DELETE FROM languages WHERE doc_id= {doc_id};"
+        cur.execute(sql)
+        sql = f"INSERT INTO languages (doc_id, {sql_language}) VALUES ({doc_id}, {sql_language_items});"
+        cur.execute(sql)
         con.commit()
         cur.close()
         con.close()
