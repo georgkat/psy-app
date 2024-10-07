@@ -123,7 +123,7 @@ class DocUpdate(CoreModel):
 
     doc_language: list
     doc_additional_info: str
-    doc_method: list
+    # doc_method: list
     doc_client_age: int
     doc_lgbtq: int
     doc_therapy_type: int

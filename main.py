@@ -900,7 +900,7 @@ def update_therapist(data: DocUpdate):
         doc_id = fetch[0][0]
 
         sql_method = []
-        sql_method_items = []
+        # sql_method_items = []
         sql_language = []
         sql_language_items = []
         sql_edu = []
@@ -909,14 +909,14 @@ def update_therapist(data: DocUpdate):
         sql_sympthoms_items = []
 
         # DATA doc_method
-        if str(data.doc_method):
-            for code in data.doc_method:
-                sql_method.append(f'm_{int(code)}')
-                sql_method_items.append('1')
-                print(sql_method)
-                print(sql_method_items)
-            sql_method = ', '.join([f'{str(x)}' for x in sql_method])
-            sql_method_items = ', '.join([f'{str(x)}' for x in sql_method_items])
+        # if str(data.doc_method):
+        #     for code in data.doc_method:
+        #         sql_method.append(f'm_{int(code)}')
+        #         sql_method_items.append('1')
+        #         print(sql_method)
+        #         print(sql_method_items)
+        #     sql_method = ', '.join([f'{str(x)}' for x in sql_method])
+        #     sql_method_items = ', '.join([f'{str(x)}' for x in sql_method_items])
         # DATA doc_language
         if str(data.doc_language):
             for code in data.doc_language:
