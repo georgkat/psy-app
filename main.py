@@ -982,6 +982,9 @@ def update_therapist(data: DocUpdate):
             if sql_sympthoms_items:
                 sql = f'INSERT INTO doc_symptoms (doc_id, {", ".join(sql_sympthoms)}) VALUES ({doc_id}, {", ".join(sql_sympthoms_items)})'
                 cur.execute(sql)
+            else:
+                sql = f'INSERT INTO doc_symptoms (doc_id) VALUES ({doc_id})'
+                cur.execute(sql)
             con.commit()
             cur.close()
             con.close()
