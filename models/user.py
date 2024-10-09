@@ -67,6 +67,13 @@ class UserLogin(CoreModel):
     # def password_is_valid(cls, password: str) -> str:
     #     return validate_password(password)
 
+class UserLoginGen(CoreModel):
+    """
+    Email and password are required for registering a new user
+    Returns user_id, sends data on e-mail
+    """
+    user_email: EmailStr
+
 
 
 class UserClient(CoreModel):

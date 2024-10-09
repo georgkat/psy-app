@@ -17,6 +17,7 @@ from json_actions import parse_doctor_register
 from models.actions import ActionUserLogin
 from models.user import (UserCreate,
                          UserLogin,
+                         UserLoginGen,
                          UserUpdate,
                          UserClient,
                          UserTherapist,
@@ -143,6 +144,34 @@ def root():
 def send_email():
     send_email_func(to_addr='georgkat@yandex.ru', subject='OK', content='OK OK OKJ')
     return {'ok': 'ok'}
+
+
+@app.post("/generate_password")
+def gen_password(data: UserLoginGen):
+    try:
+        email = data.user_email
+        password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
+        sql = f"UPDATE SET users password = '{password}' WHERE email = '{email}'"
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        con.commit()
+        cur.close()
+        con.close()
+
+        print({"status": True,
+               "password": password})
+
+        return {"status": True,
+                "password": password}
+    except Exception as e:
+        print({'status': False,
+                'error': f'/login error: {e} {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'/login error: {e} {traceback.extract_stack()}'}
+
+
+
 
 # DEBUG DELETE THIS FUNC
 @app.post("/make_admin")
