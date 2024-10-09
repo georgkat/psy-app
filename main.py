@@ -151,7 +151,7 @@ def gen_password(data: UserLoginGen):
     try:
         email = data.user_email
         password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
-        sql = f"UPDATE SET users password = '{password}' WHERE email = '{email}'"
+        sql = f'UPDATE users SET password = "{password}" WHERE email = "{email}";'
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
@@ -226,6 +226,7 @@ def login(data: ActionUserLogin):
                 user_id = f2[0][0]
                 is_therapist = True if f2[0][3] == 1 else False
                 token = uuid.uuid4()
+                # cur.execute(f'DELETE FROM tokens WHERE user_id = "{user_id}"')
                 cur.execute(f"INSERT INTO tokens (user_id, token) VALUES ('{user_id}', '{token}');")
                 con.commit()
                 cur.close()
