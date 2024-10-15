@@ -148,6 +148,7 @@ def send_email():
 
 @app.post("/generate_password")
 def gen_password(data: UserLoginGen):
+    # TODO оправлять фалсе если пользователя нет
     try:
         email = data.user_email
         password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
@@ -251,6 +252,7 @@ def login(data: ActionUserLogin):
 
 @app.post("/register")
 def register(data:UserCreate):
+    # TODO добавить токен
     try:
         con = mariadb.connect(**config)
         cur = con.cursor()
@@ -387,7 +389,10 @@ def register_therapist(data: DocRegister):
         sql = f"INSERT INTO languages (doc_id, {sql_language}) VALUES ({doc_id}, {sql_language_items});"
         print(sql)
         cur.execute(sql)
-        sql = f"INSERT INTO educations (doc_id, {sql_edu}) VALUES ({doc_id}, {sql_edu_items});"
+        if sql_edu:
+            sql = f"INSERT INTO educations (doc_id, {sql_edu}) VALUES ({doc_id}, {sql_edu_items});"
+        else:
+            sql = f"INSERT INTO educations (doc_id) VALUES ({doc_id});"
         print(sql)
         cur.execute(sql)
         sql = f"INSERT INTO educations_main (doc_id, year, university, faculty, degree) VALUES {sql_edu_main_items};"
