@@ -152,7 +152,7 @@ CREATE TABLE `client_symptoms` (
 LOCK TABLES `client_symptoms` WRITE;
 /*!40000 ALTER TABLE `client_symptoms` DISABLE KEYS */;
 INSERT INTO `client_symptoms` VALUES
-(210,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0);
+(210,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `client_symptoms` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -174,7 +174,7 @@ CREATE TABLE `clients` (
   `user_specific_date_time` varchar(45) DEFAULT NULL,
   `user_price` tinyint(1) DEFAULT NULL,
   `user_phone` varchar(45) DEFAULT NULL,
-  `clientscol` varchar(45) DEFAULT NULL,
+  `has_therapist` int(11) DEFAULT NULL,
   PRIMARY KEY (`client_id`),
   UNIQUE KEY `client_id_UNIQUE` (`client_id`),
   CONSTRAINT `cli_id` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
@@ -686,7 +686,7 @@ CREATE TABLE `schedule` (
   `accepted` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`sh_id`),
   UNIQUE KEY `sh_id_UNIQUE` (`sh_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=97 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=98 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -697,7 +697,8 @@ LOCK TABLES `schedule` WRITE;
 /*!40000 ALTER TABLE `schedule` DISABLE KEYS */;
 INSERT INTO `schedule` VALUES
 (95,'82','2024-09-15 01:00:00',NULL,NULL),
-(96,'82','2024-09-15 03:00:00',NULL,NULL);
+(96,'82','2024-09-15 03:00:00',NULL,NULL),
+(97,'223','2024-09-15 03:00:00',NULL,NULL);
 /*!40000 ALTER TABLE `schedule` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -891,4 +892,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2024-10-19 16:17:53
+-- Dump completed on 2024-10-19 18:58:58

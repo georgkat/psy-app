@@ -422,10 +422,54 @@ def list_therapists_for_client(data: SingleToken):
         if client_symptoms[0] <= doc_info[1:]:
             valid_docs.append(str(doc_info[0]))
 
-    sql_2 = f'SELECT doc_id, doc_name, doc_therapy_length FROM doctors WHERE doc_id IN ({", ".join(valid_docs)})'
+    sql_2 = f'SELECT doc_id, doc_name, doc_additional_info FROM doctors WHERE doc_id IN ({", ".join(valid_docs)})'
+    print(sql_2)
     cur.execute(sql_2)
     out_docs = cur.fetchall()
-    out_docs = [{"doc_id": row[0], "doc_name": row[1], "doc_therapy_length": row[2]} for row in out_docs]
+
+    sql_3 = f'SELECT year, university, faculty, degree FROM educations_main WHERE doc_id IN ({", ".join(valid_docs)})'
+    cur.execute(sql_3)
+    out_edu = cur.fetchall()
+    print(out_edu)
+
+    edu_dict = {}
+    for doc_id in valid_docs:
+        edu_dict[int(doc_id)] = {}
+
+    for row in out_edu:
+        year = row[0]
+        university = row[1]
+        faculty = row[2]
+        degree = row[3]
+        if doc_id in edu_dict.keys():
+            edu_dict[int(doc_id)].append({'year': year, 'university': university, 'faculty': faculty, 'degree': degree})
+        else:
+            edu_dict[int(doc_id)] = [{'year': year, 'university': university, 'faculty': faculty, 'degree': degree}]
+
+    print(edu_dict)
+
+    sql_4 = f'SELECT doctor_id, sh_id, date_time FROM schedule WHERE client IS NULL and doctor_id IN ({", ".join(valid_docs)})'
+    cur.execute(sql_4)
+    out_sch = cur.fetchall()
+    print(out_sch)
+
+    sh_dict = {}
+    for doc_id in valid_docs:
+        sh_dict[int(doc_id)] = {}
+
+    for row in out_sch:
+        doc_id = row[0]
+        sh_id = row[1]
+        date_time = row[2]
+        print(doc_id, sh_id, date_time)
+        if doc_id in sh_dict.keys():
+            sh_dict[int(doc_id)].append({'sh_id': sh_id, 'time': date_time})
+        else:
+            sh_dict[int(doc_id)] = [{'sh_id': sh_id, 'time': date_time}]
+
+    print(sh_dict)
+
+    out_docs = [{"doc_id": row[0], "doc_name": row[1], "doc_additional_info": row[2], "doc_edu": edu_dict[row[0]], "doc_schedule": sh_dict[row[0]]} for row in out_docs]
     cur.close()
     con.close()
 
