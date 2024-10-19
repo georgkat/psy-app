@@ -333,7 +333,7 @@ def return_client_data(data: SingleToken):
 
     return out
 
-@app.post("/update_user_data")
+@app.post("/update_client_data")
 def update_user(data: UserClient):
     token = data.session_token
 
