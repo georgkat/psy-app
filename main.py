@@ -422,10 +422,10 @@ def list_therapists_for_client(data: SingleToken):
         if client_symptoms[0] <= doc_info[1:]:
             valid_docs.append(str(doc_info[0]))
 
-    sql_2 = f'SELECT doc_id, doc_name FROM doctors WHERE doc_id IN ({", ".join(valid_docs)})'
+    sql_2 = f'SELECT doc_id, doc_name, doc_therapy_length FROM doctors WHERE doc_id IN ({", ".join(valid_docs)})'
     cur.execute(sql_2)
     out_docs = cur.fetchall()
-    out_docs = [{"doc_id": row[0], "doc_name": row[1]} for row in out_docs]
+    out_docs = [{"doc_id": row[0], "doc_name": row[1], "doc_therapy_length": row[2]} for row in out_docs]
     cur.close()
     con.close()
 
