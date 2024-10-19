@@ -335,58 +335,66 @@ def return_client_data(data: SingleToken):
 
 @app.post("/update_client_data")
 def update_user(data: UserClient):
-    token = data.session_token
+    try:
+        token = data.session_token
 
-    con = mariadb.connect(**config)
-    cur = con.cursor()
+        con = mariadb.connect(**config)
+        cur = con.cursor()
 
-    sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
-    cur.execute(sql_0)
-    fetch_0 = cur.fetchall()
-    if not fetch_0:
-        raise Exception
-    client_id = fetch_0[0][0]
+        sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_0)
+        fetch_0 = cur.fetchall()
+        if not fetch_0:
+            raise Exception
+        client_id = fetch_0[0][0]
 
-    sql_1_cols = 'user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone'
-    sql_1_cols_list = sql_1_cols.split(', ')
-    sql_1_vals = f'{data.user_age}, {data.user_experience}, {data.user_type}, {data.user_therapist_gender}, "{data.user_time}", "{data.user_specific_date_time}", {data.user_price}, "{data.user_phone}"'
-    sql_1_vals_list = sql_1_vals.split(', ')
-    update_data = []
-    for i in range(0, len(sql_1_cols_list)):
-        update_data.append(f'{sql_1_cols_list[i]} = {sql_1_vals_list[i]}')
-    update_data = ', '.join(update_data)
-    sql_1 = f"INSERT clients (client_id, {sql_1_cols}) VALUES ({client_id}, {sql_1_vals}) ON DUPLICATE KEY UPDATE {update_data}"
-    print(sql_1)
-    cur.execute(sql_1)
+        sql_1_cols = 'user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone'
+        sql_1_cols_list = sql_1_cols.split(', ')
+        sql_1_vals = f'{data.user_age}, {data.user_experience}, {data.user_type}, {data.user_therapist_gender}, "{data.user_time}", "{data.user_specific_date_time}", {data.user_price}, "{data.user_phone}"'
+        sql_1_vals_list = sql_1_vals.split(', ')
+        update_data = []
+        for i in range(0, len(sql_1_cols_list)):
+            update_data.append(f'{sql_1_cols_list[i]} = {sql_1_vals_list[i]}')
+        update_data = ', '.join(update_data)
+        sql_1 = f"INSERT clients (client_id, {sql_1_cols}) VALUES ({client_id}, {sql_1_vals}) ON DUPLICATE KEY UPDATE {update_data}"
+        print(sql_1)
+        cur.execute(sql_1)
 
-    sql_2_cols = [f'l_{i}' for i in range(0, 3)]
-    sql_2_vals = ['0', '0', '0']
-    if data.user_languages:
-        for index in data.user_languages:
-            sql_2_vals[index] = '1'
-    update_data = []
-    for i in range(0, len(sql_2_cols)):
-        update_data.append(f'{sql_2_cols[i]} = {sql_2_vals[i]}')
-    update_data = ', '.join(update_data)
-    sql_2 = f"INSERT INTO client_languages (client_id, {', '.join(sql_2_cols)}) VALUES ({client_id}, {', '.join(sql_2_vals)}) ON DUPLICATE KEY UPDATE {update_data}"
-    cur.execute(sql_2)
+        sql_2_cols = [f'l_{i}' for i in range(0, 3)]
+        sql_2_vals = ['0', '0', '0']
+        if data.user_languages:
+            for index in data.user_languages:
+                sql_2_vals[index] = '1'
+        update_data = []
+        for i in range(0, len(sql_2_cols)):
+            update_data.append(f'{sql_2_cols[i]} = {sql_2_vals[i]}')
+        update_data = ', '.join(update_data)
+        sql_2 = f"INSERT INTO client_languages (client_id, {', '.join(sql_2_cols)}) VALUES ({client_id}, {', '.join(sql_2_vals)}) ON DUPLICATE KEY UPDATE {update_data}"
+        cur.execute(sql_2)
 
-    sql_3_cols = [f's_{i}' for i in range(0, 28)]
-    sql_3_vals = ["0" for i in range(0, 28)]
-    if data.user_symptoms:
-        for index in data.user_symptoms:
-            sql_3_vals[index] = "1"
-    update_data = []
-    for i in range(0, len(sql_3_cols)):
-        update_data.append(f'{sql_3_cols[i]} = {sql_3_vals[i]}')
-    update_data = ', '.join(update_data)
-    sql_3 = f"INSERT INTO client_symptoms (client_id, {', '.join(sql_3_cols)}) VALUES ({client_id}, {', '.join(sql_3_vals)}) ON DUPLICATE KEY UPDATE {update_data}"
-    cur.execute(sql_3)
+        sql_3_cols = [f's_{i}' for i in range(0, 28)]
+        sql_3_vals = ["0" for i in range(0, 28)]
+        if data.user_symptoms:
+            for index in data.user_symptoms:
+                sql_3_vals[index] = "1"
+        update_data = []
+        for i in range(0, len(sql_3_cols)):
+            update_data.append(f'{sql_3_cols[i]} = {sql_3_vals[i]}')
+        update_data = ', '.join(update_data)
+        sql_3 = f"INSERT INTO client_symptoms (client_id, {', '.join(sql_3_cols)}) VALUES ({client_id}, {', '.join(sql_3_vals)}) ON DUPLICATE KEY UPDATE {update_data}"
+        cur.execute(sql_3)
 
-    con.commit()
-    cur.close()
-    con.close()
-    return {'status': True}
+        con.commit()
+        cur.close()
+        con.close()
+        return {'status': True}
+
+    except Exception as e:
+        print({'status': False,
+                'error': f'update_client error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'update_client error: {e}, {traceback.extract_stack()}'}
+
 
 @app.post('/register_therapist')
 # TODO сделать генерацию пользователя
