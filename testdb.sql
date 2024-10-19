@@ -32,7 +32,7 @@ CREATE TABLE `carddata` (
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `user_id_UNIQUE` (`user_id`),
   CONSTRAINT `id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -62,7 +62,7 @@ CREATE TABLE `cards` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `_idx` (`user_id`),
   CONSTRAINT `cards_users_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -75,6 +75,88 @@ LOCK TABLES `cards` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `client_languages`
+--
+
+DROP TABLE IF EXISTS `client_languages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `client_languages` (
+  `client_id` int(11) NOT NULL,
+  `l_0` tinyint(1) DEFAULT 0 COMMENT 'RI',
+  `l_1` tinyint(1) DEFAULT 0 COMMENT 'RI',
+  `l_2` tinyint(1) DEFAULT 0 COMMENT 'RI',
+  PRIMARY KEY (`client_id`),
+  CONSTRAINT `cli_id_lang` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `client_languages`
+--
+
+LOCK TABLES `client_languages` WRITE;
+/*!40000 ALTER TABLE `client_languages` DISABLE KEYS */;
+INSERT INTO `client_languages` VALUES
+(210,1,0,1);
+/*!40000 ALTER TABLE `client_languages` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `client_symptoms`
+--
+
+DROP TABLE IF EXISTS `client_symptoms`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `client_symptoms` (
+  `client_id` int(11) NOT NULL,
+  `s_0` tinyint(1) DEFAULT 0,
+  `s_1` tinyint(1) DEFAULT 0,
+  `s_2` tinyint(1) DEFAULT 0,
+  `s_3` tinyint(1) DEFAULT 0,
+  `s_4` tinyint(1) DEFAULT 0,
+  `s_5` tinyint(1) DEFAULT 0,
+  `s_6` tinyint(1) DEFAULT 0,
+  `s_7` tinyint(1) DEFAULT 0,
+  `s_8` tinyint(1) DEFAULT 0,
+  `s_10` tinyint(1) DEFAULT 0,
+  `s_11` tinyint(1) DEFAULT 0,
+  `s_12` tinyint(1) DEFAULT 0,
+  `s_13` tinyint(1) DEFAULT 0,
+  `s_14` tinyint(1) DEFAULT 0,
+  `s_15` tinyint(1) DEFAULT 0,
+  `s_16` tinyint(1) DEFAULT 0,
+  `s_17` tinyint(1) DEFAULT 0,
+  `s_18` tinyint(1) DEFAULT 0,
+  `s_19` tinyint(1) DEFAULT 0,
+  `s_20` tinyint(1) DEFAULT 0,
+  `s_21` tinyint(1) DEFAULT 0,
+  `s_22` tinyint(1) DEFAULT 0,
+  `s_23` tinyint(1) DEFAULT 0,
+  `s_24` tinyint(1) DEFAULT 0,
+  `s_25` tinyint(1) DEFAULT 0,
+  `s_26` tinyint(1) DEFAULT 0,
+  `s_27` tinyint(1) DEFAULT 0,
+  `s_28` tinyint(1) DEFAULT 0,
+  `s_9` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`client_id`),
+  CONSTRAINT `cli_id_sym` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `client_symptoms`
+--
+
+LOCK TABLES `client_symptoms` WRITE;
+/*!40000 ALTER TABLE `client_symptoms` DISABLE KEYS */;
+INSERT INTO `client_symptoms` VALUES
+(210,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0);
+/*!40000 ALTER TABLE `client_symptoms` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `clients`
 --
 
@@ -84,9 +166,19 @@ DROP TABLE IF EXISTS `clients`;
 CREATE TABLE `clients` (
   `client_id` int(11) NOT NULL,
   `name` text DEFAULT NULL,
+  `user_age` tinyint(2) DEFAULT NULL,
+  `user_experience` tinyint(1) DEFAULT NULL,
+  `user_type` tinyint(1) DEFAULT NULL,
+  `user_therapist_gender` tinyint(1) DEFAULT NULL,
+  `user_time` varchar(45) DEFAULT NULL,
+  `user_specific_date_time` varchar(45) DEFAULT NULL,
+  `user_price` tinyint(1) DEFAULT NULL,
+  `user_phone` varchar(45) DEFAULT NULL,
+  `clientscol` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`client_id`),
+  UNIQUE KEY `client_id_UNIQUE` (`client_id`),
   CONSTRAINT `cli_id` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -96,8 +188,8 @@ CREATE TABLE `clients` (
 LOCK TABLES `clients` WRITE;
 /*!40000 ALTER TABLE `clients` DISABLE KEYS */;
 INSERT INTO `clients` VALUES
-(210,'Vasyan'),
-(211,'*');
+(210,'Vasyan',55,1,1,0,'string','',0,'12345',NULL),
+(211,'*',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `clients` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -141,7 +233,7 @@ CREATE TABLE `doc_symptoms` (
   `s_28` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`doc_id`),
   CONSTRAINT `doc_sy_id_fk` FOREIGN KEY (`doc_id`) REFERENCES `doctors` (`doc_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -152,7 +244,8 @@ LOCK TABLES `doc_symptoms` WRITE;
 /*!40000 ALTER TABLE `doc_symptoms` DISABLE KEYS */;
 INSERT INTO `doc_symptoms` VALUES
 (223,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(225,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+(225,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
+(227,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `doc_symptoms` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -201,7 +294,7 @@ CREATE TABLE `doctors` (
   PRIMARY KEY (`doc_id`),
   UNIQUE KEY `doc_id_UNIQUE` (`doc_id`),
   CONSTRAINT `testdb_doc_user` FOREIGN KEY (`doc_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -247,7 +340,8 @@ INSERT INTO `doctors` VALUES
 (220,'string','2024-10-05',0,'[{\'year\': 1234, \'university\': \'a\', \'faculty\': \'b\', \'degree\': \'c\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','stddring','string','string','string','string','',NULL,NULL,NULL,'string',1),
 (222,'string','2024-10-05',0,'[{\'year\': 1234, \'university\': \'a\', \'faculty\': \'b\', \'degree\': \'c\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','stddrfаing','string','string','string','string','',NULL,NULL,NULL,'string',1),
 (223,'string','2024-10-06',0,'[{\'year\': 0, \'university\': \'U\', \'faculty\': \'F\', \'degree\': \'D\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','stringgggg','blablablablablablabla','string','string','string','',1,1,2,'string',1),
-(225,'string','2024-10-06',0,'[{\'year\': 0, \'university\': \'U\', \'faculty\': \'F\', \'degree\': \'D\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','stringggggg','blablablablablablabla','string','string','string','',1,1,2,'string',1);
+(225,'string','2075-01-07',0,'[{\'year\': 0, \'university\': \'U\', \'faculty\': \'F\', \'degree\': \'D\'}]',NULL,'',NULL,NULL,'string','string','string','string','string','string','string','string','string','string','string','string','string','string','stringggggg','НОВЫЕ ДАННЫЕ','string','string','string','',1,0,0,'string',1),
+(227,'Петр Петров','1970-01-01',0,'[{\'year\': \'2000\', \'university\': \'ываыва\', \'faculty\': \'ываывавы\', \'degree\': \'ываываыва\'}]',NULL,'',NULL,NULL,'аывываыва','01 2000','10','','other','','10','10','yes','yes','ываывавыа','5','ваывыавыа','other','kksdfnsffkjf@jskdjfsdf.fd','sgsdsdsfsdf','sdfsdfsdfsf','sdfsdfsdfsdf','doc_contact_email','',0,0,0,'89111111111',1);
 /*!40000 ALTER TABLE `doctors` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -267,7 +361,7 @@ CREATE TABLE `educations` (
   `e_4` tinyint(1) DEFAULT 0 COMMENT 'Другое',
   PRIMARY KEY (`doc_id`),
   CONSTRAINT `doc_id_add_edu` FOREIGN KEY (`doc_id`) REFERENCES `doctors` (`doc_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -313,7 +407,8 @@ INSERT INTO `educations` VALUES
 (220,0,0,0,1,0),
 (222,0,0,0,1,0),
 (223,0,0,0,1,0),
-(225,0,0,0,1,0);
+(225,0,0,0,1,0),
+(227,0,0,0,0,0);
 /*!40000 ALTER TABLE `educations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -332,7 +427,7 @@ CREATE TABLE `educations_main` (
   `degree` text DEFAULT NULL,
   KEY `ed_main_fc` (`doc_id`),
   CONSTRAINT `ed_main_fc` FOREIGN KEY (`doc_id`) REFERENCES `doctors` (`doc_id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -382,7 +477,8 @@ INSERT INTO `educations_main` VALUES
 (220,1234,'a','b','c'),
 (222,1234,'a','b','c'),
 (223,0,'U','F','D'),
-(225,0,'U','F','D');
+(225,0,'U','F','D'),
+(227,2000,'ываыва','ываывавы','ываываыва');
 /*!40000 ALTER TABLE `educations_main` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -400,7 +496,7 @@ CREATE TABLE `images` (
   `type` text DEFAULT NULL,
   PRIMARY KEY (`img_id`),
   UNIQUE KEY `img_id_UNIQUE` (`img_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -445,7 +541,7 @@ CREATE TABLE `languages` (
   `l_2` tinyint(1) DEFAULT 0 COMMENT 'HN',
   PRIMARY KEY (`doc_id`),
   CONSTRAINT `doc_id_lang` FOREIGN KEY (`doc_id`) REFERENCES `doctors` (`doc_id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -491,7 +587,8 @@ INSERT INTO `languages` VALUES
 (220,0,0,1),
 (222,0,0,1),
 (223,0,0,1),
-(225,0,0,1);
+(225,1,1,0),
+(227,1,0,0);
 /*!40000 ALTER TABLE `languages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -523,7 +620,7 @@ CREATE TABLE `methods` (
   `m_16` tinyint(1) DEFAULT 0 COMMENT 'Арт-терапия',
   PRIMARY KEY (`doc_id`),
   CONSTRAINT `doc_id_methods` FOREIGN KEY (`doc_id`) REFERENCES `doctors` (`doc_id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -569,7 +666,8 @@ INSERT INTO `methods` VALUES
 (220,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
 (222,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
 (223,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-(225,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+(225,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+(227,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0);
 /*!40000 ALTER TABLE `methods` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -585,9 +683,10 @@ CREATE TABLE `schedule` (
   `doctor_id` varchar(45) NOT NULL,
   `date_time` datetime NOT NULL,
   `client` int(11) DEFAULT NULL,
+  `accepted` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`sh_id`),
   UNIQUE KEY `sh_id_UNIQUE` (`sh_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=97 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=97 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -597,8 +696,8 @@ CREATE TABLE `schedule` (
 LOCK TABLES `schedule` WRITE;
 /*!40000 ALTER TABLE `schedule` DISABLE KEYS */;
 INSERT INTO `schedule` VALUES
-(95,'82','2024-09-15 01:00:00',NULL),
-(96,'82','2024-09-15 03:00:00',NULL);
+(95,'82','2024-09-15 01:00:00',NULL,NULL),
+(96,'82','2024-09-15 03:00:00',NULL,NULL);
 /*!40000 ALTER TABLE `schedule` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -615,7 +714,7 @@ CREATE TABLE `tokens` (
   `time` datetime NOT NULL DEFAULT current_timestamp(),
   KEY `fk_tokens_id` (`user_id`),
   CONSTRAINT `fk_tokens_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -639,7 +738,6 @@ INSERT INTO `tokens` VALUES
 (167,'034fb4bc-a936-4e83-bcd7-95814d6eb971','2024-10-03 00:17:13'),
 (168,'29629b10-3c53-4f6f-8635-553051f1dfba','2024-10-03 00:19:35'),
 (169,'b0308e98-509f-4988-80bd-cd358281488c','2024-10-03 00:20:00'),
-(154,'e75827cb-79c3-42dd-80b9-50ec73fdac44','2024-10-03 00:25:36'),
 (170,'5c59b766-e283-4585-9a11-187d1d5d7792','2024-10-03 07:13:32'),
 (171,'9502db13-704f-4777-a18e-4dde00a4bd7c','2024-10-03 08:00:41'),
 (172,'efc81e41-e229-402f-b3b1-681bb0532d1f','2024-10-03 08:02:09'),
@@ -685,7 +783,9 @@ INSERT INTO `tokens` VALUES
 (220,'c19f00f7-a09b-46cc-afe7-30b7f2d73832','2024-10-05 13:13:04'),
 (222,'9fa55755-9fe1-4470-8e89-b2653ffa2145','2024-10-05 13:26:21'),
 (223,'bb2dcec3-deb7-46b5-acc5-398f1cc739b8','2024-10-06 14:39:33'),
-(225,'7bf51794-87ae-413c-a472-06d3fcb650bf','2024-10-06 15:31:11');
+(225,'7bf51794-87ae-413c-a472-06d3fcb650bf','2024-10-06 15:31:11'),
+(154,'25aee449-4e74-4e7b-b2cd-795274e1a1c1','2024-10-09 16:18:57'),
+(227,'e298e963-c005-4c39-bc89-690bfbb526a9','2024-10-15 23:10:33');
 /*!40000 ALTER TABLE `tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -704,7 +804,7 @@ CREATE TABLE `users` (
   `is_admin` tinyint(4) DEFAULT 0,
   `registred_date` datetime DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=226 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=228 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -714,7 +814,7 @@ CREATE TABLE `users` (
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 INSERT INTO `users` VALUES
-(154,'test@test.ru','12345678',0,1,'2024-09-30 00:00:00'),
+(154,'test@test.ru','R9a0w0M3',0,1,'2024-09-30 00:00:00'),
 (155,'tes1t@test.ru','12345678',0,0,'2024-09-30 00:00:00'),
 (156,'test2@test.ts','E5e4M6U5',1,0,'2024-10-03 00:00:00'),
 (157,'test3@test.ts','d7r3K0I0',1,0,'2024-10-03 00:00:00'),
@@ -777,7 +877,8 @@ INSERT INTO `users` VALUES
 (220,'stddring','K4f2o9u9',1,0,'2024-10-05 13:13:04'),
 (222,'stddrfаing','A6z9i0U5',1,0,'2024-10-05 13:26:21'),
 (223,'stringgggg','M5t4X4o2',1,0,'2024-10-06 14:39:33'),
-(225,'stringggggg','n0C6V1z0',1,0,'2024-10-06 15:31:11');
+(225,'stringggggg','n0C6V1z0',1,0,'2024-10-06 15:31:11'),
+(227,'kksdfnsffkjf@jskdjfsdf.fd','W8y4X0R5',1,0,'2024-10-15 23:10:33');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -790,4 +891,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2024-10-06 22:53:53
+-- Dump completed on 2024-10-19 16:17:53
