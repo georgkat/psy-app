@@ -396,6 +396,46 @@ def update_user(data: UserClient):
                 'error': f'update_client error: {e}, {traceback.extract_stack()}'}
 
 
+@app.post("/get_therapist_list")
+def list_therapists_for_client(data: SingleToken):
+    # TODO ДОПИЛИТЬ ФИЛЬТРЫ ПО ЯЗЫКУ И ПОЛУ
+    token = data.session_token
+    symptoms = [f's_{i}' for i in range(0, 28)]
+    sql_0 = f'SELECT {", ".join(symptoms)} FROM client_symptoms JOIN tokens ON client_symptoms.client_id = tokens.user_id WHERE token = "{token}"'
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql_0)
+    client_symptoms = cur.fetchall()
+
+    sql_1 = f'SELECT doc_id, {", ".join(symptoms)} from doc_symptoms'
+    cur.execute(sql_1)
+    docs = cur.fetchall()
+
+    print(client_symptoms)
+    print(docs)
+
+    valid_docs = []
+    print(client_symptoms)
+    for doc_info in docs:
+        print(doc_info)
+        if client_symptoms[0] <= doc_info[1:]:
+            valid_docs.append(str(doc_info[0]))
+
+    sql_2 = f'SELECT doc_id, doc_name FROM doctors WHERE doc_id IN ({", ".join(valid_docs)})'
+    cur.execute(sql_2)
+    out_docs = cur.fetchall()
+    out_docs = [{"doc_id": row[0], "doc_name": row[1]} for row in out_docs]
+    cur.close()
+    con.close()
+
+    out = {"status": True,
+           "list_of_doctors": out_docs}
+    return out
+
+
+
+
 @app.post('/register_therapist')
 # TODO сделать генерацию пользователя
 def register_therapist(data: DocRegister):
@@ -708,7 +748,7 @@ def register_therapist(data: DocRegister):
 
 
 @app.post('/get_doc_data')
-def get_docf_data(data: SingleToken):
+def get_doc_data(data: SingleToken):
     try:
         token = data.session_token
         sql = (f'SELECT '  # 0
