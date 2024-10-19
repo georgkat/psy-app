@@ -82,14 +82,16 @@ class UserClient(CoreModel):
     """
     session_token: str # генерится на бэке для подтверждения сессии
 
-    user_dateofbirth: int
+    user_age: int
     user_experience: bool
-    user_isindividual: bool
-    user_filters: list[int]
-    user_sex_preference: int
-    user_time_preference: int
-    user_selected_time: int
-    user_cash_preference: int
+    user_type: bool
+    user_languages: list[int]
+    user_symptoms: list[int]
+    user_therapist_gender: int
+    user_time: str                               # 0 - любое, 1 - ближайшнн, 2 - конкретное
+    user_specific_date_time: Optional[str] = ''  #
+    user_price: int                              # 0 - не важно, 1 - 10000, 2 - 25000, 3 - 40000
+    user_phone: str
 
 
 class DocRegister(CoreModel):

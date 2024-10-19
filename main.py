@@ -276,6 +276,118 @@ def register(data:UserCreate):
         return {'status': False,
                 'error': f'/register error: {e} {traceback.extract_stack()}'}
 
+
+@app.post("/get_client_data")
+def return_client_data(data: SingleToken):
+    token = data.session_token
+
+    data_cols = 'clients.client_id, name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone'
+    language_list = [f'l_{i}' for i in range(0,3)]
+    language_cols = ', '.join(language_list)
+    symptoms_list = [f's_{i}' for i in range(0,28)]
+    symptoms_cols = ', '.join(symptoms_list)
+
+    sql_1 = (f'SELECT {data_cols}, {language_cols}, {symptoms_cols} '
+             f'FROM clients '
+             f'JOIN tokens ON clients.client_id = tokens.user_id '
+             f'JOIN client_languages ON clients.client_id = client_languages.client_id '
+             f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
+             f'WHERE token = "{token}";')
+
+    print(sql_1)
+    # '''
+    # f'FROM doctors '
+    # f'JOIN tokens ON doctors.doc_id = tokens.user_id '
+    # f'JOIN methods ON doctors.doc_id = methods.doc_id '
+    # f'JOIN languages ON doctors.doc_id = languages.doc_id '
+    # f'JOIN educations ON doctors.doc_id = educations.doc_id '
+    # f'WHERE token = "{token}"')
+    # '''
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+    cur.execute(sql_1)
+    desc = cur.description
+    fetch_0 = cur.fetchall()
+
+    pre_out = {}
+    for i in range(10, len(fetch_0[0])):
+        pre_out[desc[i][0]] = fetch_0[0][i]
+
+    user_symptoms = []
+    user_languages = []
+    for item in symptoms_list:
+        user_symptoms.append(pre_out[item])
+    for item in language_list:
+        user_languages.append(pre_out[item])
+
+    out = {}
+    for i in range(0, 10):
+        out[desc[i][0]] = fetch_0[0][i]
+    out['user_symptoms'] = user_symptoms
+    out['user_languages'] = user_languages
+
+    con.commit()
+    cur.close()
+    con.close()
+
+    return out
+
+@app.post("/update_user_data")
+def update_user(data: UserClient):
+    token = data.session_token
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+
+    sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+    cur.execute(sql_0)
+    fetch_0 = cur.fetchall()
+    if not fetch_0:
+        raise Exception
+    client_id = fetch_0[0][0]
+
+    sql_1_cols = 'user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone'
+    sql_1_cols_list = sql_1_cols.split(', ')
+    sql_1_vals = f'{data.user_age}, {data.user_experience}, {data.user_type}, {data.user_therapist_gender}, "{data.user_time}", "{data.user_specific_date_time}", {data.user_price}, "{data.user_phone}"'
+    sql_1_vals_list = sql_1_vals.split(', ')
+    update_data = []
+    for i in range(0, len(sql_1_cols_list)):
+        update_data.append(f'{sql_1_cols_list[i]} = {sql_1_vals_list[i]}')
+    update_data = ', '.join(update_data)
+    sql_1 = f"INSERT clients (client_id, {sql_1_cols}) VALUES ({client_id}, {sql_1_vals}) ON DUPLICATE KEY UPDATE {update_data}"
+    print(sql_1)
+    cur.execute(sql_1)
+
+    sql_2_cols = [f'l_{i}' for i in range(0, 3)]
+    sql_2_vals = ['0', '0', '0']
+    if data.user_languages:
+        for index in data.user_languages:
+            sql_2_vals[index] = '1'
+    update_data = []
+    for i in range(0, len(sql_2_cols)):
+        update_data.append(f'{sql_2_cols[i]} = {sql_2_vals[i]}')
+    update_data = ', '.join(update_data)
+    sql_2 = f"INSERT INTO client_languages (client_id, {', '.join(sql_2_cols)}) VALUES ({client_id}, {', '.join(sql_2_vals)}) ON DUPLICATE KEY UPDATE {update_data}"
+    cur.execute(sql_2)
+
+    sql_3_cols = [f's_{i}' for i in range(0, 28)]
+    sql_3_vals = ["0" for i in range(0, 28)]
+    if data.user_symptoms:
+        for index in data.user_symptoms:
+            sql_3_vals[index] = "1"
+    update_data = []
+    for i in range(0, len(sql_3_cols)):
+        update_data.append(f'{sql_3_cols[i]} = {sql_3_vals[i]}')
+    update_data = ', '.join(update_data)
+    sql_3 = f"INSERT INTO client_symptoms (client_id, {', '.join(sql_3_cols)}) VALUES ({client_id}, {', '.join(sql_3_vals)}) ON DUPLICATE KEY UPDATE {update_data}"
+    cur.execute(sql_3)
+
+    con.commit()
+    cur.close()
+    con.close()
+    return {'status': True}
+
 @app.post('/register_therapist')
 # TODO сделать генерацию пользователя
 def register_therapist(data: DocRegister):
