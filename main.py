@@ -326,13 +326,21 @@ def return_client_data(data: SingleToken):
     except:
         pass
 
+    pre_user_symptoms = []
     user_symptoms = []
+    pre_user_languages = []
     user_languages = []
     if pre_out:
         for item in symptoms_list:
-            user_symptoms.append(pre_out[item])
+            pre_user_symptoms.append(pre_out[item])
         for item in language_list:
-            user_languages.append(pre_out[item])
+            pre_user_languages.append(pre_out[item])
+        for i, x in enumerate(pre_user_symptoms):
+            if x:
+                user_symptoms.append(i)
+        for i, x in enumerate(pre_user_languages):
+            if x:
+                user_languages.append(i)
 
     out = {}
     if pre_out:
