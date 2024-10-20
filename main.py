@@ -354,7 +354,7 @@ def update_user(data: UserClient):
 
         sql_1_cols = 'user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone'
         sql_1_cols_list = sql_1_cols.split(', ')
-        sql_1_vals = f'{data.user_age}, {data.user_experience}, {data.user_type}, {data.user_therapist_gender}, "{data.user_time}", "{data.user_specific_date_time}", {data.user_price}, "{data.user_phone}"'
+        sql_1_vals = f'"{data.user_age}", {data.user_experience}, {data.user_type}, {data.user_therapist_gender}, "{data.user_time}", "{data.user_specific_date_time}", {data.user_price}, "{data.user_phone}"'
         sql_1_vals_list = sql_1_vals.split(', ')
         update_data = []
         for i in range(0, len(sql_1_cols_list)):
