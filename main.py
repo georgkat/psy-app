@@ -320,9 +320,11 @@ def return_client_data(data: SingleToken):
     print('fetch_0')
     print(fetch_0)
     pre_out = {}
-    if pre_out:
+    try:
         for i in range(10, len(fetch_0[0])):
             pre_out[desc[i][0]] = fetch_0[0][i]
+    except:
+        pass
 
     user_symptoms = []
     user_languages = []
@@ -1315,6 +1317,23 @@ def get_available_slots(data: SingleToken):
 
 @app.post('/select_slot')
 def select_slot_client(data: SelectTime):
+    token = data.session_token
+    sh_id = data.sh_id
+    doc_id = data.doc_id
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+
+    sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+    cur.execute(sql_0)
+    client_id = cur.fetchall()[0][0]
+
+    sql_1 = f'UPDATE schedule SET client = {client_id}" WHERE sh_id = {sh_id} AND doctor_id = {doc_id} RETURNING date_time'
+    cur.execute(sql_1)
+    date_time = cur.fetchall()[0][0]
+    return {"status": True,
+            "time": date_time}
+
     return {'status': True}
 
 @app.post('/approve_post_therapist')
