@@ -82,7 +82,7 @@ class UserClient(CoreModel):
     """
     session_token: str # генерится на бэке для подтверждения сессии
 
-    user_age: int
+    user_age: date  #YYYY-MM-DD
     user_experience: bool
     user_type: bool
     user_languages: list[int]
@@ -204,7 +204,8 @@ class ApproveTherapistToken(CoreModel):
 
 class SelectTime(CoreModel):
     session_token: str
-    time_slot: int
+    doc_id: int
+    sh_id: int
 
 
 class ApproveTime(CoreModel):

@@ -263,6 +263,9 @@ def register(data:UserCreate):
             f = cur.fetchall()
             client_id = f[0][0]
             cur.execute(f"INSERT INTO clients (client_id, name) VALUES ('{client_id}', '{data.user_name}');")
+            token = uuid.uuid4()
+            sql = f"INSERT INTO tokens (user_id, token) VALUES ('{client_id}', '{token}');"
+            cur.execute(sql)
             con.commit()
             cur.close()
             con.close()
@@ -1118,9 +1121,9 @@ def doctor_schedule(data: DocScheldure):
 
 
 
-@app.post('/update_client')
-def client_update(data: UserClient):
-    return {'status': True}
+# @app.post('/update_client')
+# def client_update(data: UserClient):
+#     return {'status': True}
 
 @app.post('/update_therapist')
 def update_therapist(data: DocUpdate):

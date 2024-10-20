@@ -166,7 +166,7 @@ DROP TABLE IF EXISTS `clients`;
 CREATE TABLE `clients` (
   `client_id` int(11) NOT NULL,
   `name` text DEFAULT NULL,
-  `user_age` tinyint(2) DEFAULT NULL,
+  `user_age` date DEFAULT NULL,
   `user_experience` tinyint(1) DEFAULT NULL,
   `user_type` tinyint(1) DEFAULT NULL,
   `user_therapist_gender` tinyint(1) DEFAULT NULL,
@@ -188,7 +188,7 @@ CREATE TABLE `clients` (
 LOCK TABLES `clients` WRITE;
 /*!40000 ALTER TABLE `clients` DISABLE KEYS */;
 INSERT INTO `clients` VALUES
-(210,'Vasyan',55,1,1,0,'string','',0,'12345',NULL),
+(210,'Vasyan','2024-10-03',1,1,0,'string','',0,'12345',NULL),
 (211,'*',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `clients` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -892,4 +892,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2024-10-19 18:58:58
+-- Dump completed on 2024-10-20 10:36:55
