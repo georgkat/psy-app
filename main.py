@@ -269,7 +269,8 @@ def register(data:UserCreate):
             con.commit()
             cur.close()
             con.close()
-            return {'status': True}
+            return {'status': True,
+                    'token': f'{token}'}
         else:
             cur.close()
             con.close()
