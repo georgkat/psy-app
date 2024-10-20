@@ -266,6 +266,10 @@ def register(data:UserCreate):
             token = uuid.uuid4()
             sql = f"INSERT INTO tokens (user_id, token) VALUES ('{client_id}', '{token}');"
             cur.execute(sql)
+            sql = f"INSERT INTO client_languages (client_id) VALUES ('{client_id}');"
+            cur.execute(sql)
+            sql = f"INSERT INTO client_symptoms (client_id) VALUES ('{client_id}');"
+            cur.execute(sql)
             con.commit()
             cur.close()
             con.close()
@@ -313,21 +317,36 @@ def return_client_data(data: SingleToken):
     cur.execute(sql_1)
     desc = cur.description
     fetch_0 = cur.fetchall()
-
+    print('fetch_0')
+    print(fetch_0)
     pre_out = {}
-    for i in range(10, len(fetch_0[0])):
-        pre_out[desc[i][0]] = fetch_0[0][i]
+    if pre_out:
+        for i in range(10, len(fetch_0[0])):
+            pre_out[desc[i][0]] = fetch_0[0][i]
 
     user_symptoms = []
     user_languages = []
-    for item in symptoms_list:
-        user_symptoms.append(pre_out[item])
-    for item in language_list:
-        user_languages.append(pre_out[item])
+    if pre_out:
+        for item in symptoms_list:
+            user_symptoms.append(pre_out[item])
+        for item in language_list:
+            user_languages.append(pre_out[item])
 
     out = {}
-    for i in range(0, 10):
-        out[desc[i][0]] = fetch_0[0][i]
+    if pre_out:
+        for i in range(0, 10):
+            out[desc[i][0]] = fetch_0[0][i]
+    else:
+        out['client_id'] = fetch_0[0][0]
+        out['name'] = fetch_0[0][1]
+        out["user_age"] = None
+        out["user_experience"] = None
+        out["user_type"] = None
+        out["user_therapist_gender"] = None
+        out["user_time"] = None
+        out["user_specific_date_time"] = None
+        out["user_price"] = None
+        out["user_phone"] = None
     out['user_symptoms'] = user_symptoms
     out['user_languages'] = user_languages
 
