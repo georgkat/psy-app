@@ -460,7 +460,7 @@ def list_therapists_for_client(data: SingleToken):
     cur.execute(sql_2)
     out_docs = cur.fetchall()
 
-    sql_3 = f'SELECT year, university, faculty, degree FROM educations_main WHERE doc_id IN ({", ".join(valid_docs)})'
+    sql_3 = f'SELECT doc_id, year, university, faculty, degree FROM educations_main WHERE doc_id IN ({", ".join(valid_docs)})'
     cur.execute(sql_3)
     out_edu = cur.fetchall()
     print(out_edu)
@@ -471,10 +471,11 @@ def list_therapists_for_client(data: SingleToken):
 
     for row in out_edu:
         print(row)
-        year = row[0]
-        university = row[1]
-        faculty = row[2]
-        degree = row[3]
+        doc_id = row[0]
+        year = row[1]
+        university = row[2]
+        faculty = row[3]
+        degree = row[4]
         edu_dict[int(doc_id)].append({'year': year, 'university': university, 'faculty': faculty, 'degree': degree})
 
     print(edu_dict)
