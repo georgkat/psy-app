@@ -92,6 +92,8 @@ class UserClient(CoreModel):
     user_specific_date_time: Optional[str] = ''  #
     user_price: int                              # 0 - не важно, 1 - 10000, 2 - 25000, 3 - 40000
     user_phone: str
+    user_timezone: Optional[int] = 0
+    user_photo: Optional[str] = None  #TODO CHANGE
 
 
 class DocRegister(CoreModel):

@@ -375,7 +375,8 @@ def return_client_data(data: SingleToken):
 
 @app.post("/update_client_data")
 def update_user(data: UserClient):
-    try:
+    # try:
+    if True:
         token = data.session_token
 
         con = mariadb.connect(**config)
@@ -388,9 +389,9 @@ def update_user(data: UserClient):
             raise Exception
         client_id = fetch_0[0][0]
 
-        sql_1_cols = 'user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone'
+        sql_1_cols = 'user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, user_photo, user_timezone'
         sql_1_cols_list = sql_1_cols.split(', ')
-        sql_1_vals = f'"{data.user_age}", {data.user_experience}, {data.user_type}, {data.user_therapist_gender}, "{data.user_time}", "{data.user_specific_date_time}", {data.user_price}, "{data.user_phone}"'
+        sql_1_vals = f'"{data.user_age}", {data.user_experience}, {data.user_type}, {data.user_therapist_gender}, "{data.user_time}", "{data.user_specific_date_time}", {data.user_price}, "{data.user_phone}", "{data.user_photo}", {data.user_timezone}'
         sql_1_vals_list = sql_1_vals.split(', ')
         update_data = []
         for i in range(0, len(sql_1_cols_list)):
@@ -429,11 +430,11 @@ def update_user(data: UserClient):
         con.close()
         return {'status': True}
 
-    except Exception as e:
-        print({'status': False,
-                'error': f'update_client error: {e}, {traceback.extract_stack()}'})
-        return {'status': False,
-                'error': f'update_client error: {e}, {traceback.extract_stack()}'}
+    # except Exception as e:
+    #     print({'status': False,
+    #             'error': f'update_client error: {e}, {traceback.extract_stack()}'})
+    #     return {'status': False,
+    #             'error': f'update_client error: {e}, {traceback.extract_stack()}'}
 
 
 @app.post("/get_therapist_list")
@@ -1341,9 +1342,21 @@ def select_slot_client(data: SelectTime):
     cur.execute(sql_0)
     client_id = cur.fetchall()[0][0]
 
-    sql_1 = f'UPDATE schedule SET client = {client_id}" WHERE sh_id = {sh_id} AND doctor_id = {doc_id} RETURNING date_time'
+    sql_1 = f'UPDATE schedule SET client = {client_id} WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
+    print(sql_1)
     cur.execute(sql_1)
+    sql_2 = f'SELECT date_time FROM schedule WHERE client = {client_id} AND sh_id = {sh_id} AND doctor_id = {doc_id}'
+    cur.execute(sql_2)
     date_time = cur.fetchall()[0][0]
+    if date_time:
+        sql_3 = f'UPDATE clients SET has_therapist = {doc_id} WHERE client_id = {client_id} '
+        cur.execute(sql_3)
+        con.commit()
+    else:
+        return {"status": False}
+    cur.close()
+    con.close()
+
     return {"status": True,
             "time": date_time}
 
