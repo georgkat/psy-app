@@ -359,13 +359,20 @@ def return_client_data(data: SingleToken):
         out["user_specific_date_time"] = None
         out["user_price"] = None
         out["user_phone"] = None
-        out["user_therapist"] = None
+        out["has_therapist"] = None
         out['user_timezone'] = None
         out['user_photo'] = None
 
     out['user_photo'] = ""
     out['user_symptoms'] = user_symptoms
     out['user_languages'] = user_languages
+
+    if out["has_therapist"]:
+        sql = f"SELECT doc_name, date_time FROM schedule JOIN doctors ON schedule.doctor_id = doctors.doc_id WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]}"
+        cur.execute(sql)
+        fetch = cur.fetchall()
+        print(fetch)
+        out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'sch_time': fetch[0][1]}
 
     con.commit()
     cur.close()
@@ -1347,7 +1354,10 @@ def select_slot_client(data: SelectTime):
     cur.execute(sql_1)
     sql_2 = f'SELECT date_time FROM schedule WHERE client = {client_id} AND sh_id = {sh_id} AND doctor_id = {doc_id}'
     cur.execute(sql_2)
-    date_time = cur.fetchall()[0][0]
+    try:
+        date_time = cur.fetchall()[0][0]
+    except:
+        date_time = None
     if date_time:
         sql_3 = f'UPDATE clients SET has_therapist = {doc_id} WHERE client_id = {client_id} '
         cur.execute(sql_3)
