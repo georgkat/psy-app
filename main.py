@@ -287,103 +287,109 @@ def register(data:UserCreate):
 
 @app.post("/get_client_data")
 def return_client_data(data: SingleToken):
-    token = data.session_token
-
-    data_cols = 'clients.client_id, name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo'
-    language_list = [f'l_{i}' for i in range(0,3)]
-    language_cols = ', '.join(language_list)
-    symptoms_list = [f's_{i}' for i in range(0,28)]
-    symptoms_cols = ', '.join(symptoms_list)
-
-    sql_1 = (f'SELECT {data_cols}, {language_cols}, {symptoms_cols} '
-             f'FROM clients '
-             f'JOIN tokens ON clients.client_id = tokens.user_id '
-             f'JOIN client_languages ON clients.client_id = client_languages.client_id '
-             f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
-             f'JOIN users ON clients.client_id = users.id '
-             f'WHERE token = "{token}";')
-
-    print(sql_1)
-    # '''
-    # f'FROM doctors '
-    # f'JOIN tokens ON doctors.doc_id = tokens.user_id '
-    # f'JOIN methods ON doctors.doc_id = methods.doc_id '
-    # f'JOIN languages ON doctors.doc_id = languages.doc_id '
-    # f'JOIN educations ON doctors.doc_id = educations.doc_id '
-    # f'WHERE token = "{token}"')
-    # '''
-
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql_1)
-    desc = cur.description
-    fetch_0 = cur.fetchall()
-    print('fetch_0')
-    print(fetch_0)
-    pre_out = {}
     try:
-        for i in range(10, len(fetch_0[0])):
-            pre_out[desc[i][0]] = fetch_0[0][i]
-    except:
-        pass
+        token = data.session_token
 
-    pre_user_symptoms = []
-    user_symptoms = []
-    pre_user_languages = []
-    user_languages = []
-    if pre_out:
-        for item in symptoms_list:
-            pre_user_symptoms.append(pre_out[item])
-        for item in language_list:
-            pre_user_languages.append(pre_out[item])
-        for i, x in enumerate(pre_user_symptoms):
-            if x:
-                user_symptoms.append(i)
-        for i, x in enumerate(pre_user_languages):
-            if x:
-                user_languages.append(i)
+        data_cols = 'clients.client_id, name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo'
+        language_list = [f'l_{i}' for i in range(0,3)]
+        language_cols = ', '.join(language_list)
+        symptoms_list = [f's_{i}' for i in range(0,28)]
+        symptoms_cols = ', '.join(symptoms_list)
 
-    out = {}
-    if pre_out:
-        for i in range(0, 14):
-            out[desc[i][0]] = fetch_0[0][i]
-    else:
-        out['client_id'] = fetch_0[0][0]
-        out['name'] = fetch_0[0][1]
-        out['email'] = fetch_0[0][13]
-        out["user_age"] = None
-        out["user_experience"] = None
-        out["user_type"] = None
-        out["user_therapist_gender"] = None
-        out["user_time"] = None
-        out["user_specific_date_time"] = None
-        out["user_price"] = None
-        out["user_phone"] = None
-        out["has_therapist"] = None
-        out['user_timezone'] = None
-        out['user_photo'] = None
+        sql_1 = (f'SELECT {data_cols}, {language_cols}, {symptoms_cols} '
+                 f'FROM clients '
+                 f'JOIN tokens ON clients.client_id = tokens.user_id '
+                 f'JOIN client_languages ON clients.client_id = client_languages.client_id '
+                 f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
+                 f'JOIN users ON clients.client_id = users.id '
+                 f'WHERE token = "{token}";')
 
-    out['user_photo'] = ""
-    out['user_symptoms'] = user_symptoms
-    out['user_languages'] = user_languages
+        print(sql_1)
+        # '''
+        # f'FROM doctors '
+        # f'JOIN tokens ON doctors.doc_id = tokens.user_id '
+        # f'JOIN methods ON doctors.doc_id = methods.doc_id '
+        # f'JOIN languages ON doctors.doc_id = languages.doc_id '
+        # f'JOIN educations ON doctors.doc_id = educations.doc_id '
+        # f'WHERE token = "{token}"')
+        # '''
 
-    if out["has_therapist"]:
-        sql = f"SELECT doc_name, date_time FROM schedule JOIN doctors ON schedule.doctor_id = doctors.doc_id WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]}"
-        cur.execute(sql)
-        fetch = cur.fetchall()
-        print(fetch)
-        out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'sch_time': fetch[0][1]}
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql_1)
+        desc = cur.description
+        fetch_0 = cur.fetchall()
+        print('fetch_0')
+        print(fetch_0)
+        pre_out = {}
+        try:
+            for i in range(10, len(fetch_0[0])):
+                pre_out[desc[i][0]] = fetch_0[0][i]
+        except:
+            pass
 
-    con.commit()
-    cur.close()
-    con.close()
+        pre_user_symptoms = []
+        user_symptoms = []
+        pre_user_languages = []
+        user_languages = []
+        if pre_out:
+            for item in symptoms_list:
+                pre_user_symptoms.append(pre_out[item])
+            for item in language_list:
+                pre_user_languages.append(pre_out[item])
+            for i, x in enumerate(pre_user_symptoms):
+                if x:
+                    user_symptoms.append(i)
+            for i, x in enumerate(pre_user_languages):
+                if x:
+                    user_languages.append(i)
 
-    return out
+        out = {}
+        if pre_out:
+            for i in range(0, 14):
+                out[desc[i][0]] = fetch_0[0][i]
+        else:
+            out['client_id'] = fetch_0[0][0]
+            out['name'] = fetch_0[0][1]
+            out['email'] = fetch_0[0][13]
+            out["user_age"] = None
+            out["user_experience"] = None
+            out["user_type"] = None
+            out["user_therapist_gender"] = None
+            out["user_time"] = None
+            out["user_specific_date_time"] = None
+            out["user_price"] = None
+            out["user_phone"] = None
+            out["has_therapist"] = None
+            out['user_timezone'] = None
+            out['user_photo'] = None
+
+        out['user_photo'] = ""
+        out['user_symptoms'] = user_symptoms
+        out['user_languages'] = user_languages
+
+        if out["has_therapist"]:
+            sql = f"SELECT doc_name, date_time FROM schedule JOIN doctors ON schedule.doctor_id = doctors.doc_id WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]}"
+            cur.execute(sql)
+            fetch = cur.fetchall()
+            print(fetch)
+            out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'sch_time': fetch[0][1]}
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        return out
+    except Exception as e:
+        print({'status': False,
+                'error': f'return_client_data error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'return_client_data error: {e}, {traceback.extract_stack()}'}
 
 @app.post("/update_client_data")
 def update_user(data: UserClient):
-    # try:
-    if True:
+    try:
+    # if True:
         token = data.session_token
 
         con = mariadb.connect(**config)
@@ -437,89 +443,95 @@ def update_user(data: UserClient):
         con.close()
         return {'status': True}
 
-    # except Exception as e:
-    #     print({'status': False,
-    #             'error': f'update_client error: {e}, {traceback.extract_stack()}'})
-    #     return {'status': False,
-    #             'error': f'update_client error: {e}, {traceback.extract_stack()}'}
+    except Exception as e:
+        print({'status': False,
+                'error': f'update_client error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'update_client error: {e}, {traceback.extract_stack()}'}
 
 
 @app.post("/get_therapist_list")
 def list_therapists_for_client(data: SingleToken):
     # TODO ДОПИЛИТЬ ФИЛЬТРЫ ПО ЯЗЫКУ И ПОЛУ
-    token = data.session_token
-    symptoms = [f's_{i}' for i in range(0, 28)]
-    sql_0 = f'SELECT {", ".join(symptoms)} FROM client_symptoms JOIN tokens ON client_symptoms.client_id = tokens.user_id WHERE token = "{token}"'
+    try:
+        token = data.session_token
+        symptoms = [f's_{i}' for i in range(0, 28)]
+        sql_0 = f'SELECT {", ".join(symptoms)} FROM client_symptoms JOIN tokens ON client_symptoms.client_id = tokens.user_id WHERE token = "{token}"'
 
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql_0)
-    client_symptoms = cur.fetchall()
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql_0)
+        client_symptoms = cur.fetchall()
 
-    sql_1 = f'SELECT doc_id, {", ".join(symptoms)} from doc_symptoms'
-    cur.execute(sql_1)
-    docs = cur.fetchall()
+        sql_1 = f'SELECT doc_id, {", ".join(symptoms)} from doc_symptoms'
+        cur.execute(sql_1)
+        docs = cur.fetchall()
 
-    print(client_symptoms)
-    print(docs)
+        print(client_symptoms)
+        print(docs)
 
-    valid_docs = []
-    print(client_symptoms)
-    for doc_info in docs:
-        print(doc_info)
-        if client_symptoms[0] <= doc_info[1:]:
-            valid_docs.append(str(doc_info[0]))
+        valid_docs = []
+        print(client_symptoms)
+        for doc_info in docs:
+            print(doc_info)
+            if client_symptoms[0] <= doc_info[1:]:
+                valid_docs.append(str(doc_info[0]))
 
-    sql_2 = f'SELECT doc_id, doc_name, doc_additional_info FROM doctors WHERE doc_id IN ({", ".join(valid_docs)})'
-    print(sql_2)
-    cur.execute(sql_2)
-    out_docs = cur.fetchall()
+        sql_2 = f'SELECT doc_id, doc_name, doc_additional_info FROM doctors WHERE doc_id IN ({", ".join(valid_docs)})'
+        print(sql_2)
+        cur.execute(sql_2)
+        out_docs = cur.fetchall()
 
-    sql_3 = f'SELECT doc_id, year, university, faculty, degree FROM educations_main WHERE doc_id IN ({", ".join(valid_docs)})'
-    cur.execute(sql_3)
-    out_edu = cur.fetchall()
-    print(out_edu)
+        sql_3 = f'SELECT doc_id, year, university, faculty, degree FROM educations_main WHERE doc_id IN ({", ".join(valid_docs)})'
+        cur.execute(sql_3)
+        out_edu = cur.fetchall()
+        print(out_edu)
 
-    edu_dict = {}
-    for doc_id in valid_docs:
-        edu_dict[int(doc_id)] = []
+        edu_dict = {}
+        for doc_id in valid_docs:
+            edu_dict[int(doc_id)] = []
 
-    for row in out_edu:
-        print(row)
-        doc_id = row[0]
-        year = row[1]
-        university = row[2]
-        faculty = row[3]
-        degree = row[4]
-        edu_dict[int(doc_id)].append({'year': year, 'university': university, 'faculty': faculty, 'degree': degree})
+        for row in out_edu:
+            print(row)
+            doc_id = row[0]
+            year = row[1]
+            university = row[2]
+            faculty = row[3]
+            degree = row[4]
+            edu_dict[int(doc_id)].append({'year': year, 'university': university, 'faculty': faculty, 'degree': degree})
 
-    print(edu_dict)
+        print(edu_dict)
 
-    sql_4 = f'SELECT doctor_id, sh_id, date_time FROM schedule WHERE client IS NULL and doctor_id IN ({", ".join(valid_docs)})'
-    cur.execute(sql_4)
-    out_sch = cur.fetchall()
-    # print(out_sch)
+        sql_4 = f'SELECT doctor_id, sh_id, date_time FROM schedule WHERE client IS NULL and doctor_id IN ({", ".join(valid_docs)})'
+        cur.execute(sql_4)
+        out_sch = cur.fetchall()
+        # print(out_sch)
 
-    sh_dict = {}
-    for doc_id in valid_docs:
-        sh_dict[int(doc_id)] = []
+        sh_dict = {}
+        for doc_id in valid_docs:
+            sh_dict[int(doc_id)] = []
 
-    for row in out_sch:
-        doc_id = row[0]
-        sh_id = row[1]
-        date_time = row[2]
-        # print(doc_id, sh_id, date_time)
-        sh_dict[int(doc_id)].append({'sh_id': sh_id, 'time': date_time})
+        for row in out_sch:
+            doc_id = row[0]
+            sh_id = row[1]
+            date_time = row[2]
+            # print(doc_id, sh_id, date_time)
+            sh_dict[int(doc_id)].append({'sh_id': sh_id, 'time': date_time})
 
-    # print(sh_dict)
+        # print(sh_dict)
 
-    out_docs = [{"doc_id": row[0], "doc_name": row[1], "doc_additional_info": row[2], "doc_edu": edu_dict[row[0]], "doc_schedule": sh_dict[row[0]]} for row in out_docs]
-    cur.close()
-    con.close()
+        out_docs = [{"doc_id": row[0], "doc_name": row[1], "doc_additional_info": row[2], "doc_edu": edu_dict[row[0]], "doc_schedule": sh_dict[row[0]]} for row in out_docs]
+        cur.close()
+        con.close()
 
-    out = {"status": True,
-           "list_of_doctors": out_docs}
-    return out
+        out = {"status": True,
+               "list_of_doctors": out_docs}
+        return out
+    except Exception as e:
+        print({'status': False,
+                'error': f'list_therapist for client error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'list_therapist for client error: {e}, {traceback.extract_stack()}'}
 
 
 
