@@ -467,40 +467,35 @@ def list_therapists_for_client(data: SingleToken):
 
     edu_dict = {}
     for doc_id in valid_docs:
-        edu_dict[int(doc_id)] = {}
+        edu_dict[int(doc_id)] = []
 
     for row in out_edu:
+        print(row)
         year = row[0]
         university = row[1]
         faculty = row[2]
         degree = row[3]
-        if doc_id in edu_dict.keys():
-            edu_dict[int(doc_id)].append({'year': year, 'university': university, 'faculty': faculty, 'degree': degree})
-        else:
-            edu_dict[int(doc_id)] = [{'year': year, 'university': university, 'faculty': faculty, 'degree': degree}]
+        edu_dict[int(doc_id)].append({'year': year, 'university': university, 'faculty': faculty, 'degree': degree})
 
     print(edu_dict)
 
     sql_4 = f'SELECT doctor_id, sh_id, date_time FROM schedule WHERE client IS NULL and doctor_id IN ({", ".join(valid_docs)})'
     cur.execute(sql_4)
     out_sch = cur.fetchall()
-    print(out_sch)
+    # print(out_sch)
 
     sh_dict = {}
     for doc_id in valid_docs:
-        sh_dict[int(doc_id)] = {}
+        sh_dict[int(doc_id)] = []
 
     for row in out_sch:
         doc_id = row[0]
         sh_id = row[1]
         date_time = row[2]
-        print(doc_id, sh_id, date_time)
-        if doc_id in sh_dict.keys():
-            sh_dict[int(doc_id)].append({'sh_id': sh_id, 'time': date_time})
-        else:
-            sh_dict[int(doc_id)] = [{'sh_id': sh_id, 'time': date_time}]
+        # print(doc_id, sh_id, date_time)
+        sh_dict[int(doc_id)].append({'sh_id': sh_id, 'time': date_time})
 
-    print(sh_dict)
+    # print(sh_dict)
 
     out_docs = [{"doc_id": row[0], "doc_name": row[1], "doc_additional_info": row[2], "doc_edu": edu_dict[row[0]], "doc_schedule": sh_dict[row[0]]} for row in out_docs]
     cur.close()
@@ -826,6 +821,7 @@ def register_therapist(data: DocRegister):
 
 @app.post('/get_doc_data')
 def get_doc_data(data: SingleToken):
+
     try:
         token = data.session_token
         sql = (f'SELECT '  # 0
@@ -970,6 +966,7 @@ def get_doc_data(data: SingleToken):
                             "faculty": item[3],
                             "degree": item[4]})
 
+        print(f)
         method_edu_language_sym = f[0][27:80]
         print(method_edu_language_sym)
         doc_method = method_edu_language_sym[0:16]
