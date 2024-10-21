@@ -289,7 +289,7 @@ def register(data:UserCreate):
 def return_client_data(data: SingleToken):
     token = data.session_token
 
-    data_cols = 'clients.client_id, name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone'
+    data_cols = 'clients.client_id, name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo'
     language_list = [f'l_{i}' for i in range(0,3)]
     language_cols = ', '.join(language_list)
     symptoms_list = [f's_{i}' for i in range(0,28)]
@@ -300,6 +300,7 @@ def return_client_data(data: SingleToken):
              f'JOIN tokens ON clients.client_id = tokens.user_id '
              f'JOIN client_languages ON clients.client_id = client_languages.client_id '
              f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
+             f'JOIN users ON clients.client_id = users.id '
              f'WHERE token = "{token}";')
 
     print(sql_1)
@@ -344,11 +345,12 @@ def return_client_data(data: SingleToken):
 
     out = {}
     if pre_out:
-        for i in range(0, 10):
+        for i in range(0, 14):
             out[desc[i][0]] = fetch_0[0][i]
     else:
         out['client_id'] = fetch_0[0][0]
         out['name'] = fetch_0[0][1]
+        out['email'] = fetch_0[0][13]
         out["user_age"] = None
         out["user_experience"] = None
         out["user_type"] = None
@@ -357,6 +359,11 @@ def return_client_data(data: SingleToken):
         out["user_specific_date_time"] = None
         out["user_price"] = None
         out["user_phone"] = None
+        out["user_therapist"] = None
+        out['user_timezone'] = None
+        out['user_photo'] = None
+
+    out['user_photo'] = ""
     out['user_symptoms'] = user_symptoms
     out['user_languages'] = user_languages
 
