@@ -25,9 +25,11 @@ from models.user import (UserCreate,
                          ApproveTime,
                          SelectTime,
                          ReSelectTime,
+                         CancelTherapy,
                          DocRegister,
                          DocScheldure,
                          ApproveTherapistToken,
+                         AdminReport,
                          DocUpdate)
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
@@ -1384,17 +1386,26 @@ def select_slot_client(data: SelectTime):
 
     return {'status': True}
 
-@app.post('/approve_post_therapist')
-def approve_post_therapist(data: ApproveTime):
+@app.post('/approve_time_therapist')
+def approve_time_therapist(data: ApproveTime):
+    token = data.session_token
+    sh_id = data.sh_id
+    client_id = data.client_id
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+
+    sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+    print(sql_0)
+    cur.execute(sql_0)
+    doc_id = cur.fetchall()[0][0]
+
+    sql_0 = f'UPDATE schedule SET accepted = 1 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client_id = {client_id}'
+    print(sql_0)
+    cur.execute(sql_0)
+
     return {'status': True}
 
-@app.post('/change_slot')
-def change_slot(data: ReSelectTime):
-    return {'status': True}
-
-@app.get('/refrash')
-def refrash_data():
-    return {'status': True, 'data': None}
 
 @app.post('/login_admin')
 def login_admin(data: ActionUserLogin):
@@ -1444,6 +1455,37 @@ def login_admin(data: ActionUserLogin):
         return {'status': False,
                 'error': f'login_admin error: {e}, {traceback.extract_stack()}'}
 
+
+@app.post('/report_to_admin')
+def send_report_to_admin(data: AdminReport):
+    if data.session_token:
+        sql = f"SELECT name, email FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{data.session_token}'"
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        f = cur.fetchall()
+        con.commit()
+        cur.close()
+
+        if f:
+            report_name = f[0][0]
+            report_email = f[0][1]
+        else:
+            pass
+    elif data.user_email:
+        report_email = data.user_email
+        report_name = 'None'
+    else:
+        report_email = 'None'
+        report_name = 'None'
+
+    send_email_func(to_addr='admin@speakyourmind.help',
+                    sender=report_email,
+                    noreply=True,
+                    author=report_name,
+                    subject=data.report_subject + f':y {str(datetime.datetime.now())}',
+                    content=data.report_text)
+    return {"status": True}
 @app.post('/approve_therapist')
 def approve_therapist(data: ApproveTherapistToken):
     try:
@@ -1517,3 +1559,100 @@ def list_therapists(data: SingleToken):
                 'error': f'list_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'list_therapist error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/list_clients')
+def list_clients(data: SingleToken):
+    try:
+        token = data.session_token
+
+        sql = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        f = cur.fetchall()
+        con.commit()
+        cur.close()
+
+        out = []
+        if f:
+            sql = 'SELECT client_id, name, email, registred_date FROM users JOIN doctors ON doc_id = users.id'
+            con = mariadb.connect(**config)
+            cur = con.cursor()
+            cur.execute(sql)
+            res = cur.fetchall()
+            con.commit()
+            cur.close()
+            for row in res:
+                out.append({'client_id': row[0],
+                            'name': row[1],
+                            'email': row[2],
+                            'registred_date': row[3]})
+            print({'status': True,
+                    'list': out})
+            return {'status': True,
+                    'list': out}
+    except Exception as e:
+        print({'status': False,
+                'error': f'list_therapist error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'list_therapist error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/change_session_time')
+def change_session_time(data: ReSelectTime):
+    token = data.session_token
+    old_sh_id = data.old_sh_id
+    sh_id = data.new_sh_id
+    doc_id = data.doc_id
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+
+    sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+    print(sql_0)
+    cur.execute(sql_0)
+    client_id = cur.fetchall()[0][0]
+
+    sql_0 = f'UPDATE schedule SET client = NULL, accepted = NULL WHERE sh_id = {old_sh_id} AND doctor_id = {doc_id}'
+    print(sql_0)
+    cur.execute(sql_0)
+
+    sql_1 = f'UPDATE schedule SET client = {client_id} WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
+    print(sql_1)
+    cur.execute(sql_1)
+    sql_2 = f'SELECT date_time FROM schedule WHERE client = {client_id} AND sh_id = {sh_id} AND doctor_id = {doc_id}'
+    print(sql_2)
+    cur.execute(sql_2)
+    try:
+        date_time = cur.fetchall()[0][0]
+    except:
+        date_time = None
+    if date_time:
+        sql_3 = f'UPDATE clients SET has_therapist = {doc_id} WHERE client_id = {client_id}'
+        cur.execute(sql_3)
+        con.commit()
+    else:
+        return {"status": False}
+    cur.close()
+    con.close()
+
+    return {"status": True,
+            "time": date_time}
+
+
+@app.post('/change_therapist')
+def change_therapist(data: CancelTherapy):
+    token = data.session_token
+    doc_id = data.doc_id
+
+    sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+    cur.execute(sql_0)
+    client_id = cur.fetchall()[0][0]
+
+    sql_1 = f'UPDATE schedule SET client = NULL, accepted = NULL WHERE client_id = {client_id} AND doc_id = {doc_id}'
+    cur.execute(sql_1)
+    sql_2 = f'UPDATE clients SET has_therapist = NULL client_id = {client_id} AND has_therapist = {doc_id}'
+    cur.execute(sql_2)
+    return {"status": True}

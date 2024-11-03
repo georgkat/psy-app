@@ -96,6 +96,14 @@ class UserClient(CoreModel):
     user_photo: Optional[str] = None  #TODO CHANGE
 
 
+class AdminReport(CoreModel):
+    session_token: Optional[str] = None
+
+    user_email: Optional[str] = None
+    report_subject: str = 'REPORT'
+    report_text: str
+
+
 class DocRegister(CoreModel):
     doc_name: str
     doc_date_of_birth: date # YYYY-MM-DD
@@ -212,15 +220,21 @@ class SelectTime(CoreModel):
 
 class ApproveTime(CoreModel):
     session_token: str
-    contract_token: int
-    time_slot: int
+    client_id: int
+    sh_id: int
     approved: bool
 
 
 class ReSelectTime(CoreModel):
     session_token: str
-    contract_token: int
-    time_slot: int
+    doc_id: int
+    old_sh_id: int
+    new_sh_id: int
+
+
+class CancelTherapy(CoreModel):
+    session_token: str
+    doc_id: int
 
 
 class UserUpdate(CoreModel):
