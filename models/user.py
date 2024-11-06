@@ -108,6 +108,9 @@ class UserRequestData(CoreModel):
     user_type: int
     user_symptoms: list[int]
     user_therapist_gender: int
+    user_time: int
+    user_specific_date_time: str
+    user_price: int
 
 class UserTherapistReview(CoreModel):
     session_token: str

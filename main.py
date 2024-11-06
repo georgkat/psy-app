@@ -552,6 +552,9 @@ def update_client_request(data: UserRequestData):
         user_type = data.user_type
         user_symptoms = data.user_symptoms
         user_therapist_gender = data.user_therapist_gender
+        user_time = data.user_time
+        user_specific_date_time = data.user_specific_date_time
+        user_price = data.user_price
 
         symptoms = ['0' for i in range(0, 28)]
         for i in user_symptoms:
@@ -569,7 +572,13 @@ def update_client_request(data: UserRequestData):
             raise Exception
         client_id = fetch[0][0]
 
-        sql_0 = f"UPDATE clients SET user_type = {user_type}, user_therapist_gender = {user_therapist_gender} WHERE client_id = {client_id}"
+        sql_0 = (f"UPDATE clients SET "
+                 f"user_type = {user_type}, "
+                 f"user_therapist_gender = {user_therapist_gender}, "
+                 f"user_time = {user_time}, "
+                 f"user_specific_date_time = {user_specific_date_time}, "
+                 f"user_price = {user_price}"
+                 f"WHERE client_id = {client_id}")
 
         sql_symptoms_list = []
         for idx, item in enumerate(symptoms_cols):
