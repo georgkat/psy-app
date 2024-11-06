@@ -545,8 +545,8 @@ def update_user_main(data: UserMainData):
                 'error': f'update_client_main_data error: {e}, {traceback.extract_stack()}'}
 
 
-@app.post("/update_user_request")
-def list_therapists_for_client(data: UserRequestData):
+@app.post("/update_client_request")
+def update_client_request(data: UserRequestData):
     try:
         token = data.session_token
         user_type = data.user_type
