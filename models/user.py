@@ -250,7 +250,6 @@ class ApproveTime(CoreModel):
 
 class ReSelectTime(CoreModel):
     session_token: str
-    doc_id: int
     old_sh_id: int
     new_sh_id: int
 
