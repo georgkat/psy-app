@@ -454,7 +454,7 @@ def update_user(data: UserClient):
                 'error': f'update_client error: {e}, {traceback.extract_stack()}'}
 
 
-@app.post("/user_therpist_cancel_review")
+@app.post("/user_therapist_cancel_review")
 def update_user_main(data: UserTherapistReview):
     try:
         token = data.session_token
