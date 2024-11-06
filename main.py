@@ -1459,7 +1459,7 @@ def login_admin(data: ActionUserLogin):
 @app.post('/report_to_admin')
 def send_report_to_admin(data: AdminReport):
     if data.session_token:
-        sql = f"SELECT name, email FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{data.session_token}'"
+        sql = f"SELECT email FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{data.session_token}'"
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
@@ -1468,8 +1468,8 @@ def send_report_to_admin(data: AdminReport):
         cur.close()
 
         if f:
-            report_name = f[0][0]
-            report_email = f[0][1]
+            report_email = f[0][0]
+            # report_email = f[0][1]
         else:
             pass
     elif data.user_email:
@@ -1482,9 +1482,9 @@ def send_report_to_admin(data: AdminReport):
     send_email_func(to_addr='admin@speakyourmind.help',
                     sender=report_email,
                     noreply=True,
-                    author=report_name,
-                    subject=data.report_subject + f':y {str(datetime.datetime.now())}',
-                    content=data.report_text)
+                    author=report_email,
+                    subject=data.report_subject + f': {str(datetime.datetime.now().ctime())}',
+                    content=f'REPORT FROM {report_email}:\n' + data.report_text)
     return {"status": True}
 @app.post('/approve_therapist')
 def approve_therapist(data: ApproveTherapistToken):
