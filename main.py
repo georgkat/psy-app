@@ -21,6 +21,7 @@ from models.user import (UserCreate,
                          UserUpdate,
                          UserClient,
                          UserMainData,
+                         UserRequestData,
                          UserTherapist,
                          UserTherapistReview,
                          SingleToken,
@@ -541,6 +542,54 @@ def update_user_main(data: UserMainData):
                 'error': f'update_client_main_data error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'update_client_main_data error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post("/update_user_request")
+def list_therapists_for_client(data: UserRequestData):
+    try:
+        token = data.session_token
+        user_type = data.user_type
+        user_symptoms = data.user_symptoms
+        user_therapist_gender = data.user_therapist_gender
+
+        symptoms = ['0' for i in range(0, 28)]
+        for i in user_symptoms:
+            symptoms[i] = '1'
+
+        symptoms_cols = [f's_{i}' for i in range(0, 28)]
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_token)
+        fetch = cur.fetchall()
+        if not fetch:
+            raise Exception
+        client_id = fetch[0][0]
+
+        sql_0 = f"UPDATE clients SET user_type = {user_type}, user_therapist_gender = {user_therapist_gender} WHERE client_id = {client_id}"
+
+        sql_symptoms_list = []
+        for idx, item in enumerate(symptoms_cols):
+            sql_symptoms_list.append(f'{item} = {symptoms[idx]}')
+        sql_symptoms_list = ', '.join(sql_symptoms_list)
+        sql_1 = f"UPDATE client_symptoms SET {sql_symptoms_list} WHERE client_id = {client_id}"
+
+        cur.execute(sql_0)
+        cur.execute(sql_1)
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {'status': True}
+    except Exception as e:
+        print({'status': False,
+                'error': f'/update_user_request error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'/update_user_request error: {e}, {traceback.extract_stack()}'}
+
 
 
 @app.post("/get_therapist_list")

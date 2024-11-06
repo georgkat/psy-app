@@ -105,7 +105,7 @@ class UserMainData(CoreModel):
 
 class UserRequestData(CoreModel):
     session_token: str
-    user_type: bool
+    user_type: int
     user_symptoms: list[int]
     user_therapist_gender: int
 
