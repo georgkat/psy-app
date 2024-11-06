@@ -99,9 +99,8 @@ class UserClient(CoreModel):
 class AdminReport(CoreModel):
     session_token: Optional[str] = None
     user_name: Optional[str] = None
-
     user_email: Optional[str] = None
-    report_subject: str = 'REPORT'
+    report_subject: Optional[str] = 'REPORT'
     report_text: str
 
 
