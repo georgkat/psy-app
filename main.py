@@ -496,7 +496,8 @@ def update_user_main(data: UserTherapistReview):
 
     except Exception as e:
         print({'status': False,
-                'error': f'user_therpist_cancel_review error: {e}, {traceback.extract_stack()}'})
+               'error': f'user_therpist_cancel_review error: {e}, {traceback.extract_stack()}'})
+
         return {'status': False,
                 'error': f'user_therpist_cancel_review error: {e}, {traceback.extract_stack()}'}
 
