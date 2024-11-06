@@ -1474,17 +1474,18 @@ def send_report_to_admin(data: AdminReport):
             pass
     elif data.user_email:
         report_email = data.user_email
-        report_name = 'None'
+        # report_name = 'None'
     else:
         report_email = 'None'
-        report_name = 'None'
+        # report_name = 'None'
 
+    report_name = data.user_name if data.user_name else "anonymous"
     send_email_func(to_addr='admin@speakyourmind.help',
                     sender=report_email,
                     noreply=True,
                     author=report_email,
                     subject=data.report_subject + f': {str(datetime.datetime.now().ctime())}',
-                    content=f'REPORT FROM {report_email}:\n' + data.report_text)
+                    content=f'REPORT FROM {report_name} ({report_email}):\n' + data.report_text)
     return {"status": True}
 @app.post('/approve_therapist')
 def approve_therapist(data: ApproveTherapistToken):
