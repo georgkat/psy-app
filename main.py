@@ -603,7 +603,7 @@ def update_client_request(data: UserRequestData):
 
 
 @app.post("/get_therapist_list")
-def list_therapists_for_client(data: SingleToken):
+def get_therapist_list(data: SingleToken):
     # TODO ДОПИЛИТЬ ФИЛЬТРЫ ПО ЯЗЫКУ И ПОЛУ
     try:
         token = data.session_token
@@ -1750,6 +1750,8 @@ def list_clients(data: SingleToken):
                     'list': out})
             return {'status': True,
                     'list': out}
+        else:
+            return {'status': False}
     except Exception as e:
         print({'status': False,
                 'error': f'list_therapist error: {e}, {traceback.extract_stack()}'})
@@ -1757,62 +1759,51 @@ def list_clients(data: SingleToken):
                 'error': f'list_therapist error: {e}, {traceback.extract_stack()}'}
 
 
-@app.post('/change_session_time')
-def change_session_time(data: ReSelectTime):
+@app.post('/client_change_session_time')
+def client_change_session_time(data: ReSelectTime):
     token = data.session_token
     old_sh_id = data.old_sh_id
     sh_id = data.new_sh_id
-    doc_id = data.doc_id
+    # doc_id = data.doc_id
 
     con = mariadb.connect(**config)
     cur = con.cursor()
 
     sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
-    print(sql_0)
     cur.execute(sql_0)
     client_id = cur.fetchall()[0][0]
 
-    sql_0 = f'UPDATE schedule SET client = NULL, accepted = NULL WHERE sh_id = {old_sh_id} AND doctor_id = {doc_id}'
-    print(sql_0)
-    cur.execute(sql_0)
-
-    sql_1 = f'UPDATE schedule SET client = {client_id} WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
-    print(sql_1)
+    sql_1 = f'SELECT has_therapist FROM clients WHERE client_id = {client_id}'
     cur.execute(sql_1)
-    sql_2 = f'SELECT date_time FROM schedule WHERE client = {client_id} AND sh_id = {sh_id} AND doctor_id = {doc_id}'
-    print(sql_2)
+    doc_id = cur.fetchall()[0][0]
+
+    sql_2 = f'UPDATE schedule SET client = {client_id} WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
     cur.execute(sql_2)
-    try:
-        date_time = cur.fetchall()[0][0]
-    except:
-        date_time = None
-    if date_time:
-        sql_3 = f'UPDATE clients SET has_therapist = {doc_id} WHERE client_id = {client_id}'
-        cur.execute(sql_3)
-        con.commit()
-    else:
-        return {"status": False}
+
+    sql_3 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id})'
+    cur.execute(sql_3)
+
+    con.commit()
     cur.close()
     con.close()
 
-    return {"status": True,
-            "time": date_time}
-
-
-@app.post('/change_therapist')
-def change_therapist(data: CancelTherapy):
-    token = data.session_token
-    doc_id = data.doc_id
-
-    sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
-    cur.execute(sql_0)
-    client_id = cur.fetchall()[0][0]
-
-    sql_1 = f'UPDATE schedule SET client = NULL, accepted = NULL WHERE client_id = {client_id} AND doc_id = {doc_id}'
-    cur.execute(sql_1)
-    sql_2 = f'UPDATE clients SET has_therapist = NULL client_id = {client_id} AND has_therapist = {doc_id}'
-    cur.execute(sql_2)
-    cur.commit()
-    cur.close()
-    con.close()
     return {"status": True}
+
+
+# @app.post('/change_therapist')
+# def change_therapist(data: CancelTherapy):
+#     token = data.session_token
+#     doc_id = data.doc_id
+#
+#     sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+#     cur.execute(sql_0)
+#     client_id = cur.fetchall()[0][0]
+#
+#     sql_1 = f'UPDATE schedule SET client = NULL, accepted = NULL WHERE client_id = {client_id} AND doc_id = {doc_id}'
+#     cur.execute(sql_1)
+#     sql_2 = f'UPDATE clients SET has_therapist = NULL client_id = {client_id} AND has_therapist = {doc_id}'
+#     cur.execute(sql_2)
+#     cur.commit()
+#     cur.close()
+#     con.close()
+#     return {"status": True}
