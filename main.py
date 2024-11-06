@@ -458,9 +458,9 @@ def update_user(data: UserClient):
 def update_user_main(data: UserTherapistReview):
     try:
         token = data.session_token
-        problems = [0 for i in range(0, 11)]
+        problems = ['0' for i in range(0, 11)]
         for i in data.problems:
-            problems[i] = 1
+            problems[i] = '1'
         more_problems = data.more_problems
         call_me = data.call_me
 
@@ -470,16 +470,11 @@ def update_user_main(data: UserTherapistReview):
         sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
         cur.execute(sql_token)
         fetch = cur.fetchall()
-        if not fetch:
-            raise Exception
         client_id = fetch[0][0]
-
         sql_doc = f'SELECT has_therapist FROM clients WHERE client_id = {client_id}'
         print(sql_doc)
         cur.execute(sql_doc)
         fetch = cur.fetchall()
-        if not fetch:
-            raise Exception
         doc_id = fetch[0][0]
 
         problems_list = ', '.join(problems)
