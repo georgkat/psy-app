@@ -482,10 +482,7 @@ def update_user_main(data: UserTherapistReview):
             raise Exception
         doc_id = fetch[0][0]
 
-        problems_list = ['0' for i in range(0, 11)]
-        for idx in problems:
-            problems_list[idx] = '1'
-        problems_list = ', '.join(problems_list)
+        problems_list = ', '.join(problems)
 
         columns_list = 'pr_0, pr_1, pr_2, pr_3, pr_4, pr_5, pr_6, pr_7, pr_8, pr_9, pr_10, more_problems, call_me, doc_id, client_id'
 
