@@ -576,9 +576,9 @@ def update_client_request(data: UserRequestData):
                  f"user_type = {user_type}, "
                  f"user_therapist_gender = {user_therapist_gender}, "
                  f"user_time = {user_time}, "
-                 f"user_specific_date_time = {user_specific_date_time}, "
-                 f"user_price = {user_price}"
-                 f"WHERE client_id = {client_id}")
+                 f"user_specific_date_time = '{user_specific_date_time}', "
+                 f"user_price = {user_price} "
+                 f"WHERE client_id = {client_id};")
 
         sql_symptoms_list = []
         for idx, item in enumerate(symptoms_cols):
