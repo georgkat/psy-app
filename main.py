@@ -20,6 +20,7 @@ from models.user import (UserCreate,
                          UserLoginGen,
                          UserUpdate,
                          UserClient,
+                         UserMainData,
                          UserTherapist,
                          SingleToken,
                          ApproveTime,
@@ -450,6 +451,50 @@ def update_user(data: UserClient):
                 'error': f'update_client error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'update_client error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post("/update_client_main_data")
+def update_user_main(data: UserMainData):
+    try:
+        token = data.session_token
+        name = data.name
+        email = data.email
+        user_languages = data.user_languages
+        user_timezone = data.user_timezone
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_token)
+        fetch = cur.fetchall()
+        if not fetch:
+            raise Exception
+        client_id = fetch[0][0]
+
+        sql_0 = f"UPDATE users SET email = '{email}' WHERE id = {client_id}"
+        sql_1 = f"UPDATE clients SET name = '{name}', user_timezone = {user_timezone} WHERE client_id = {client_id}"
+
+        languages = [0, 0, 0]
+        for i in user_languages:
+            languages[i] = 1
+
+        sql_2 = f"UPDATE client_languages SET l_0 = {languages[0]}, l_1 = {languages[1]}, l_2 = {languages[2]} WHERE client_id = {client_id}"
+
+        cur.execute(sql_0)
+        cur.execute(sql_1)
+        cur.execute(sql_2)
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {'status': True}
+    except Exception as e:
+        print({'status': False,
+                'error': f'update_client_main_data error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'update_client_main_data error: {e}, {traceback.extract_stack()}'}
 
 
 @app.post("/get_therapist_list")
@@ -1458,35 +1503,41 @@ def login_admin(data: ActionUserLogin):
 
 @app.post('/report_to_admin')
 def send_report_to_admin(data: AdminReport):
-    if data.session_token:
-        sql = f"SELECT email FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{data.session_token}'"
-        con = mariadb.connect(**config)
-        cur = con.cursor()
-        cur.execute(sql)
-        f = cur.fetchall()
-        con.commit()
-        cur.close()
+    try:
+        if data.session_token:
+            sql = f"SELECT email FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{data.session_token}'"
+            con = mariadb.connect(**config)
+            cur = con.cursor()
+            cur.execute(sql)
+            f = cur.fetchall()
+            con.commit()
+            cur.close()
 
-        if f:
-            report_email = f[0][0]
-            # report_email = f[0][1]
+            if f:
+                report_email = f[0][0]
+                # report_email = f[0][1]
+            else:
+                pass
+        elif data.user_email:
+            report_email = data.user_email
+            # report_name = 'None'
         else:
-            pass
-    elif data.user_email:
-        report_email = data.user_email
-        # report_name = 'None'
-    else:
-        report_email = 'None'
-        # report_name = 'None'
+            report_email = 'None'
+            # report_name = 'None'
 
-    report_name = data.user_name if data.user_name else "anonymous"
-    send_email_func(to_addr='admin@speakyourmind.help',
-                    sender=report_email,
-                    noreply=True,
-                    author=report_email,
-                    subject=data.report_subject + f': {str(datetime.datetime.now().ctime())}',
-                    content=f'REPORT FROM {report_name} ({report_email}):\n' + data.report_text)
-    return {"status": True}
+        report_name = data.user_name if data.user_name else "anonymous"
+        send_email_func(to_addr='admin@speakyourmind.help',
+                        sender=report_email,
+                        noreply=True,
+                        author=report_email,
+                        subject=data.report_subject + f': {str(datetime.datetime.now().ctime())}',
+                        content=f'REPORT FROM {report_name} ({report_email}):\n' + data.report_text)
+        return {"status": True}
+    except Exception as e:
+        print({'status': False,
+               'error': f'report_to_admin error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'report_to_admin error: {e}, {traceback.extract_stack()}'}
 @app.post('/approve_therapist')
 def approve_therapist(data: ApproveTherapistToken):
     try:

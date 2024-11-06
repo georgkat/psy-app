@@ -95,6 +95,13 @@ class UserClient(CoreModel):
     user_timezone: Optional[int] = 0
     user_photo: Optional[str] = None  #TODO CHANGE
 
+class UserMainData(CoreModel):
+    session_token: str
+    name: str
+    email: str
+    user_languages: list
+    user_timezone: int
+
 
 class AdminReport(CoreModel):
     session_token: Optional[str] = None
