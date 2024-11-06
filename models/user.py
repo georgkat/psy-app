@@ -103,6 +103,19 @@ class UserMainData(CoreModel):
     user_timezone: int
 
 
+class UserRequestData(CoreModel):
+    session_token: str
+    user_type: bool
+    user_symptoms: list[int]
+    user_therapist_gender: int
+
+class UserTherapistReview(CoreModel):
+    session_token: str
+    problems: list
+    more_problems: Optional[str]
+    call_me: int
+
+
 class AdminReport(CoreModel):
     session_token: Optional[str] = None
     user_name: Optional[str] = None

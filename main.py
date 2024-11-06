@@ -22,6 +22,7 @@ from models.user import (UserCreate,
                          UserClient,
                          UserMainData,
                          UserTherapist,
+                         UserTherapistReview,
                          SingleToken,
                          ApproveTime,
                          SelectTime,
@@ -452,6 +453,59 @@ def update_user(data: UserClient):
         return {'status': False,
                 'error': f'update_client error: {e}, {traceback.extract_stack()}'}
 
+
+@app.post("/user_therpist_cancel_review")
+def update_user_main(data: UserTherapistReview):
+    try:
+        token = data.session_token
+        problems = [0 for i in range(0, 11)]
+        for i in data.problems:
+            problems[i] = 1
+        more_problems = data.more_problems
+        call_me = data.call_me
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_token)
+        fetch = cur.fetchall()
+        if not fetch:
+            raise Exception
+        client_id = fetch[0][0]
+
+        sql_doc = f'SELECT has_therapist FROM clients WHERE client_id = {client_id}'
+        print(sql_doc)
+        cur.execute(sql_doc)
+        fetch = cur.fetchall()
+        if not fetch:
+            raise Exception
+        doc_id = fetch[0][0]
+
+        problems_list = ['0' for i in range(0, 11)]
+        for idx in problems:
+            problems_list[idx] = '1'
+        problems_list = ', '.join(problems_list)
+
+        columns_list = 'pr_0, pr_1, pr_2, pr_3, pr_4, pr_5, pr_6, pr_7, pr_8, pr_9, pr_10, more_problems, call_me, doc_id, client_id'
+
+        sql = f"INSERT INTO cancelled_therapies ({columns_list}) VALUES ({problems_list}, '{more_problems}', {call_me}, {doc_id}, {client_id})"
+        cur.execute(sql)
+        sql_1 = f'UPDATE schedule SET client = NULL, accepted = NULL WHERE client = {client_id} AND doctor_id = {doc_id}'
+        cur.execute(sql_1)
+        sql_2 = f'UPDATE clients SET has_therapist = NULL WHERE client_id = {client_id} AND has_therapist = {doc_id}'
+        cur.execute(sql_2)
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {'status': True}
+
+    except Exception as e:
+        print({'status': False,
+                'error': f'user_therpist_cancel_review error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'user_therpist_cancel_review error: {e}, {traceback.extract_stack()}'}
 
 @app.post("/update_client_main_data")
 def update_user_main(data: UserMainData):
@@ -1707,4 +1761,7 @@ def change_therapist(data: CancelTherapy):
     cur.execute(sql_1)
     sql_2 = f'UPDATE clients SET has_therapist = NULL client_id = {client_id} AND has_therapist = {doc_id}'
     cur.execute(sql_2)
+    cur.commit()
+    cur.close()
+    con.close()
     return {"status": True}
