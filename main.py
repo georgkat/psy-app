@@ -1981,6 +1981,47 @@ def recieve_sessions_for_therapist(data: SingleToken):
                 'error': f'recieve_sessions_list_for_therapist error: {e}, {traceback.extract_stack()}'}
 
 
+@app.post('/get_clients_therapist_schedule')
+def get_clients_therapist_schedule(data: SingleToken):
+    try:
+        token = data.session_token
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        sql = f'SELECT user_id, has_therapist FROM tokens JOIN clients ON tokens.user_id = clients.client_id WHERE token = "{token}"'
+        cur.execute(sql)
+        fetch = cur.fetchall()
+        client_id = fetch[0][0]
+        doc_id = fetch[0][1]
+
+        if doc_id:
+            sql_1 = f'SELECT sh_id, date_time, client, accepted FROM schedule WHERE client IS NULL OR client = {client_id} AND doctor_id = {doc_id}'
+            cur.execute(sql_1)
+            fetch = cur.fetchall()
+            # print(fetch)
+            sh_out = []
+            for row in fetch:
+                # print(row)
+                sh_row = {}
+                sh_row['sh_id'] = row[0]
+                sh_row['date_time'] = row[1]
+                sh_row['client'] = row[2] if row[2] else None
+                sh_row['accepted'] = row[3] if row[3] else None
+                sh_out.append(sh_row)
+            return {'status': True,
+                    'doctor_id': doc_id,
+                    'schedule': sh_out}
+
+        else:
+            return {'status': False, 'error': 'Client have no therapist'}
+    except Exception as e:
+        print({'status': False,
+               'error': f'get_clients_therapist_schedule error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'get_clients_therapist_schedule error: {e}, {traceback.extract_stack()}'}
+
+
+
 @app.post('/get_user_data')
 def get_user_data(data: GetSomeoneData):
     token = data.session_token
