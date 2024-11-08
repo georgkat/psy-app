@@ -1598,7 +1598,7 @@ def approve_time_therapist(data: ApproveTime):
                 cur.execute(sql)
                 fetch = cur.fetchall()
                 old_sh_id = fetch[0][0]
-                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending = 0 WHERE sh_id = {old_sh_id}'
+                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id}'
                 cur.execute(sql)
                 sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
                 cur.execute(sql)
@@ -1934,7 +1934,7 @@ def therapist_change_session_time(data: ReSelectTime):
             cur.execute(sql)
             fetch = cur.fetchall()
             old_sh_id = fetch[0][0]
-            sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending = 0 WHERE sh_id = {old_sh_id}'
+            sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id}'
             cur.execute(sql)
             sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
             cur.execute(sql)
