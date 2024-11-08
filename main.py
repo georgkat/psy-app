@@ -1875,13 +1875,59 @@ def therapist_change_session_time(data: ReSelectTime):
 #     con.close()
 #     return {"status": True}
 
-# @app.post('/recieve_sessions_for_therapist')
-# def recieve_sessions_for_therapist(data: SingleToken):
-#     token = SingleToken
-#     sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
-#     cur.execute(sql_0)
-#     doc_id = cur.fetchall()[0][0]
-#
-#     # client_id, name, date_time, pending_change<
-#     sql_0 = f'SELECT client_id, name, date_time, accepted, pending_change FROM schedule JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id}'
-#     cur.execute(sql_0)
+@app.post('/recieve_sessions_list_for_therapist')
+def recieve_sessions_for_therapist(data: SingleToken):
+    try:
+        token = data.session_token
+
+
+
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_0)
+        doc_id = cur.fetchall()[0][0]
+
+        # client_id, name, date_time, pending_change<
+        sql_0 = f'SELECT client_id, name, sh_id, date_time, accepted, pending_change FROM schedule JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id} and pending_change = 0'
+        cur.execute(sql_0)
+        fetch_0 = cur.fetchall()
+        normal_sessions_list = []
+        for row in fetch_0:
+            out_normal = {}
+            out_normal['client_id'] = row[0]
+            out_normal['name'] = row[1]
+            out_normal['sh_id'] = row[2]
+            out_normal['time'] = row[3]
+            out_normal['accepted'] = row[4]
+            normal_sessions_list.append(out_normal)
+
+        pending_sessions_list = []
+        sql_1 = f'SELECT ch_id, ch.client_id, name, old_sh_id, new_sh_id, old_sh.date_time, new_sh.date_time FROM testdb.change_schedule ch JOIN schedule old_sh ON ch.old_sh_id = old_sh.sh_id JOIN schedule new_sh ON ch.new_sh_id = new_sh.sh_id JOIN clients ON ch.client_id = clients.client_id WHERE ch.doc_id = {doc_id} ORDER BY ch_id DESC;'
+        cur.execute(sql_1)
+        fetch_1 = cur.fetchall()
+        for row in fetch_1:
+            out_pending = {}
+            out_pending['client_id'] = row[1]
+            out_pending['name'] = row[2]
+            out_pending['old_sh_id'] = row[3]
+            out_pending['new_sh_id'] = row[4]
+            out_pending['old_time'] = row[5]
+            out_pending['new_time'] = row[6]
+            # out_pending['accepted'] = row[7]
+            pending_sessions_list.append(out_pending)
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {'status': True,
+                'normal_sessions_list': normal_sessions_list,
+                'pending_sessions_list': pending_sessions_list}
+    except Exception as e:
+        print({'status': False,
+               'error': f'recieve_sessions_list_for_therapist error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'recieve_sessions_list_for_therapist error: {e}, {traceback.extract_stack()}'}
