@@ -1910,13 +1910,14 @@ def recieve_sessions_for_therapist(data: SingleToken):
         fetch_1 = cur.fetchall()
         for row in fetch_1:
             out_pending = {}
+            out_pending['ch_id'] = row[0]
             out_pending['client_id'] = row[1]
             out_pending['name'] = row[2]
             out_pending['old_sh_id'] = row[3]
             out_pending['new_sh_id'] = row[4]
             out_pending['old_time'] = row[5]
             out_pending['new_time'] = row[6]
-            out_pending['ch_id'] = row[7]
+
             pending_sessions_list.append(out_pending)
 
         con.commit()
