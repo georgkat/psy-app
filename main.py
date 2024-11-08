@@ -374,11 +374,24 @@ def return_client_data(data: SingleToken):
         out['user_languages'] = user_languages
 
         if out["has_therapist"]:
-            sql = f"SELECT doc_name, date_time FROM schedule JOIN doctors ON schedule.doctor_id = doctors.doc_id WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]}"
+            sql = f"SELECT doc_name, date_time, pending_change, sh_id FROM schedule JOIN doctors ON schedule.doctor_id = doctors.doc_id WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]} AND pending_change IN (0, 1)"
             cur.execute(sql)
             fetch = cur.fetchall()
+            pending = fetch[0][2]
+            new_time = ''
+            if pending:
+                old_sh_id = fetch[0][3]
+                sql_1 = f"SELECT new_sh_id, who_asked FROM change_schedule WHERE old_sh_id = {old_sh_id}"
+                cur.execute(sql_1)
+                fetch_1 = cur.fetchall()
+                new_sh_id = fetch_1[0][0]
+                pending = fetch_1[0][1]
+                sql_1 = f"SELECT date_time FROM schedule WHERE sh_id = {new_sh_id}"
+                cur.execute(sql_1)
+                fetch_1 = cur.fetchall()
+                new_time = fetch_1[0][0]
             print(fetch)
-            out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'sch_time': fetch[0][1]}
+            out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'sch_time': fetch[0][1], 'pending': pending, 'new_sch_time': new_time}
 
         con.commit()
         cur.close()
@@ -1759,35 +1772,89 @@ def list_clients(data: SingleToken):
                 'error': f'list_therapist error: {e}, {traceback.extract_stack()}'}
 
 
+
+
 @app.post('/client_change_session_time')
 def client_change_session_time(data: ReSelectTime):
-    token = data.session_token
-    old_sh_id = data.old_sh_id
-    sh_id = data.new_sh_id
-    # doc_id = data.doc_id
+    try:
+        token = data.session_token
+        old_sh_id = data.old_sh_id
+        sh_id = data.new_sh_id
+        # doc_id = data.doc_id
 
-    con = mariadb.connect(**config)
-    cur = con.cursor()
+        con = mariadb.connect(**config)
+        cur = con.cursor()
 
-    sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
-    cur.execute(sql_0)
-    client_id = cur.fetchall()[0][0]
+        sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_0)
+        client_id = cur.fetchall()[0][0]
 
-    sql_1 = f'SELECT has_therapist FROM clients WHERE client_id = {client_id}'
-    cur.execute(sql_1)
-    doc_id = cur.fetchall()[0][0]
+        sql_1 = f'SELECT has_therapist FROM clients WHERE client_id = {client_id}'
+        cur.execute(sql_1)
+        doc_id = cur.fetchall()[0][0]
 
-    sql_2 = f'UPDATE schedule SET client = {client_id} WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
-    cur.execute(sql_2)
+        sql_2 = f'UPDATE schedule SET pending_change = 1 WHERE sh_id = {old_sh_id}'
+        cur.execute(sql_2)
 
-    sql_3 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id})'
-    cur.execute(sql_3)
+        sql_3 = f'UPDATE schedule SET client = {client_id}, pending_change = 2 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
+        cur.execute(sql_3)
 
-    con.commit()
-    cur.close()
-    con.close()
+        sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 2)'
+        cur.execute(sql_4)
 
-    return {"status": True}
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {"status": True}
+    except Exception as e:
+        print({'status': False,
+               'error': f'client_change_session_time error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'client_change_session_time error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/therapist_change_session_time')
+def therapist_change_session_time(data: ReSelectTime):
+    try:
+        token = data.session_token
+        old_sh_id = data.old_sh_id
+        sh_id = data.new_sh_id
+        # doc_id = data.doc_id
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_0)
+        doc_id = cur.fetchall()[0][0]
+
+        sql_1 = f'SELECT client FROM schedule WHERE sh_id = {old_sh_id}'
+        cur.execute(sql_1)
+        client_id = cur.fetchall()[0][0]
+
+        sql_2 = f'UPDATE schedule SET pending_change = 1 WHERE sh_id = {old_sh_id}'
+        cur.execute(sql_2)
+
+        sql_3 = f'UPDATE schedule SET client = {client_id}, pending_change = 2 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
+        cur.execute(sql_3)
+
+        sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 1)'
+        cur.execute(sql_4)
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {"status": True}
+    except Exception as e:
+        print({'status': False,
+               'error': f'therapist_change_session_time error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'therapist_change_session_time error: {e}, {traceback.extract_stack()}'}
+
+
+
 
 
 # @app.post('/change_therapist')
@@ -1807,3 +1874,14 @@ def client_change_session_time(data: ReSelectTime):
 #     cur.close()
 #     con.close()
 #     return {"status": True}
+
+# @app.post('/recieve_sessions_for_therapist')
+# def recieve_sessions_for_therapist(data: SingleToken):
+#     token = SingleToken
+#     sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+#     cur.execute(sql_0)
+#     doc_id = cur.fetchall()[0][0]
+#
+#     # client_id, name, date_time, pending_change<
+#     sql_0 = f'SELECT client_id, name, date_time, accepted, pending_change FROM schedule JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id}'
+#     cur.execute(sql_0)
