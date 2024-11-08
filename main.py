@@ -1554,42 +1554,46 @@ def select_slot_client(data: SelectTime):
 
 @app.post('/approve_time_therapist')
 def approve_time_therapist(data: ApproveTime):
-    token = data.session_token
-    sh_id = data.sh_id
+    try:
+        token = data.session_token
+        sh_id = data.sh_id
 
-    con = mariadb.connect(**config)
-    cur = con.cursor()
+        con = mariadb.connect(**config)
+        cur = con.cursor()
 
-    sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
-    print(sql_0)
-    cur.execute(sql_0)
-    doc_id = cur.fetchall()[0][0]
-
-    if data.approved:
-        sql_0 = f'UPDATE schedule SET accepted = 1, pending_change = 0 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
+        sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
         print(sql_0)
         cur.execute(sql_0)
-        sql_1 = f'SELECT client FROM schedule WHERE sh_id = "{sh_id}"'
-        cur.execute(sql_1)
-        fetch_1 = cur.fetchall()
-        client_id = fetch_1[0][0]
-        sql_2 = f'UPDATE clients SET first_time = 0 WHERE client_id = {client_id}'
+        doc_id = cur.fetchall()[0][0]
 
-        if data.ch_id:
-            sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {data.ch_id}'
-            cur.execute(sql)
-            fetch = cur.fetchall()
-            old_sh_id = fetch[0][0]
-            sql = f'UPDATE schedule SET client = NULL WHERE sh_id = {old_sh_id}'
-            cur.execute(sql)
-            sql = f'DELETE FROM change_schedule WHERE ch_id = {data.ch_id}'
-            cur.execute(sql)
+        if data.approved:
+            sql_0 = f'UPDATE schedule SET accepted = 1, pending_change = 0 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
+            print(sql_0)
+            cur.execute(sql_0)
+            sql_1 = f'SELECT client FROM schedule WHERE sh_id = "{sh_id}"'
+            cur.execute(sql_1)
+            fetch_1 = cur.fetchall()
+            client_id = fetch_1[0][0]
+            sql_2 = f'UPDATE clients SET first_time = 0 WHERE client_id = {client_id}'
 
-    con.commit()
-    cur.close()
-    con.close()
+            if data.ch_id:
+                sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {data.ch_id}'
+                cur.execute(sql)
+                fetch = cur.fetchall()
+                old_sh_id = fetch[0][0]
+                sql = f'UPDATE schedule SET client = NULL WHERE sh_id = {old_sh_id}'
+                cur.execute(sql)
+                sql = f'DELETE FROM change_schedule WHERE ch_id = {data.ch_id}'
+                cur.execute(sql)
 
-    return {'status': True}
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {'status': True}
+    except Exception as e:
+        print({'status': False, 'error': f'approve_time_therapist error: {e}, {traceback.extract_stack()}'})
+        return {'status': False, 'error': f'approve_time_therapist error: {e}, {traceback.extract_stack()}'}
 
 
 
@@ -1934,7 +1938,7 @@ def recieve_sessions_for_therapist(data: SingleToken):
         doc_id = cur.fetchall()[0][0]
 
         # client_id, name, date_time, pending_change<
-        sql_0 = f'SELECT client_id, name, sh_id, date_time, accepted, pending_change FROM schedule JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id} and pending_change = 0'
+        sql_0 = f'SELECT client_id, name, sh_id, date_time, accepted, pending_change FROM schedule JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id} AND pending_change = 0'
         cur.execute(sql_0)
         fetch_0 = cur.fetchall()
         normal_sessions_list = []
