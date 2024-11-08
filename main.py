@@ -381,6 +381,8 @@ def return_client_data(data: SingleToken):
             pending = fetch[0][2]
             accepted = fetch[0][4]
             new_time = ''
+            old_sh_id = fetch[0][3]
+            new_sh_id = None
             if pending:
                 old_sh_id = fetch[0][3]
                 sql_1 = f"SELECT new_sh_id, who_asked FROM change_schedule WHERE old_sh_id = {old_sh_id}"
@@ -393,7 +395,7 @@ def return_client_data(data: SingleToken):
                 fetch_1 = cur.fetchall()
                 new_time = fetch_1[0][0]
             print(fetch)
-            out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'sch_time': fetch[0][1], 'pending': pending, 'new_sch_time': new_time, 'accepted': accepted}
+            out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'sh_id': old_sh_id, 'sch_time': fetch[0][1], 'pending': pending, 'new_sh_id': new_sh_id, 'new_sch_time': new_time, 'accepted': accepted}
 
         con.commit()
         cur.close()
