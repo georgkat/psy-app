@@ -28,6 +28,7 @@ from models.user import (UserCreate,
                          ApproveTime,
                          SelectTime,
                          ReSelectTime,
+                         GetSomeoneData,
                          CancelTherapy,
                          DocRegister,
                          DocScheldure,
@@ -1563,19 +1564,20 @@ def approve_time_therapist(data: ApproveTime):
     cur.execute(sql_0)
     doc_id = cur.fetchall()[0][0]
 
-    sql_0 = f'UPDATE schedule SET accepted = 1 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
-    print(sql_0)
-    cur.execute(sql_0)
+    if data.approved:
+        sql_0 = f'UPDATE schedule SET accepted = 1 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
+        print(sql_0)
+        cur.execute(sql_0)
 
-    if data.ch_id:
-        sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {data.ch_id}'
-        cur.execute(sql)
-        fetch = cur.fetchall()
-        old_sh_id = fetch[0][0]
-        sql = f'UPDATE schedule SET client = NULL WHERE sh_id = {old_sh_id}'
-        cur.execute(sql)
-        sql = f'DELETE FROM change_schedule WHERE ch_id = {data.ch_id}'
-        cur.execute(sql)
+        if data.ch_id:
+            sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {data.ch_id}'
+            cur.execute(sql)
+            fetch = cur.fetchall()
+            old_sh_id = fetch[0][0]
+            sql = f'UPDATE schedule SET client = NULL WHERE sh_id = {old_sh_id}'
+            cur.execute(sql)
+            sql = f'DELETE FROM change_schedule WHERE ch_id = {data.ch_id}'
+            cur.execute(sql)
 
     con.commit()
     cur.close()
@@ -1968,3 +1970,21 @@ def recieve_sessions_for_therapist(data: SingleToken):
         return {'status': False,
                 'error': f'recieve_sessions_list_for_therapist error: {e}, {traceback.extract_stack()}'}
 
+
+@app.post('/get_user_data')
+def get_user_data(data: GetSomeoneData):
+    token = data.session_token
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+
+    sql = f'SELECT user_id, is_therapist FROM tokens WHERE token = "{token}"'
+    cur.execute(sql)
+
+    fetch = cur.fetchall()
+    is_therapist = fetch[0][1]
+
+    if is_therapist:
+        doc_id = fetch[0][0]
+
+    sql = f'SELECT name, age, NULL FROM clients JOIN schedule ON clients.client_id = schedule.client WHERE client = {data.user_id} AND doctor_id = {doc_id} ORDER by sh_id DESC'

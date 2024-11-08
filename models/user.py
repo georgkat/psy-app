@@ -230,6 +230,11 @@ class UserTherapistFull(UserTherapist):
 class SingleToken(CoreModel):
     session_token: str
 
+
+class GetSomeoneData(CoreModel):
+    session_token: str
+    user_id: int
+
 class ApproveTherapistToken(CoreModel):
     session_token: str
     doc_id: int
@@ -248,7 +253,7 @@ class ApproveTime(CoreModel):
     session_token: str
     sh_id: int
     ch_id: Optional[int] = None
-    approved: bool
+    approved: int
 
 
 class ReSelectTime(CoreModel):
