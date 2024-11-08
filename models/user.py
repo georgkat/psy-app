@@ -241,10 +241,13 @@ class SelectTime(CoreModel):
     sh_id: int
 
 
+
+
+
 class ApproveTime(CoreModel):
     session_token: str
-    client_id: int
     sh_id: int
+    ch_id: Optional[int] = None
     approved: bool
 
 
@@ -252,6 +255,7 @@ class ReSelectTime(CoreModel):
     session_token: str
     old_sh_id: int
     new_sh_id: int
+    ch_id: Optional[int] = None
 
 
 class CancelTherapy(CoreModel):

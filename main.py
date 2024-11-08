@@ -374,10 +374,11 @@ def return_client_data(data: SingleToken):
         out['user_languages'] = user_languages
 
         if out["has_therapist"]:
-            sql = f"SELECT doc_name, date_time, pending_change, sh_id FROM schedule JOIN doctors ON schedule.doctor_id = doctors.doc_id WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]} AND pending_change IN (0, 1)"
+            sql = f"SELECT doc_name, date_time, pending_change, sh_id, accepted FROM schedule JOIN doctors ON schedule.doctor_id = doctors.doc_id WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]} AND pending_change IN (0, 1)"
             cur.execute(sql)
             fetch = cur.fetchall()
             pending = fetch[0][2]
+            accepted = fetch[0][4]
             new_time = ''
             if pending:
                 old_sh_id = fetch[0][3]
@@ -391,7 +392,7 @@ def return_client_data(data: SingleToken):
                 fetch_1 = cur.fetchall()
                 new_time = fetch_1[0][0]
             print(fetch)
-            out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'sch_time': fetch[0][1], 'pending': pending, 'new_sch_time': new_time}
+            out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'sch_time': fetch[0][1], 'pending': pending, 'new_sch_time': new_time, 'accepted': accepted}
 
         con.commit()
         cur.close()
@@ -1553,7 +1554,6 @@ def select_slot_client(data: SelectTime):
 def approve_time_therapist(data: ApproveTime):
     token = data.session_token
     sh_id = data.sh_id
-    client_id = data.client_id
 
     con = mariadb.connect(**config)
     cur = con.cursor()
@@ -1563,11 +1563,27 @@ def approve_time_therapist(data: ApproveTime):
     cur.execute(sql_0)
     doc_id = cur.fetchall()[0][0]
 
-    sql_0 = f'UPDATE schedule SET accepted = 1 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client_id = {client_id}'
+    sql_0 = f'UPDATE schedule SET accepted = 1 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
     print(sql_0)
     cur.execute(sql_0)
 
+    if data.ch_id:
+        sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {data.ch_id}'
+        cur.execute(sql)
+        fetch = cur.fetchall()
+        old_sh_id = fetch[0][0]
+        sql = f'UPDATE schedule SET client = NULL WHERE sh_id = {old_sh_id}'
+        cur.execute(sql)
+        sql = f'DELETE FROM change_schedule WHERE ch_id = {data.ch_id}'
+        cur.execute(sql)
+
+    con.commit()
+    cur.close()
+    con.close()
+
     return {'status': True}
+
+
 
 
 @app.post('/login_admin')
@@ -1785,6 +1801,8 @@ def client_change_session_time(data: ReSelectTime):
         con = mariadb.connect(**config)
         cur = con.cursor()
 
+
+
         sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
         cur.execute(sql_0)
         client_id = cur.fetchall()[0][0]
@@ -1801,6 +1819,16 @@ def client_change_session_time(data: ReSelectTime):
 
         sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 2)'
         cur.execute(sql_4)
+
+        if data.ch_id:
+            sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {data.ch_id}'
+            cur.execute(sql)
+            fetch = cur.fetchall()
+            old_sh_id = fetch[0][0]
+            sql = f'UPDATE schedule SET client = NULL WHERE sh_id = {old_sh_id}'
+            cur.execute(sql)
+            sql = f'DELETE FROM change_schedule WHERE ch_id = {data.ch_id}'
+            cur.execute(sql)
 
         con.commit()
         cur.close()
@@ -1842,6 +1870,16 @@ def therapist_change_session_time(data: ReSelectTime):
         sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 1)'
         cur.execute(sql_4)
 
+        if data.ch_id:
+            sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {data.ch_id}'
+            cur.execute(sql)
+            fetch = cur.fetchall()
+            old_sh_id = fetch[0][0]
+            sql = f'UPDATE schedule SET client = NULL WHERE sh_id = {old_sh_id}'
+            cur.execute(sql)
+            sql = f'DELETE FROM change_schedule WHERE ch_id = {data.ch_id}'
+            cur.execute(sql)
+
         con.commit()
         cur.close()
         con.close()
@@ -1879,9 +1917,6 @@ def therapist_change_session_time(data: ReSelectTime):
 def recieve_sessions_for_therapist(data: SingleToken):
     try:
         token = data.session_token
-
-
-
 
         con = mariadb.connect(**config)
         cur = con.cursor()
@@ -1932,3 +1967,4 @@ def recieve_sessions_for_therapist(data: SingleToken):
                'error': f'recieve_sessions_list_for_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'recieve_sessions_list_for_therapist error: {e}, {traceback.extract_stack()}'}
+
