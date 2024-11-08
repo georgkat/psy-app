@@ -1853,14 +1853,27 @@ def client_change_session_time(data: ReSelectTime):
         sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 1)'
         cur.execute(sql_4)
 
-        if data.ch_id:
-            sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {data.ch_id}'
+        ch_id = None
+
+        try:
+            sql_2 = f'SELECT ch_id FROM change_schedule WHERE client_id = {client_id} AND doc_id = {doc_id} AND new_sh_id = {old_sh_id}'
+            cur.execute(sql_2)
+            fetch_2 = cur.fetchall()
+            ch_id = fetch_2[0][0]
+        except:
+            pass
+
+        if not ch_id:
+            ch_id = data.ch_id
+
+        if ch_id:
+            sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {ch_id}'
             cur.execute(sql)
             fetch = cur.fetchall()
             old_sh_id = fetch[0][0]
             sql = f'UPDATE schedule SET client = NULL WHERE sh_id = {old_sh_id}'
             cur.execute(sql)
-            sql = f'DELETE FROM change_schedule WHERE ch_id = {data.ch_id}'
+            sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
             cur.execute(sql)
 
         con.commit()
@@ -1903,8 +1916,11 @@ def therapist_change_session_time(data: ReSelectTime):
         sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 2)'
         cur.execute(sql_4)
 
+        ch_id = None
+
         try:
             sql_2 = f'SELECT ch_id FROM change_schedule WHERE client_id = {client_id} AND doc_id = {doc_id} AND new_sh_id = {old_sh_id}'
+            cur.execute(sql_2)
             fetch_2 = cur.fetchall()
             ch_id = fetch_2[0][0]
         except:
