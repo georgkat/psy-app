@@ -1565,7 +1565,7 @@ def approve_time_therapist(data: ApproveTime):
     doc_id = cur.fetchall()[0][0]
 
     if data.approved:
-        sql_0 = f'UPDATE schedule SET accepted = 1 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
+        sql_0 = f'UPDATE schedule SET accepted = 1, pending = 0 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
         print(sql_0)
         cur.execute(sql_0)
 
