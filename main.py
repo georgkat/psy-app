@@ -1576,16 +1576,31 @@ def approve_time_therapist(data: ApproveTime):
             cur.execute(sql_1)
             fetch_1 = cur.fetchall()
             client_id = fetch_1[0][0]
-            sql_2 = f'UPDATE clients SET first_time = 0 WHERE client_id = {client_id}'
 
-            if data.ch_id:
-                sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {data.ch_id}'
+            ch_id = None
+
+            try:
+                sql_2 = f'SELECT ch_id FROM change_schedule WHERE client_id = {client_id} AND doc_id = {doc_id} AND new_sh_id = {sh_id}'
+                print(sql_2)
+                cur.execute(sql_2)
+                fetch_2 = cur.fetchall()
+                ch_id = fetch_2[0][0]
+                print(f'ch_id = {ch_id}')
+            except:
+                pass
+
+            if not ch_id:
+                ch_id = data.ch_id
+
+            if ch_id:
+                print(ch_id)
+                sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {ch_id}'
                 cur.execute(sql)
                 fetch = cur.fetchall()
                 old_sh_id = fetch[0][0]
                 sql = f'UPDATE schedule SET client = NULL WHERE sh_id = {old_sh_id}'
                 cur.execute(sql)
-                sql = f'DELETE FROM change_schedule WHERE ch_id = {data.ch_id}'
+                sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
                 cur.execute(sql)
 
         con.commit()
@@ -1825,6 +1840,10 @@ def client_change_session_time(data: ReSelectTime):
         cur.execute(sql_1)
         doc_id = cur.fetchall()[0][0]
 
+        # sql_check_accepted = f'SELECT accepted FROM schedule WHERE sh_id = {old_sh_id}'
+        # cur.execute(sql_check_accepted)
+        # accepted = cur.fetchall()[0][0]
+
         sql_2 = f'UPDATE schedule SET pending_change = 1, accepted = 0 WHERE sh_id = {old_sh_id}'
         cur.execute(sql_2)
 
@@ -1997,7 +2016,7 @@ def get_clients_therapist_schedule(data: SingleToken):
         doc_id = fetch[0][1]
 
         if doc_id:
-            sql_1 = f'SELECT sh_id, date_time, client, accepted FROM schedule WHERE client IS NULL OR client = {client_id} AND doctor_id = {doc_id}'
+            sql_1 = f'SELECT sh_id, date_time, client, accepted FROM schedule WHERE client IS NULL OR client = {client_id} AND doctor_id = {doc_id} '
             cur.execute(sql_1)
             fetch = cur.fetchall()
             # print(fetch)
@@ -2009,6 +2028,7 @@ def get_clients_therapist_schedule(data: SingleToken):
                 sh_row['date_time'] = row[1]
                 sh_row['client'] = row[2] if row[2] else None
                 sh_row['accepted'] = row[3] if row[3] else None
+
                 sh_out.append(sh_row)
             return {'status': True,
                     'doctor_id': doc_id,
