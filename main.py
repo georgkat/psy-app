@@ -1916,7 +1916,7 @@ def recieve_sessions_for_therapist(data: SingleToken):
             out_pending['new_sh_id'] = row[4]
             out_pending['old_time'] = row[5]
             out_pending['new_time'] = row[6]
-            # out_pending['accepted'] = row[7]
+            out_pending['ch_id'] = row[7]
             pending_sessions_list.append(out_pending)
 
         con.commit()
