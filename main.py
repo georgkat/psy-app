@@ -1825,13 +1825,13 @@ def client_change_session_time(data: ReSelectTime):
         cur.execute(sql_1)
         doc_id = cur.fetchall()[0][0]
 
-        sql_2 = f'UPDATE schedule SET pending_change = 1 WHERE sh_id = {old_sh_id}'
+        sql_2 = f'UPDATE schedule SET pending_change = 1, accepted = 0 WHERE sh_id = {old_sh_id}'
         cur.execute(sql_2)
 
-        sql_3 = f'UPDATE schedule SET client = {client_id}, pending_change = 2 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
+        sql_3 = f'UPDATE schedule SET client = {client_id}, pending_change = 1 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
         cur.execute(sql_3)
 
-        sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 2)'
+        sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 1)'
         cur.execute(sql_4)
 
         if data.ch_id:
@@ -1875,13 +1875,13 @@ def therapist_change_session_time(data: ReSelectTime):
         cur.execute(sql_1)
         client_id = cur.fetchall()[0][0]
 
-        sql_2 = f'UPDATE schedule SET pending_change = 1 WHERE sh_id = {old_sh_id}'
+        sql_2 = f'UPDATE schedule SET pending_change = 2, accepted = 0 WHERE sh_id = {old_sh_id}'
         cur.execute(sql_2)
 
         sql_3 = f'UPDATE schedule SET client = {client_id}, pending_change = 2 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
         cur.execute(sql_3)
 
-        sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 1)'
+        sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 2)'
         cur.execute(sql_4)
 
         if data.ch_id:
