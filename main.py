@@ -1537,8 +1537,9 @@ def select_slot_client(data: SelectTime):
         date_time = cur.fetchall()[0][0]
     except:
         date_time = None
+
     if date_time:
-        sql_3 = f'UPDATE clients SET has_therapist = {doc_id} WHERE client_id = {client_id} '
+        sql_3 = f'UPDATE clients SET has_therapist = {doc_id} WHERE client_id = {client_id}'
         cur.execute(sql_3)
         con.commit()
     else:
@@ -1565,9 +1566,14 @@ def approve_time_therapist(data: ApproveTime):
     doc_id = cur.fetchall()[0][0]
 
     if data.approved:
-        sql_0 = f'UPDATE schedule SET accepted = 1, pending = 0 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
+        sql_0 = f'UPDATE schedule SET accepted = 1, pending_change = 0 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
         print(sql_0)
         cur.execute(sql_0)
+        sql_1 = f'SELECT client FROM schedule WHERE sh_id = "{sh_id}"'
+        cur.execute(sql_1)
+        fetch_1 = cur.fetchall()
+        client_id = fetch_1[0][0]
+        sql_2 = f'UPDATE clients SET first_time = 0 WHERE client_id = {client_id}'
 
         if data.ch_id:
             sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {data.ch_id}'
