@@ -2058,11 +2058,21 @@ def get_clients_therapist_schedule(data: SingleToken):
                 sh_row['accepted'] = row[3] if row[3] else None
 
                 sh_out.append(sh_row)
+
+                con.commit()
+                cur.close()
+                con.close()
             return {'status': True,
                     'doctor_id': doc_id,
                     'schedule': sh_out}
 
+            con.commit()
+            cur.close()
+            con.close()
         else:
+            con.commit()
+            cur.close()
+            con.close()
             return {'status': False, 'error': 'Client have no therapist'}
     except Exception as e:
         print({'status': False,
@@ -2095,6 +2105,10 @@ def get_user_data(data: GetSomeoneData):
                     'client_id': fetch[0][1],
                     'name': fetch[0][2],
                     'age': fetch[0][3]}
+
+        con.commit()
+        cur.close()
+        con.close()
         return {'status': False}
     except Exception as e:
         print({'status': False,
@@ -2111,7 +2125,7 @@ def cancel_session(data: CancelSession):
         con = mariadb.connect(**config)
         cur = con.cursor()
 
-        sql = f'SELECT user_id, is_therapist FROM tokens WHERE token = "{token}"'
+        sql = f'SELECT user_id, is_therapist FROM tokens JOIN users ON tokens.user_id = users.id WHERE token = "{token}"'
         cur.execute(sql)
         fetch = cur.fetchall()
         is_therapist = fetch[0][1]
@@ -2133,22 +2147,30 @@ def cancel_session(data: CancelSession):
         if is_therapist:
             doc_id = fetch[0][0]
 
-            sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {sh_id} AND doc_id = {doc_id}'
+            sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
+            print(sql)
             cur.execute(sql)
 
             if ch_id:
-                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} AND doc_id = {doc_id}'
+                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} AND doctor_id = {doc_id}'
                 cur.execute(sql)
 
         else:
             client_id = fetch[0][0]
 
             sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {sh_id} AND client_id = {client_id}'
+            print(sql)
             cur.execute(sql)
 
             if ch_id:
                 sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} AND client_id = {client_id}'
                 cur.execute(sql)
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {'status': True}
     except Exception as e:
         print({'status': False,
                'error': f'cancel_session error: {e}, {traceback.extract_stack()}'})
