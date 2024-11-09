@@ -1781,35 +1781,37 @@ def list_clients(data: SingleToken):
     try:
         token = data.session_token
 
-        sql = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
+        sql = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}'"# AND users.is_admin = 1"
 
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
         f = cur.fetchall()
-        con.commit()
-        cur.close()
 
         out = []
         if f:
-            sql = 'SELECT client_id, name, email, registred_date FROM users JOIN doctors ON doc_id = users.id'
-            con = mariadb.connect(**config)
-            cur = con.cursor()
+            sql = 'SELECT client_id, name, NULL, user_age, email, registred_date FROM users JOIN doctors ON doc_id = users.id'
             cur.execute(sql)
             res = cur.fetchall()
-            con.commit()
-            cur.close()
+
             for row in res:
                 out.append({'client_id': row[0],
                             'name': row[1],
-                            'email': row[2],
-                            'registred_date': row[3]})
+                            'user_age': row[3],
+                            'email': row[4],
+                            'registred_date': row[5]})
             print({'status': True,
                     'list': out})
+            con.commit()
+            cur.close()
             return {'status': True,
                     'list': out}
+
+        con.commit()
+        cur.close()
         else:
             return {'status': False}
+
     except Exception as e:
         print({'status': False,
                 'error': f'list_therapist error: {e}, {traceback.extract_stack()}'})
