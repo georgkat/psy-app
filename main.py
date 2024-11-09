@@ -23,6 +23,7 @@ from models.user import (UserCreate,
                          UserMainData,
                          UserRequestData,
                          UserTherapist,
+                         CancelSession,
                          UserTherapistReview,
                          SingleToken,
                          ApproveTime,
@@ -2073,24 +2074,83 @@ def get_clients_therapist_schedule(data: SingleToken):
 
 @app.post('/get_user_data')
 def get_user_data(data: GetSomeoneData):
-    token = data.session_token
+    try:
+        token = data.session_token
 
-    con = mariadb.connect(**config)
-    cur = con.cursor()
+        con = mariadb.connect(**config)
+        cur = con.cursor()
 
-    sql = f'SELECT user_id, is_therapist FROM tokens WHERE token = "{token}"'
-    cur.execute(sql)
+        sql = f'SELECT user_id, is_therapist FROM tokens WHERE token = "{token}"'
+        cur.execute(sql)
 
-    fetch = cur.fetchall()
-    is_therapist = fetch[0][1]
+        fetch = cur.fetchall()
+        is_therapist = fetch[0][1]
 
-    if is_therapist:
-        doc_id = fetch[0][0]
-        sql = f'SELECT client_id, name, age, NULL FROM clients JOIN schedule ON clients.client_id = schedule.client WHERE client = {data.user_id} AND doctor_id = {doc_id} ORDER by sh_id DESC'
+        if is_therapist:
+            doc_id = fetch[0][0]
+            sql = f'SELECT client_id, name, age, NULL FROM clients JOIN schedule ON clients.client_id = schedule.client WHERE client = {data.user_id} AND doctor_id = {doc_id} ORDER by sh_id DESC'
+            cur.execute(sql)
+            fetch = cur.fetchall()
+            return {'status': True,
+                    'client_id': fetch[0][1],
+                    'name': fetch[0][2],
+                    'age': fetch[0][3]}
+        return {'status': False}
+    except Exception as e:
+        print({'status': False,
+               'error': f'get_user_data error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'get_user_data error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/cancel_session')
+def cancel_session(data: CancelSession):
+    try:
+        token = data.session_token
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        sql = f'SELECT user_id, is_therapist FROM tokens WHERE token = "{token}"'
         cur.execute(sql)
         fetch = cur.fetchall()
-        return {'status': True,
-                'client_id': fetch[0][1],
-                'name': fetch[0][2],
-                'age': fetch[0][3]}
-    return {'status': False}
+        is_therapist = fetch[0][1]
+        sh_id = data.sh_id
+
+        ch_id = None
+        try:
+            sql = f'SELECT old_sh_id, ch_id FROM change_schedule WHERE AND new_sh_id = {sh_id}'
+            cur.execute(sql)
+            fetch = cur.fetchall()
+            old_sh_id = fetch[0][0]
+            ch_id = fetch[0][1]
+
+            sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
+            cur.execute(sql)
+        except:
+            pass
+
+        if is_therapist:
+            doc_id = fetch[0][0]
+
+            sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {sh_id} AND doc_id = {doc_id}'
+            cur.execute(sql)
+
+            if ch_id:
+                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} AND doc_id = {doc_id}'
+                cur.execute(sql)
+
+        else:
+            client_id = fetch[0][0]
+
+            sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {sh_id} AND client_id = {client_id}'
+            cur.execute(sql)
+
+            if ch_id:
+                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} AND client_id = {client_id}'
+                cur.execute(sql)
+    except Exception as e:
+        print({'status': False,
+               'error': f'cancel_session error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'cancel_session error: {e}, {traceback.extract_stack()}'}
