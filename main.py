@@ -1790,7 +1790,7 @@ def list_clients(data: SingleToken):
 
         out = []
         if f:
-            sql = 'SELECT client_id, name, NULL, user_age, email, registred_date FROM users JOIN doctors ON doc_id = users.id'
+            sql = 'SELECT client_id, name, NULL, user_age, email, registred_date FROM users JOIN clients ON clients.client_id = users.id'
             cur.execute(sql)
             res = cur.fetchall()
 
