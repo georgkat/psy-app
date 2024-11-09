@@ -2086,5 +2086,11 @@ def get_user_data(data: GetSomeoneData):
 
     if is_therapist:
         doc_id = fetch[0][0]
-
-    sql = f'SELECT name, age, NULL FROM clients JOIN schedule ON clients.client_id = schedule.client WHERE client = {data.user_id} AND doctor_id = {doc_id} ORDER by sh_id DESC'
+        sql = f'SELECT client_id, name, age, NULL FROM clients JOIN schedule ON clients.client_id = schedule.client WHERE client = {data.user_id} AND doctor_id = {doc_id} ORDER by sh_id DESC'
+        cur.execute(sql)
+        fetch = cur.fetchall()
+        return {'status': True,
+                'client_id': fetch[0][1],
+                'name': fetch[0][2],
+                'age': fetch[0][3]}
+    return {'status': False}
