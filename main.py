@@ -1806,11 +1806,10 @@ def list_clients(data: SingleToken):
             cur.close()
             return {'status': True,
                     'list': out}
-
-        con.commit()
-        cur.close()
         else:
             return {'status': False}
+        con.commit()
+        cur.close()
 
     except Exception as e:
         print({'status': False,
