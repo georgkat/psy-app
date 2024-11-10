@@ -2045,7 +2045,7 @@ def recieve_sessions_for_therapist(data: SingleToken):
         return {'status': True,
                 'normal_sessions_list': normal_sessions_list,
                 'pending_sessions_list': pending_sessions_list,
-                'clients_list': client_out}
+                'clients_list': clients_out}
     except Exception as e:
         print({'status': False,
                'error': f'recieve_sessions_list_for_therapist error: {e}, {traceback.extract_stack()}'})
