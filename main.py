@@ -2129,10 +2129,11 @@ def cancel_session(data: CancelSession):
         cur.execute(sql)
         fetch = cur.fetchall()
         is_therapist = fetch[0][1]
-        sh_id = data.sh_id
-
+        if is_therapist:
+            sh_id = data.sh_id
         ch_id = None
         try:
+            sh_id = data.sh_id
             sql = f'SELECT old_sh_id, ch_id FROM change_schedule WHERE AND new_sh_id = {sh_id}'
             cur.execute(sql)
             fetch = cur.fetchall()
@@ -2158,12 +2159,35 @@ def cancel_session(data: CancelSession):
         else:
             client_id = fetch[0][0]
 
-            sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {sh_id} AND client_id = {client_id}'
+            sql = f'SELECT ch_id, old_sh_id, new_sh_id FROM change_schedule WHERE client_id = {client_id}'
             print(sql)
             cur.execute(sql)
+            fetch = cur.fetchall()
+            if fetch:
+                ch_id  = fetch[0]
+                old_sh_id = fetch[1]
+                sh_id = fetch[2]
 
-            if ch_id:
                 sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} AND client_id = {client_id}'
+                print(sql)
+                cur.execute(sql)
+                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {sh_id} AND client_id = {client_id}'
+                print(sql)
+                cur.execute(sql)
+                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} AND client_id = {client_id}'
+                print(sql)
+                cur.execute(sql)
+                sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
+                print(sql)
+                cur.execute(sql)
+            else:
+                sql = f'SELECT sh_id FROM schedule WHERE client_id = {client_id}'
+                print(sql)
+                cur.execute(sql)
+                fetch = cur.fetchall()
+                sh_id = fetch[0][0]
+                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {sh_id} AND client_id = {client_id}'
+                print(sql)
                 cur.execute(sql)
 
         con.commit()
