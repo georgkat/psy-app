@@ -2040,6 +2040,7 @@ def get_clients_therapist_schedule(data: SingleToken):
         sql = f'SELECT user_id, has_therapist FROM tokens JOIN clients ON tokens.user_id = clients.client_id WHERE token = "{token}"'
         cur.execute(sql)
         fetch = cur.fetchall()
+        print(fetch)
         client_id = fetch[0][0]
         doc_id = fetch[0][1]
 
@@ -2059,9 +2060,6 @@ def get_clients_therapist_schedule(data: SingleToken):
 
                 sh_out.append(sh_row)
 
-                con.commit()
-                cur.close()
-                con.close()
             return {'status': True,
                     'doctor_id': doc_id,
                     'schedule': sh_out}
