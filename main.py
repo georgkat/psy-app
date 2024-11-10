@@ -2026,13 +2026,26 @@ def recieve_sessions_for_therapist(data: SingleToken):
 
             pending_sessions_list.append(out_pending)
 
+        sql_2 = f'SELECT client_id, name FROM clients WHERE has_therapist = {doc_id}'
+        cur.execute(sql_2)
+        fetch_2 = cur.fetchall()
+
+        clients_out = []
+        if fetch_2:
+            for row in fetch_2:
+                client_out = {}
+                client_out['client_id'] = row[0]
+                client_out['name'] = row[1]
+                clients_out.append(client_out)
+
         con.commit()
         cur.close()
         con.close()
 
         return {'status': True,
                 'normal_sessions_list': normal_sessions_list,
-                'pending_sessions_list': pending_sessions_list}
+                'pending_sessions_list': pending_sessions_list,
+                'clients_list': client_out}
     except Exception as e:
         print({'status': False,
                'error': f'recieve_sessions_list_for_therapist error: {e}, {traceback.extract_stack()}'})
