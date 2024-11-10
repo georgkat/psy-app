@@ -2090,21 +2090,64 @@ def get_user_data(data: GetSomeoneData):
         con = mariadb.connect(**config)
         cur = con.cursor()
 
-        sql = f'SELECT user_id, is_therapist FROM tokens WHERE token = "{token}"'
+        sql = f'SELECT user_id, is_therapist FROM tokens JOIN users ON tokens.user_id = users.id WHERE token = "{token}"'
         cur.execute(sql)
 
         fetch = cur.fetchall()
         is_therapist = fetch[0][1]
 
         if is_therapist:
+            print('is therapist')
             doc_id = fetch[0][0]
-            sql = f'SELECT client_id, name, age, NULL FROM clients JOIN schedule ON clients.client_id = schedule.client WHERE client = {data.user_id} AND doctor_id = {doc_id} ORDER by sh_id DESC'
+            s = [f's_{i}' for i in range(0, 29)]
+            s = ', '.join(s)
+            sql = f'SELECT clients.client_id, name, user_age, NULL, schedule.pending_change, {s} FROM clients JOIN schedule ON clients.client_id = schedule.client JOIN client_symptoms ON clients.client_id = client_symptoms.client_id WHERE clients.client_id = {data.user_id} AND schedule.doctor_id = {doc_id}'
+            print(sql)
             cur.execute(sql)
             fetch = cur.fetchall()
+            s = fetch[0][6:]
+            s_out = []
+            for idx, i in enumerate(s):
+                if i != 0:
+                    s_out.append(idx)
+
+            pending = fetch[0][4]
+            if pending:
+                sql = f'SELECT ch_id, old_sh_id, old_sh.date_time, new_sh_id, new_sh.date_time, who_asked FROM change_schedule JOIN schedule AS old_sh ON change_schedule.old_sh_id = old_sh.sh_id JOIN schedule AS new_sh ON change_schedule.new_sh_id = new_sh.sh_id WHERE change_schedule.client_id = {data.user_id} AND change_schedule.doc_id = {doc_id}'
+                print(sql)
+                cur.execute(sql)
+                fetch_pending = cur.fetchall()
+                sch_data = {}
+                sch_data['pending'] = True
+                sch_data['ch_id'] = fetch_pending[0][0]
+                sch_data['old_sh_id'] = fetch_pending[0][1]
+                sch_data['old_sh_date_time'] = fetch_pending[0][2]
+                sch_data['new_sh_id'] = fetch_pending[0][3]
+                sch_data['new_sh_date_time'] = fetch_pending[0][4]
+                sch_data['who_asked'] = fetch_pending[0][5]
+                sch_data['accepted'] = 0
+            else:
+                sql = f'SELECT sh_id, date_time, accepted FROM schedule WHERE client = {data.user_id} AND doctor_id = {doc_id}'
+                print(sql)
+                cur.execute(sql)
+                fetch_normal = cur.fetchall()
+                sch_data = {}
+                sch_data['pending'] = False
+                sch_data['ch_id'] = None
+                sch_data['old_sh_id'] = fetch_normal[0][0]
+                sch_data['old_sh_date_time'] = fetch_normal[0][1]
+                sch_data['new_sh_id'] = None
+                sch_data['new_sh_date_time'] = None
+                sch_data['who_asked'] = None
+                sch_data['accepted'] = fetch_normal[0][2]
+
             return {'status': True,
-                    'client_id': fetch[0][1],
-                    'name': fetch[0][2],
-                    'age': fetch[0][3]}
+                    'client_id': fetch[0][0],
+                    'name': fetch[0][1],
+                    'age': fetch[0][2],
+                    'sessions_count': 0,
+                    'sch_data': sch_data,
+                    'client_symptoms': s_out}
 
         con.commit()
         cur.close()

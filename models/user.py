@@ -264,7 +264,7 @@ class ReSelectTime(CoreModel):
 
 class CancelSession(CoreModel):
     session_token: str
-    sh_id: Optional[int]
+    sh_id: Optional[int] = None
 
 
 class CancelTherapy(CoreModel):
