@@ -2126,46 +2126,74 @@ def get_user_data(data: GetSomeoneData):
             print(sql)
             cur.execute(sql)
             fetch = cur.fetchall()
-            s = fetch[0][6:]
-            s_out = []
-            for idx, i in enumerate(s):
-                if i != 0:
-                    s_out.append(idx)
+            if fetch:
+                client_id = fetch[0][0]
+                client_name = fetch[0][1]
+                client_age = fetch[0][2]
+                client_sessions_count = fetch[0][3]
+                s = fetch[0][6:]
+                s_out = []
+                for idx, i in enumerate(s):
+                    if i != 0:
+                        s_out.append(idx)
 
-            pending = fetch[0][4]
-            if pending:
-                sql = f'SELECT ch_id, old_sh_id, old_sh.date_time, new_sh_id, new_sh.date_time, who_asked FROM change_schedule JOIN schedule AS old_sh ON change_schedule.old_sh_id = old_sh.sh_id JOIN schedule AS new_sh ON change_schedule.new_sh_id = new_sh.sh_id WHERE change_schedule.client_id = {data.user_id} AND change_schedule.doc_id = {doc_id}'
-                print(sql)
-                cur.execute(sql)
-                fetch_pending = cur.fetchall()
-                sch_data = {}
-                sch_data['pending'] = True
-                sch_data['ch_id'] = fetch_pending[0][0]
-                sch_data['old_sh_id'] = fetch_pending[0][1]
-                sch_data['old_sh_date_time'] = fetch_pending[0][2]
-                sch_data['new_sh_id'] = fetch_pending[0][3]
-                sch_data['new_sh_date_time'] = fetch_pending[0][4]
-                sch_data['who_asked'] = fetch_pending[0][5]
-                sch_data['accepted'] = 0
+                pending = fetch[0][4]
+                if pending:
+                    sql = f'SELECT ch_id, old_sh_id, old_sh.date_time, new_sh_id, new_sh.date_time, who_asked FROM change_schedule JOIN schedule AS old_sh ON change_schedule.old_sh_id = old_sh.sh_id JOIN schedule AS new_sh ON change_schedule.new_sh_id = new_sh.sh_id WHERE change_schedule.client_id = {data.user_id} AND change_schedule.doc_id = {doc_id}'
+                    print(sql)
+                    cur.execute(sql)
+                    fetch_pending = cur.fetchall()
+                    sch_data = {}
+                    sch_data['pending'] = True
+                    sch_data['ch_id'] = fetch_pending[0][0]
+                    sch_data['old_sh_id'] = fetch_pending[0][1]
+                    sch_data['old_sh_date_time'] = fetch_pending[0][2]
+                    sch_data['new_sh_id'] = fetch_pending[0][3]
+                    sch_data['new_sh_date_time'] = fetch_pending[0][4]
+                    sch_data['who_asked'] = fetch_pending[0][5]
+                    sch_data['accepted'] = 0
+                else:
+                    sql = f'SELECT sh_id, date_time, accepted FROM schedule WHERE client = {data.user_id} AND doctor_id = {doc_id}'
+                    print(sql)
+                    cur.execute(sql)
+                    fetch_normal = cur.fetchall()
+                    sch_data = {}
+                    sch_data['pending'] = False
+                    sch_data['ch_id'] = None
+                    sch_data['old_sh_id'] = fetch_normal[0][0]
+                    sch_data['old_sh_date_time'] = fetch_normal[0][1]
+                    sch_data['new_sh_id'] = None
+                    sch_data['new_sh_date_time'] = None
+                    sch_data['who_asked'] = None
+                    sch_data['accepted'] = fetch_normal[0][2]
             else:
-                sql = f'SELECT sh_id, date_time, accepted FROM schedule WHERE client = {data.user_id} AND doctor_id = {doc_id}'
+                s = [f's_{i}' for i in range(0, 29)]
+                s = ', '.join(s)
+
+                sql = f'SELECT name, user_age, NULL, {s} from clients JOIN client_symptoms ON clients.client_id = client_symptoms.client_id WHERE clients.client_id = {data.user_id}'
                 print(sql)
                 cur.execute(sql)
-                fetch_normal = cur.fetchall()
-                sch_data = {}
-                sch_data['pending'] = False
-                sch_data['ch_id'] = None
-                sch_data['old_sh_id'] = fetch_normal[0][0]
-                sch_data['old_sh_date_time'] = fetch_normal[0][1]
-                sch_data['new_sh_id'] = None
-                sch_data['new_sh_date_time'] = None
-                sch_data['who_asked'] = None
-                sch_data['accepted'] = fetch_normal[0][2]
+                fetch_others = cur.fetchall()
+
+                s = fetch_others[0][3:]
+
+                s_out = []
+                for idx, i in enumerate(s):
+                    if i != 0:
+                        s_out.append(idx)
+
+                client_id = data.user_id
+                client_name = fetch_others[0][0]
+                client_age = fetch_others[0][1]
+                user_age = 0
+                sch_data = []
+
+
 
             return {'status': True,
-                    'client_id': fetch[0][0],
-                    'name': fetch[0][1],
-                    'age': fetch[0][2],
+                    'client_id': client_id,
+                    'name': client_name,
+                    'age': client_age,
                     'sessions_count': 0,
                     'sch_data': sch_data,
                     'client_symptoms': s_out}
