@@ -1554,9 +1554,10 @@ def select_slot_client(data: SelectTime):
     if date_time:
         sql_3 = f'UPDATE clients SET has_therapist = {doc_id} WHERE client_id = {client_id}'
         cur.execute(sql_3)
-        con.commit()
     else:
         return {"status": False}
+
+    con.commit()
     cur.close()
     con.close()
 
