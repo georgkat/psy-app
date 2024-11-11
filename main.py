@@ -1564,6 +1564,10 @@ def select_slot_client(data: SelectTime):
     return {"status": True,
             "time": date_time}
 
+    con.commit()
+    cur.close()
+    con.close()
+
     return {'status': True}
 
 @app.post('/approve_time_therapist')
