@@ -1629,6 +1629,82 @@ def approve_time_therapist(data: ApproveTime):
         return {'status': False, 'error': f'approve_time_therapist error: {e}, {traceback.extract_stack()}'}
 
 
+@app.post('/approve_time_client')
+def approve_time_client(data: ApproveTime):
+    try:
+        token = data.session_token
+        sh_id = data.sh_id
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        print(sql_0)
+        cur.execute(sql_0)
+        client_id = cur.fetchall()[0][0]
+
+        if data.approved:
+            sql = f'SELECT ch_id, new_sh_id FROM change_schedule WHERE old_sh_id = {sh_id} AND who_asked = 2'
+            print(sql)
+            cur.execute(sql)
+            fetch = cur.fetchall()
+
+            ch_id = None
+            if fetch:
+                ch_id = fetch[0][0]
+                sh_id = fetch[0][1]
+
+            sql_0 = f'UPDATE schedule SET accepted = 1, pending_change = 0 WHERE sh_id = {sh_id} AND client = {client_id} AND pending_change = 2'
+            print(sql_0)
+            cur.execute(sql_0)
+
+            sql_check = f'SELECT accepted FROM schedule WHERE pending_change = 0 AND sh_id = {sh_id} AND client = {client_id}'
+            print(sql_check)
+            cur.execute(sql_check)
+            fetch_check = cur.fetchall()
+            print('!!!')
+            if not fetch_check:
+                return {'status': False, 'error': 'wrong input data, cant find data in DB'}
+
+            sql_1 = f'SELECT doctor_id FROM schedule WHERE sh_id = "{sh_id}"'
+            cur.execute(sql_1)
+            fetch_1 = cur.fetchall()
+            doc_id = fetch_1[0][0]
+
+            try:
+                sql_2 = f'SELECT ch_id FROM change_schedule WHERE client_id = {client_id} AND doc_id = {doc_id} AND new_sh_id = {sh_id}'
+                print(sql_2)
+                cur.execute(sql_2)
+                fetch_2 = cur.fetchall()
+                ch_id = fetch_2[0][0]
+                print(f'ch_id = {ch_id}')
+            except:
+                pass
+
+            if not ch_id:
+                ch_id = data.ch_id
+
+            if ch_id:
+                print(ch_id)
+                sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {ch_id}'
+                cur.execute(sql)
+                fetch = cur.fetchall()
+                old_sh_id = fetch[0][0]
+                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} AND pending_change = 2'
+                cur.execute(sql)
+                sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id} AND who_asked = 2'
+                cur.execute(sql)
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {'status': True}
+    except Exception as e:
+        print({'status': False, 'error': f'approve_time_client error: {e}, {traceback.extract_stack()}'})
+        return {'status': False, 'error': f'approve_time_client error: {e}, {traceback.extract_stack()}'}
+
+
 
 
 @app.post('/login_admin')
