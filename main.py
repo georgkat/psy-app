@@ -2392,7 +2392,7 @@ def admin_get_client(data: GetSomeoneData):
         cur = con.cursor()
 
         # NULL iS PHOTO
-        sql = f'SELECT client_id, name, user_phone, user_age, NULL, has_therapist FROM clients JOIN users ON clients.client_id = users.id WHERE clients.client_id = {data.user_id}'
+        sql = f'SELECT client_id, name, user_phone, user_age, NULL, has_therapist, email FROM clients JOIN users ON clients.client_id = users.id WHERE clients.client_id = {data.user_id}'
         cur.execute(sql)
         fetch = cur.fetchall()
 
@@ -2401,6 +2401,7 @@ def admin_get_client(data: GetSomeoneData):
         user_age = fetch[0][3]
         user_photo = None
         doc_id = fetch[0][5]
+        user_email = fetch[0][6]
 
         user_card = None
         user_cashflow = None
@@ -2462,6 +2463,16 @@ def admin_get_client(data: GetSomeoneData):
                     'user_card': None,
                     'user_cashflow': None,
                     'sch_data': sch_data}
+        else:
+            return {'status': True,
+                    'client_id': data.user_id,
+                    'name': name,
+                    'user_phone': user_phone,
+                    'user_age': user_age,
+                    'user_photo': None,
+                    'user_card': None,
+                    'user_cashflow': None,
+                    'sch_data': None}
 
         con.commit()
         cur.close()
