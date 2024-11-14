@@ -2473,3 +2473,191 @@ def admin_get_client(data: GetSomeoneData):
         return {'status': False,
                 'error': f'admin_get_client error: {e}, {traceback.extract_stack()}'}
 
+
+@app.post('/admin_get_therapist')
+def admin_get_therapist(data: GetSomeoneData):
+    try:
+        token = data.session_token
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        # NULL iS PHOTO
+        l = ', '.join([f'l_{i}' for i in range(0, 3)])
+        s = ', '.join([f's_{i}' for i in range(0, 29)])
+        e = ', '.join([f'e_{i}' for i in range(0, 5)])
+        m = ', '.join([f'm_{i}' for i in range(0, 17)])
+        sql = (f'SELECT doctors.doc_id, doc_name, doc_gender, doc_phone, doc_date_of_birth, doc_practice_start, '
+               f'doc_additional_info, doc_client_age, doc_lgbtq, doc_therapy_type, email, {l}, {s}, {e}, {m} '
+               f'FROM doctors JOIN languages ON doctors.doc_id = languages.doc_id JOIN symptoms ON doctors.doc_id = symptoms.doc_id JOIN educations ON doctors.doc_id = educations.doc_id JOIN methods ON doctors.doc_id = methods.doc_id JOIN users ON doctors.doc_id = users.id WHERE doctors.doc_id = {data.user_id}')
+        cur.execute(sql)
+        fetch = cur.fetchall()
+        fetch_cols = cur.description
+
+        di = {}
+
+        for i, item in enumerate(fetch[0]):
+            di[fetch_cols[i][0]] = item
+
+        print(di)
+
+        sql_edu = f'SELECT year, university, faculty, degree FROM educations_main WHERE doc_id = {data.user_id}'
+        cur.execute(sql_edu)
+        fetch_edu = cur.fetchall()
+
+        doc_name = fetch[0][1]
+        doc_gender = fetch[0][2]
+        doc_phone = fetch[0][3]
+        doc_age = fetch[0][4]
+        doc_practice_start = fetch[0][5]
+        doc_additional_info = fetch[0][6]
+        doc_client_age = fetch[0][7]
+        doc_lgbtq = fetch[0][8]
+        doc_therapy_type = fetch[0][9]
+        doc_email = fetch[0][10]
+
+        doc_photo = None
+        doc_grade = None
+        doc_card = None
+        doc_cashflow = None
+        doc_sessions = None
+
+        l = [f'l_{i}' for i in range(0, 3)]
+        s = [f's_{i}' for i in range(0, 29)]
+        e = [f'e_{i}' for i in range(0, 5)]
+        m = [f'm_{i}' for i in range(0, 17)]
+
+        doc_languages = []
+        doc_symptoms = []
+        doc_additional_educations = []
+        doc_methods = []
+        for key in di.keys():
+            if key in l:
+                if di[key] == 1:
+                    doc_languages.append(l.index(key))
+            elif key in s:
+                if di[key] == 1:
+                    doc_symptoms.append(s.index(key))
+            elif key in e:
+                if di[key] == 1:
+                    doc_additional_educations.append(e.index(key))
+            elif key in m:
+                if di[key] == 1:
+                    doc_methods.append(m.index(key))
+
+        doc_educations = []
+        for row in fetch_edu:
+            main_edu = {}
+            main_edu['year'] = row[0]
+            main_edu['university'] = row[1]
+            main_edu['faculty'] = row[2]
+            main_edu['degree'] = row[3]
+            doc_educations.append(main_edu)
+
+        out = {}
+        out['doc_id'] = data.user_id
+        out['doc_name'] = doc_name
+        out['doc_gender'] = doc_gender
+        out['doc_phone'] = doc_phone
+        out['doc_date_of_birth'] = doc_age
+        out['doc_email'] = doc_email
+        out['doc_photo'] = doc_photo
+        out['doc_card'] = doc_card
+        out['doc_sessions_count'] = doc_sessions
+        out['doc_session_cost'] = doc_grade
+        out['doc_payments'] = doc_cashflow
+        out['doc_language'] = doc_languages
+        out['doc_practice_start'] = doc_practice_start
+        out['doc_additional_info'] = doc_additional_info
+        out['doc_method'] = doc_methods
+        out['doc_client_age'] = doc_client_age
+        out['doc_lgbtq'] = doc_lgbtq
+        out['doc_therapy_type'] = doc_therapy_type
+        out['doc_symptoms'] = doc_symptoms
+        out['doc_edu'] = doc_educations
+
+        print(out)
+
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        out['status'] = True
+
+        return out
+
+    except Exception as e:
+        print({'status': False,
+               'error': f'admin_get_therapist error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'admin_get_therapist error: {e}, {traceback.extract_stack()}'}
+
+        # Session_data
+
+    #     sql = f'SELECT sh_id, date_time, pending_change FROM schedule WHERE client = {data.user_id}'
+    #     cur.execute(sql)
+    #     fetch = cur.fetchall()
+    #     if fetch:
+    #         sh_id = fetch[0][0]
+    #         date_time = fetch[0][1]
+    #         pending_change = fetch[0][2]
+    #
+    #         if pending_change:
+    #             sql = f'SELECT ch_id, old_sh_id, old_sh.date_time, new_sh_id, new_sh.date_time, who_asked FROM change_schedule JOIN schedule AS old_sh ON change_schedule.old_sh_id = old_sh.sh_id JOIN schedule AS new_sh ON change_schedule.new_sh_id = new_sh.sh_id WHERE change_schedule.client_id = {data.user_id}'
+    #             print(sql)
+    #             cur.execute(sql)
+    #             fetch_pending = cur.fetchall()
+    #             sch_data = {}
+    #             sch_data['pending'] = True
+    #             sch_data['ch_id'] = fetch_pending[0][0]
+    #             sch_data['old_sh_id'] = fetch_pending[0][1]
+    #             sch_data['old_sh_date_time'] = fetch_pending[0][2]
+    #             sch_data['new_sh_id'] = fetch_pending[0][3]
+    #             sch_data['new_sh_date_time'] = fetch_pending[0][4]
+    #             sch_data['who_asked'] = fetch_pending[0][5]
+    #             sch_data['accepted'] = 0
+    #         else:
+    #             sql = f'SELECT sh_id, date_time, accepted FROM schedule WHERE client = {data.user_id}'
+    #             print(sql)
+    #             cur.execute(sql)
+    #             fetch_normal = cur.fetchall()
+    #             sch_data = {}
+    #             sch_data['pending'] = False
+    #             sch_data['ch_id'] = None
+    #             sch_data['old_sh_id'] = fetch_normal[0][0]
+    #             sch_data['old_sh_date_time'] = fetch_normal[0][1]
+    #             sch_data['new_sh_id'] = None
+    #             sch_data['new_sh_date_time'] = None
+    #             sch_data['who_asked'] = None
+    #             sch_data['accepted'] = fetch_normal[0][2]
+    #
+    #         sql = f'SELECT doc_name FROM doctors WHERE doc_id = {doc_id}'
+    #         print(sql)
+    #         cur.execute(sql)
+    #
+    #         con.commit()
+    #         cur.close()
+    #         con.close()
+    #
+    #
+    #         return {'status': True,
+    #                 'client_id': data.user_id,
+    #                 'name': name,
+    #                 'user_phone': user_phone,
+    #                 'user_age': user_age,
+    #                 'user_photo': None,
+    #                 'user_card': None,
+    #                 'user_cashflow': None,
+    #                 'sch_data': sch_data}
+    #
+    #     con.commit()
+    #     cur.close()
+    #     con.close()
+    #     return {'status': False}
+    # except Exception as e:
+    #     print({'status': False,
+    #            'error': f'admin_get_therapist error: {e}, {traceback.extract_stack()}'})
+    #     return {'status': False,
+    #             'error': f'admin_get_therapist error: {e}, {traceback.extract_stack()}'}
+    #
