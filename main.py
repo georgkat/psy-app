@@ -2381,3 +2381,95 @@ def cancel_session(data: CancelSession):
                'error': f'cancel_session error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'cancel_session error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/admin_get_client')
+def admin_get_client(data: GetSomeoneData):
+    try:
+        token = data.session_token
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        # NULL iS PHOTO
+        sql = f'SELECT client_id, name, user_phone, user_age, NULL, has_therapist FROM clients JOIN users ON clients.client_id = users.id WHERE clients.client_id = {data.user_id}'
+        cur.execute(sql)
+        fetch = cur.fetchall()
+
+        name = fetch[0][1]
+        user_phone = fetch[0][2]
+        user_age = fetch[0][3]
+        user_photo = None
+        doc_id = fetch[0][5]
+
+        user_card = None
+        user_cashflow = None
+
+        # Session_data
+
+        sql = f'SELECT sh_id, date_time, pending_change FROM schedule WHERE client = {data.user_id}'
+        cur.execute(sql)
+        fetch = cur.fetchall()
+        if fetch:
+            sh_id = fetch[0][0]
+            date_time = fetch[0][1]
+            pending_change = fetch[0][2]
+
+            if pending_change:
+                sql = f'SELECT ch_id, old_sh_id, old_sh.date_time, new_sh_id, new_sh.date_time, who_asked FROM change_schedule JOIN schedule AS old_sh ON change_schedule.old_sh_id = old_sh.sh_id JOIN schedule AS new_sh ON change_schedule.new_sh_id = new_sh.sh_id WHERE change_schedule.client_id = {data.user_id}'
+                print(sql)
+                cur.execute(sql)
+                fetch_pending = cur.fetchall()
+                sch_data = {}
+                sch_data['pending'] = True
+                sch_data['ch_id'] = fetch_pending[0][0]
+                sch_data['old_sh_id'] = fetch_pending[0][1]
+                sch_data['old_sh_date_time'] = fetch_pending[0][2]
+                sch_data['new_sh_id'] = fetch_pending[0][3]
+                sch_data['new_sh_date_time'] = fetch_pending[0][4]
+                sch_data['who_asked'] = fetch_pending[0][5]
+                sch_data['accepted'] = 0
+            else:
+                sql = f'SELECT sh_id, date_time, accepted FROM schedule WHERE client = {data.user_id}'
+                print(sql)
+                cur.execute(sql)
+                fetch_normal = cur.fetchall()
+                sch_data = {}
+                sch_data['pending'] = False
+                sch_data['ch_id'] = None
+                sch_data['old_sh_id'] = fetch_normal[0][0]
+                sch_data['old_sh_date_time'] = fetch_normal[0][1]
+                sch_data['new_sh_id'] = None
+                sch_data['new_sh_date_time'] = None
+                sch_data['who_asked'] = None
+                sch_data['accepted'] = fetch_normal[0][2]
+
+            sql = f'SELECT doc_name FROM doctors WHERE doc_id = {doc_id}'
+            print(sql)
+            cur.execute(sql)
+
+            con.commit()
+            cur.close()
+            con.close()
+
+
+            return {'status': True,
+                    'client_id': data.user_id,
+                    'name': name,
+                    'user_phone': user_phone,
+                    'user_age': user_age,
+                    'user_photo': None,
+                    'user_card': None,
+                    'user_cashflow': None,
+                    'sch_data': sch_data}
+
+        con.commit()
+        cur.close()
+        con.close()
+        return {'status': False}
+    except Exception as e:
+        print({'status': False,
+               'error': f'admin_get_client error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'admin_get_client error: {e}, {traceback.extract_stack()}'}
+
