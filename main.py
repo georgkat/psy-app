@@ -364,18 +364,19 @@ def return_client_data(data: SingleToken):
         if pre_out:
             for i in range(0, 14):
                 out[desc[i][0]] = fetch_0[0][i]
+            print('out')
             print(out)
-            try:
-                if fetch_0[0][13]:
-                    sql_photo = f'SELECT * FROM images WHERE img_id = {int(fetch_0[0][13])}'
-                    cur.execute(sql_photo)
-                    fetch_photo = cur.fetchall()
-                    out["user_photo"] = str(fetch_photo[0][3]) + ';' + str(fetch_photo[0][1].decode())
-                    print(out["user_photo"])
-                else:
-                    out['user_photo'] = ""
-            except:
+
+            if fetch_0[0][13]:
+                sql_photo = f'SELECT * FROM images WHERE img_id = {int(fetch_0[0][13])}'
+                cur.execute(sql_photo)
+                fetch_photo = cur.fetchall()
+                out["user_photo"] = str(fetch_photo[0][3]) + ';' + str(fetch_photo[0][1])
+                print(out["user_photo"])
+            else:
                 out['user_photo'] = ""
+            #except:
+            #    out['user_photo'] = ""
             print(out)
 
         else:
