@@ -324,16 +324,16 @@ def return_client_data(data: SingleToken):
 
         con = mariadb.connect(**config)
         cur = con.cursor()
+
+
+        # try:
+        #     ch_sql = '''ALTER TABLE `testdb`.`images` CHANGE COLUMN `data` `data` TEXT NULL DEFAULT NULL ;'''
+        #     cur.execute(ch_sql)
+        #     con.commit()
+        # except:
+        #     pass
+
         cur.execute(sql_1)
-
-        try:
-            ch_sql = '''ALTER TABLE `testdb`.`images` CHANGE COLUMN `data` `data` TEXT NULL DEFAULT NULL ;'''
-            cur.execute(ch_sql)
-            con.commit()
-        except:
-            pass
-
-
         desc = cur.description
         fetch_0 = cur.fetchall()
         print('fetch_0')
