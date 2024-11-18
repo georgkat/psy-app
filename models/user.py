@@ -101,6 +101,7 @@ class UserMainData(CoreModel):
     email: str
     user_languages: list
     user_timezone: int
+    user_photo: Optional[str] = None  # TODO CHANGE
 
 
 class UserRequestData(CoreModel):
