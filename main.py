@@ -297,7 +297,7 @@ def return_client_data(data: SingleToken):
     try:
         token = data.session_token
 
-        data_cols = 'clients.client_id, name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo'
+        data_cols = 'clients.client_id, clients.name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo, images.data, images.name, images.type'
         language_list = [f'l_{i}' for i in range(0,3)]
         language_cols = ', '.join(language_list)
         symptoms_list = [f's_{i}' for i in range(0,28)]
@@ -306,9 +306,10 @@ def return_client_data(data: SingleToken):
         sql_1 = (f'SELECT {data_cols}, {language_cols}, {symptoms_cols} '
                  f'FROM clients '
                  f'JOIN tokens ON clients.client_id = tokens.user_id '
-                 f'JOIN client_languages ON clients.client_id = client_languages.client_id '
-                 f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
-                 f'JOIN users ON clients.client_id = users.id '
+                 f'LEFT JOIN client_languages ON clients.client_id = client_languages.client_id '
+                 f'LEFT JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
+                 f'LEFT JOIN users ON clients.client_id = users.id '
+                 f'LEFT JOIN images ON images.img_id = clients.user_photo '
                  f'WHERE token = "{token}";')
 
         print(sql_1)
@@ -324,6 +325,15 @@ def return_client_data(data: SingleToken):
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql_1)
+
+        try:
+            ch_sql = '''ALTER TABLE `testdb`.`images` CHANGE COLUMN `data` `data` TEXT NULL DEFAULT NULL ;'''
+            cur.execute(ch_sql)
+            con.commit()
+        except:
+            pass
+
+
         desc = cur.description
         fetch_0 = cur.fetchall()
         print('fetch_0')
@@ -355,6 +365,8 @@ def return_client_data(data: SingleToken):
         if pre_out:
             for i in range(0, 14):
                 out[desc[i][0]] = fetch_0[0][i]
+            out["user_photo"] = str(fetch_0[0][14]) + ';' + str(fetch_0[0][16])
+
         else:
             out['client_id'] = fetch_0[0][0]
             out['name'] = fetch_0[0][1]
@@ -371,7 +383,7 @@ def return_client_data(data: SingleToken):
             out['user_timezone'] = None
             out['user_photo'] = None
 
-        out['user_photo'] = ""
+        # out['user_photo'] = ""
         out['user_symptoms'] = user_symptoms
         out['user_languages'] = user_languages
 
@@ -471,6 +483,16 @@ def update_user(data: UserClient):
         sql_3 = f"INSERT INTO client_symptoms (client_id, {', '.join(sql_3_cols)}) VALUES ({client_id}, {', '.join(sql_3_vals)}) ON DUPLICATE KEY UPDATE {update_data}"
         cur.execute(sql_3)
 
+        if data.user_photo:
+            photo_splitteed = data.user_photo.split(';')
+            photo_type = photo_splitteed[0]
+            base_64 = photo_splitteed[0]
+            sql_4 = f"INSERT INTO images (data, name, type) VALUES ('{base_64}', 'avatar', '{photo_type}') RETURNING img_id"
+            cur.execute(sql_4)
+            photo_id = cur.fetchall()[0][0]
+
+            sql_5 = f'''UPDATE clients SET user_photo = {photo_id} WHERE client_id = {client_id}'''
+            cur.execute(sql_5)
         con.commit()
         cur.close()
         con.close()
