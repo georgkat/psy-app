@@ -364,9 +364,10 @@ def return_client_data(data: SingleToken):
         if pre_out:
             for i in range(0, 14):
                 out[desc[i][0]] = fetch_0[0][i]
+            print(out)
             try:
                 if fetch_0[0][13]:
-                    sql_photo = f'SELECT * FROM images WHERE img_id = {fetch_0[0][13]}'
+                    sql_photo = f'SELECT * FROM images WHERE img_id = {int(fetch_0[0][13])}'
                     cur.execute(sql_photo)
                     fetch_photo = cur.fetchall()
                     out["user_photo"] = str(fetch_photo[0][3]) + ';' + str(fetch_photo[0][1].decode())
@@ -598,8 +599,10 @@ def update_user_main(data: UserMainData):
         photo_type = photo_splitteed[0]
         base_64 = photo_splitteed[1]
         sql_4 = f"INSERT INTO images (data, name, type) VALUES ('{base_64}', 'avatar', '{photo_type}') RETURNING img_id"
+        print(sql_4)
         cur.execute(sql_4)
         photo_id = cur.fetchall()[0][0]
+        print(photo_id)
 
         sql_5 = f'''UPDATE clients SET user_photo = {photo_id} WHERE client_id = {client_id}'''
         cur.execute(sql_5)
