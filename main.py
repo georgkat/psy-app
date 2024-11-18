@@ -365,7 +365,7 @@ def return_client_data(data: SingleToken):
         if pre_out:
             for i in range(0, 14):
                 out[desc[i][0]] = fetch_0[0][i]
-            out["user_photo"] = str(fetch_0[0][16])  + ';' + str(fetch_0[0][14])[2:]
+            out["user_photo"] = str(fetch_0[0][16])  + ';' + str(fetch_0[0][14].decode())
             print(out)
 
         else:
