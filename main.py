@@ -365,7 +365,8 @@ def return_client_data(data: SingleToken):
         if pre_out:
             for i in range(0, 14):
                 out[desc[i][0]] = fetch_0[0][i]
-            out["user_photo"] = str(fetch_0[0][14]) + ';' + str(fetch_0[0][16])
+            out["user_photo"] = str(fetch_0[0][16])  + ';' + str(fetch_0[0][14])[2:]
+            print(out)
 
         else:
             out['client_id'] = fetch_0[0][0]
@@ -433,8 +434,8 @@ def return_client_data(data: SingleToken):
 
 @app.post("/update_client_data")
 def update_user(data: UserClient):
-    try:
-    # if True:
+    # try:
+    if True:
         token = data.session_token
 
         con = mariadb.connect(**config)
@@ -449,7 +450,7 @@ def update_user(data: UserClient):
 
         sql_1_cols = 'user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, user_photo, user_timezone'
         sql_1_cols_list = sql_1_cols.split(', ')
-        sql_1_vals = f'"{data.user_age}", {data.user_experience}, {data.user_type}, {data.user_therapist_gender}, "{data.user_time}", "{data.user_specific_date_time}", {data.user_price}, "{data.user_phone}", "{data.user_photo}", {data.user_timezone}'
+        sql_1_vals = f'"{data.user_age}", {data.user_experience}, {data.user_type}, {data.user_therapist_gender}, "{data.user_time}", "{data.user_specific_date_time}", {data.user_price}, "{data.user_phone}", NULL, {data.user_timezone}'
         sql_1_vals_list = sql_1_vals.split(', ')
         update_data = []
         for i in range(0, len(sql_1_cols_list)):
@@ -486,7 +487,7 @@ def update_user(data: UserClient):
         if data.user_photo:
             photo_splitteed = data.user_photo.split(';')
             photo_type = photo_splitteed[0]
-            base_64 = photo_splitteed[0]
+            base_64 = photo_splitteed[1]
             sql_4 = f"INSERT INTO images (data, name, type) VALUES ('{base_64}', 'avatar', '{photo_type}') RETURNING img_id"
             cur.execute(sql_4)
             photo_id = cur.fetchall()[0][0]
@@ -498,11 +499,11 @@ def update_user(data: UserClient):
         con.close()
         return {'status': True}
 
-    except Exception as e:
-        print({'status': False,
-                'error': f'update_client error: {e}, {traceback.extract_stack()}'})
-        return {'status': False,
-                'error': f'update_client error: {e}, {traceback.extract_stack()}'}
+    # except Exception as e:
+    #     print({'status': False,
+    #             'error': f'update_client error: {e}, {traceback.extract_stack()}'})
+    #     return {'status': False,
+    #             'error': f'update_client error: {e}, {traceback.extract_stack()}'}
 
 
 @app.post("/user_therapist_cancel_review")
