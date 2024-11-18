@@ -297,7 +297,7 @@ def return_client_data(data: SingleToken):
     try:
         token = data.session_token
 
-        data_cols = 'clients.client_id, clients.name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo, images.data, images.name, images.type'
+        data_cols = 'clients.client_id, clients.name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo'
         language_list = [f'l_{i}' for i in range(0,3)]
         language_cols = ', '.join(language_list)
         symptoms_list = [f's_{i}' for i in range(0,28)]
@@ -309,7 +309,6 @@ def return_client_data(data: SingleToken):
                  f'LEFT JOIN client_languages ON clients.client_id = client_languages.client_id '
                  f'LEFT JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
                  f'LEFT JOIN users ON clients.client_id = users.id '
-                 f'LEFT JOIN images ON images.img_id = clients.user_photo '
                  f'WHERE token = "{token}";')
 
         print(sql_1)
@@ -365,10 +364,14 @@ def return_client_data(data: SingleToken):
         if pre_out:
             for i in range(0, 14):
                 out[desc[i][0]] = fetch_0[0][i]
-                if fetch_0[0][14]:
-                    out["user_photo"] = str(fetch_0[0][16]) + ';' + str(fetch_0[0][14].decode())
-                else:
-                    out['user_photo'] = ""
+            if fetch_0[0][13]:
+                sql_photo = f'SELECT * FROM images WHERE img_id = {fetch_0[0][13]}'
+                cur.execute(sql_photo)
+                fetch_photo = cur.fetchall()
+                out["user_photo"] = str(fetch_photo[0][3]) + ';' + str(fetch_photo[0][1].decode())
+                print(out["user_photo"])
+            else:
+                out['user_photo'] = ""
             print(out)
 
         else:
