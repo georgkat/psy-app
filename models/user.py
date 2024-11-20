@@ -158,7 +158,7 @@ class DocRegister(CoreModel):
     doc_question_1: str
     doc_question_2: str
     doc_contact: str
-    user_photo: Optional[list]
+    user_photo: Optional[dict]
 
 
 class DocUpdate(CoreModel):
@@ -181,54 +181,6 @@ class DocScheldure(CoreModel):
     timezone: Optional[str]
 
 
-class UserTherapist(CoreModel):
-    session_token: str  # генерится на бэке для подтверждения сессии
-
-    user_id: int
-    user_therapist_sex: str
-    user_therapist_date_of_birth: str
-    user_therapist_education: str
-    user_therapist_method: int
-    user_therapist_education_addictions: bool
-    user_therapist_education_food_disorder: bool
-    user_therapist_education_sexology: bool
-    user_therapist_education_ptsd: bool
-    user_therapist_education_other: bool
-    '''
-    user_therapist_diplomas: list
-    '''
-    user_therapist_community: str
-    user_therapist_online_experience: int
-    user_therapist_client_count: int
-    user_therapist_longest_client: str
-    user_therapist_on_therapy: bool
-    user_therapist_on_supervision: bool
-    user_therapist_other_work: str
-    user_therapist_clients_ready: str
-    user_therapist_links: str
-    user_therapist_citezenship: int
-    user_therapist_phone: str
-    user_therapist_essay: str
-    user_therapist_unethical: str
-    user_therapist_offline_only_cases: str
-
-class UserTherapistFull(UserTherapist):
-    session_token: str  # генерится на бэке для подтверждения сессии
-
-    user_therapist_language: str
-    user_therapist_experience: str
-    user_therapist_about_self: str
-    user_therapist_methods: list[int]
-    user_therapist_lower18: bool
-    user_therapist_lgbtq_experience: bool
-    user_therapist_pair_therapy: bool
-    user_therapist_symptomatics: list[int]
-    user_therapist_relations: list[int]
-    user_therapist_events: list[int]
-    user_therapist_session_cost: int
-    user_therapist_card_number: str
-
-
 class SingleToken(CoreModel):
     session_token: str
 
@@ -246,8 +198,6 @@ class SelectTime(CoreModel):
     session_token: str
     doc_id: int
     sh_id: int
-
-
 
 
 

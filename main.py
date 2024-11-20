@@ -22,7 +22,6 @@ from models.user import (UserCreate,
                          UserClient,
                          UserMainData,
                          UserRequestData,
-                         UserTherapist,
                          CancelSession,
                          UserTherapistReview,
                          SingleToken,
@@ -367,7 +366,7 @@ def return_client_data(data: SingleToken):
             print('out')
             print(out)
 
-            if fetch_0[0][13]:
+            if fetch_0[0][13] != 'None':
                 sql_photo = f'SELECT * FROM images WHERE img_id = {int(fetch_0[0][13])}'
                 cur.execute(sql_photo)
                 fetch_photo = cur.fetchall()
@@ -766,7 +765,8 @@ def get_therapist_list(data: SingleToken):
 @app.post('/register_therapist')
 # TODO сделать генерацию пользователя
 def register_therapist(data: DocRegister):
-    try:
+    # try:
+    if True:
         mail = data.doc_email
         password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
         con = mariadb.connect(**config)
@@ -793,17 +793,52 @@ def register_therapist(data: DocRegister):
 
         # save photos
         img_data = []
+
+        if data.user_photo:
+            for key in data.user_photo:
+                if key == 'avatar':
+                    name = 'avatar'
+                    photo_splitteed = data.user_photo[key].split(';')
+                    photo_type = photo_splitteed[0]
+                    base_64 = photo_splitteed[1]
+                    img_data.append((base_64, name, photo_type))
+                else:
+                    name = 'document'
+                    for item in data.user_photo[key]:
+                        photo_splitteed = item.split(';')
+                        photo_type = photo_splitteed[0]
+                        base_64 = photo_splitteed[1]
+                        img_data.append((base_64, name, photo_type))
+            print('IMG DATA')
+            print(img_data)
+            img_data = [str(x) for x in img_data]
+            img_data = ', '.join(img_data)
+            sql_4 = f"INSERT INTO images (data, name, type) VALUES {img_data} RETURNING img_id"
+            print(sql_4)
+            cur.execute(sql_4)
+            photo_id = cur.fetchall()
+            print('photo_id')
+            print(photo_id)
+            photo_id = ', '.join([str(x[0]) for x in photo_id])
+            data.user_photo = photo_id
+            sql_5 = f'''UPDATE doctors SET user_photo = "{photo_id}" WHERE doc_id = {doc_id}'''
+            print(sql_5)
+            cur.execute(sql_5)
+
+        # raise Exception
+
         # for item in data.user_photo:
         #     img_data.append(str((item['data'], item['name'], item['type'])))
-
-        if img_data:
-            sql = f'INSERT INTO images (data, name, type) VALUES {", ".join(img_data)} RETURNING img_id;'
-            cur.execute(sql)
-            f = cur.fetchall()
-            photo_ids = ', '.join([str(x[0]) for x in f])
-            data.user_photo = photo_ids
-        else:
-            data.user_photo = ''
+        print(img_data)
+        # if img_data:
+        #     sql = f'INSERT INTO images (data, name, type) VALUES {", ".join(img_data)} RETURNING img_id;'
+        #     print(sql)
+        #     cur.execute(sql)
+        #     f = cur.fetchall()
+        #     photo_ids = ', '.join([str(x[0]) for x in f])
+        #     data.user_photo = photo_ids
+        # else:
+        #     data.user_photo = ''
 
         # doc_edu part
         # doc_edu_list = []
@@ -888,9 +923,10 @@ def register_therapist(data: DocRegister):
         sql = f"INSERT INTO doc_symptoms (doc_id) VALUES ({doc_id});"
         print(sql)
         cur.execute(sql)
+        # raise Exception
         con.commit()
-        cur.close()
-        con.close()
+        # cur.close()
+        # con.close()
 
         # take everything back with token
         sql = (f'SELECT '
@@ -947,40 +983,36 @@ def register_therapist(data: DocRegister):
                f'e_4 '  # 44  23
                f'FROM doctors '
                f'JOIN tokens ON doctors.doc_id = tokens.user_id '
-               f'JOIN methods ON doctors.doc_id = methods.doc_id '
-               f'JOIN languages ON doctors.doc_id = languages.doc_id '
-               f'JOIN educations ON doctors.doc_id = educations.doc_id '
+               f'LEFT JOIN methods ON doctors.doc_id = methods.doc_id '
+               f'LEFT JOIN languages ON doctors.doc_id = languages.doc_id '
+               f'LEFT JOIN educations ON doctors.doc_id = educations.doc_id '
                f'WHERE token = "{token}"')
 
-        con = mariadb.connect(**config)
-        cur = con.cursor()
+        # con = mariadb.connect(**config)
+        # cur = con.cursor()
+        print('TAKE BACK THIS DATA')
+        print(sql)
         cur.execute(sql)
-        f = cur.fetchall()
-        d = cur.description
-        print('______________________________')
-        for i, x in enumerate(d):
-            print(f'{i} / {x[0]} / {f[0][i]}')
-        print('______________________________')
-        con.commit()
-        cur.close()
-        con.close()
+        # con.commit()
+        # cur.close()
+        # con.close()
 
-        doc_id, doc_photos_ids = f[0][0], f[0][26]
+        f = cur.fetchall()
+        doc_id, doc_photos_ids = [0][0], f[0][26]
         print(f[0])
         print(doc_photos_ids)
 
         if doc_photos_ids:
             sql = f'SELECT data, name, type FROM images WHERE img_id IN ({doc_photos_ids})'
-            con = mariadb.connect(**config)
-            cur = con.cursor()
             print(sql)
             cur.execute(sql)
             fph = cur.fetchall()
-            con.commit()
-            cur.close()
-            con.close()
+            print(fph)
+            # con.commit()
+            # cur.close()
+            # con.close()
 
-            fph = [{'data': ph[0], 'name': ph[1], 'type': ph[2]} for ph in fph]
+            fph = [{'data': ph[2] + ';' + ph[0], 'name': ph[1].decode()} for ph in fph]
         else:
             fph = []
 
@@ -1006,11 +1038,12 @@ def register_therapist(data: DocRegister):
 
         # DOC EDU MAIN
         print('DOC EDU MAIN')
-        con = mariadb.connect(**config)
-        cur = con.cursor()
+        # con = mariadb.connect(**config)
+        # cur = con.cursor()
         sql = f'SELECT * FROM educations_main WHERE doc_id = {doc_id}'
         cur.execute(sql)
         fetch_edu_main = cur.fetchall()
+#        raise Exception
         con.commit()
         cur.close()
         con.close()
@@ -1061,16 +1094,16 @@ def register_therapist(data: DocRegister):
                'user_photo': fph}
         print(out)
         return out
-    except ValidationError as e:
-        print({'status': False,
-                'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'})
-        return {'status': False,
-                'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'}
-    except Exception as e:
-        print({'status': False,
-                'error': f'register_therapist error: {e}, {traceback.extract_stack()}'})
-        return {'status': False,
-                'error': f'register_therapist error: {e}, {traceback.extract_stack()}'}
+    # except ValidationError as e:
+    #     print({'status': False,
+    #             'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'})
+    #     return {'status': False,
+    #             'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'}
+    # except Exception as e:
+    #     print({'status': False,
+    #             'error': f'register_therapist error: {e}, {traceback.extract_stack()}'})
+    #     return {'status': False,
+    #             'error': f'register_therapist error: {e}, {traceback.extract_stack()}'}
 
 
 
