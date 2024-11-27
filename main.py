@@ -379,7 +379,7 @@ def return_client_data(data: SingleToken):
                 cur.execute(sql_photo)
                 fetch_photo = cur.fetchall()
                 print('out_user_photo')
-                out["user_photo"] = str(fetch_photo[0][3]) + ';' + str(fetch_photo[0][1])
+                out["user_photo"] = str(fetch_photo[0][3]) + ';' + str(fetch_photo[0][1].decode())
                 print(out["user_photo"])
             else:
                 out['user_photo'] = ""
@@ -1245,7 +1245,7 @@ def get_doc_data(data: SingleToken):
             cur.close()
             con.close()
 
-            fph = [{'data': ph[0], 'name': ph[1], 'type': ph[2]} for ph in fph]
+            fph = [{'data': ph[0].decode(), 'name': ph[1], 'type': ph[2]} for ph in fph]
         else:
             fph = []
 
