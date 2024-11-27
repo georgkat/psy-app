@@ -1142,7 +1142,7 @@ def get_doc_data(data: SingleToken):
                f'doc_question_1, '  # 23
                f'doc_question_2, '  # 24
                f'doc_contact, '  # 25
-               f'user_photo, '  # 26
+               f'doc_avatar, '  # 26
                f'm_0, '  # 27 0
                f'm_1, '  # 28 1
                f'm_2, '  # 29 2
