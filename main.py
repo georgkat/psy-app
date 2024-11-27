@@ -2582,7 +2582,7 @@ def admin_get_therapist(data: GetSomeoneData):
         m = ', '.join([f'm_{i}' for i in range(0, 17)])
         sql = (f'SELECT doctors.doc_id, doc_name, doc_gender, doc_phone, doc_date_of_birth, doc_practice_start, '
                f'doc_additional_info, doc_client_age, doc_lgbtq, doc_therapy_type, email, user_photo, doc_avatar, doc_session_cost, {l}, {s}, {e}, {m} '
-               f'FROM doctors LEFT JOIN languages ON doctors.doc_id = languages.doc_id LEFT JOIN symptoms ON doctors.doc_id = symptoms.doc_id LEFT JOIN educations ON doctors.doc_id = educations.doc_id LEFT JOIN methods ON doctors.doc_id = methods.doc_id LEFT JOIN users ON doctors.doc_id = users.id WHERE doctors.doc_id = {data.user_id}')
+               f'FROM doctors LEFT JOIN languages ON doctors.doc_id = languages.doc_id LEFT JOIN doc_symptoms ON doctors.doc_id = doc_symptoms.doc_id LEFT JOIN educations ON doctors.doc_id = educations.doc_id LEFT JOIN methods ON doctors.doc_id = methods.doc_id LEFT JOIN users ON doctors.doc_id = users.id WHERE doctors.doc_id = {data.user_id}')
         cur.execute(sql)
         fetch = cur.fetchall()
         fetch_cols = cur.description
