@@ -138,8 +138,8 @@ class AdminUpdateDoc(CoreModel):
     doc_phone: str
     doc_session_cost: int
     doc_avatar: Optional[int] = None
-    doc_language: list
-    doc_method: list
+    doc_language: list[int]
+    doc_method: list[int]
 
 class DocRegister(CoreModel):
     doc_name: str
