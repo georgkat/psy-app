@@ -2722,6 +2722,7 @@ def admin_update_therapist(data: AdminUpdateDoc):
     token_check = cur.fetchall()
     # if not token_check:
     #     return {'status': False}
+    doc_email = data.doc_email
     doc_name = data.doc_name
     doc_gender = data.doc_gender
     doc_phone = data.doc_phone
@@ -2730,6 +2731,7 @@ def admin_update_therapist(data: AdminUpdateDoc):
     doc_language = data.doc_language
     doc_method = data.doc_method
 
+    sql_email = f'UPDATE users SET email = {doc_email} WHERE id = {doc_id}'
     sql_main = (f'UPDATE doctors SET '
                 f'doc_name = "{doc_name}", '
                 f'doc_gender = {doc_gender}, '
@@ -2764,6 +2766,7 @@ def admin_update_therapist(data: AdminUpdateDoc):
     sql_language = f'UPDATE languages SET {l_sql} WHERE doc_id = {doc_id}'
     sql_method = f'UPDATE methods SET {m_sql} WHERE doc_id = {doc_id}'
 
+    cur.execute(sql_email)
     cur.execute(sql_main)
     cur.execute(sql_language)
     cur.execute(sql_method)

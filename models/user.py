@@ -132,6 +132,7 @@ class AdminReport(CoreModel):
 class AdminUpdateDoc(CoreModel):
     session_token: str
     doc_id: int
+    doc_email: str
     doc_name: str
     doc_gender: int
     doc_phone: str
