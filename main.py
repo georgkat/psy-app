@@ -34,7 +34,8 @@ from models.user import (UserCreate,
                          DocScheldure,
                          ApproveTherapistToken,
                          AdminReport,
-                         DocUpdate)
+                         DocUpdate,
+                         AdminUpdateDoc)
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -1537,7 +1538,6 @@ def update_therapist(data: DocUpdate):
             print({'status': True})
             return {'status': True}
         else:
-            print(975)
             print(doc_id)
             con = mariadb.connect(**config)
             cur = con.cursor()
@@ -2708,6 +2708,71 @@ def admin_get_therapist(data: GetSomeoneData):
                'error': f'admin_get_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'admin_get_therapist error: {e}, {traceback.extract_stack()}'}
+
+@app.post('/admin_update_therapist')
+def admin_update_therapist(data: AdminUpdateDoc):
+
+    con = mariadb.connect(**config)
+    cur = con.cursor()
+
+    token = data.session_token
+    doc_id = data.doc_id
+    sql_check = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
+    cur.execute(sql_check)
+    token_check = cur.fetchall()
+    if not token_check:
+        return {'status': False}
+    doc_name = data.doc_name
+    doc_gender = data.doc_gender
+    doc_phone = data.doc_phone
+    doc_session_cost = data.doc_session_cost
+    doc_avatar = data.doc_avatar
+    doc_language = data.doc_language
+    doc_method = data.doc_method
+
+    sql_main = (f'UPDATE doctors SET '
+                f'doc_name = {doc_name}, '
+                f'doc_gender = {doc_gender}, '
+                f'doc_phone = {doc_phone}, '
+                f'doc_avatar = {doc_avatar}, '
+                f'doc_session_cost = {doc_session_cost} '
+                f'WHERE doc_id = {doc_id}')
+
+    l_c = [f'l_{i}' for i in range(0, 3)]
+    l_v = [f'm_{i}' for i in range(0, 17)]
+
+    m_c = [0 for i in range(0, 3)]
+    m_v = [0 for i in range(0, 17)]
+
+    for v in doc_language:
+        l_v[v] = 1
+    for v in doc_method:
+        m_v[v] = 1
+
+    l_sql = []
+    m_sql = []
+
+    for index, column in enumerate(l_c):
+        l_sql.append(f'{column} = {l_v[index]}')
+
+    for index, column in enumerate(m_c):
+        m_sql.append(f'{column} = {m_v[index]}')
+
+    l_sql = ', '.join(l_sql)
+    m_sql = ', '.join(l_sql)
+
+    sql_language = f'UPDATE languages SET {l_sql} WHERE doc_id = {doc_id}'
+    sql_method = f'UPDATE methods SET {m_sql} WHERE doc_id = {doc_id}'
+
+    cur.execute(sql_main)
+    cur.execute(sql_language)
+    cur.execute(sql_method)
+
+    con.commit()
+    cur.close()
+    con.close()
+
+    return {'status': True}
 
         # Session_data
 

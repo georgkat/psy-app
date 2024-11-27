@@ -129,6 +129,16 @@ class AdminReport(CoreModel):
     report_text: str
 
 
+class AdminUpdateDoc(CoreModel):
+    session_token: str
+    doc_name: str
+    doc_gender: int
+    doc_phone: str
+    doc_session_cost: int
+    doc_avatar: Optional[int] = None
+    doc_language: list
+    doc_method: list
+
 class DocRegister(CoreModel):
     doc_name: str
     doc_date_of_birth: date # YYYY-MM-DD
