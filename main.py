@@ -2581,7 +2581,7 @@ def admin_get_therapist(data: GetSomeoneData):
         e = ', '.join([f'e_{i}' for i in range(0, 5)])
         m = ', '.join([f'm_{i}' for i in range(0, 17)])
         sql = (f'SELECT doctors.doc_id, doc_name, doc_gender, doc_phone, doc_date_of_birth, doc_practice_start, '
-               f'doc_additional_info, doc_client_age, doc_lgbtq, doc_therapy_type, email, {l}, {s}, {e}, {m} '
+               f'doc_additional_info, doc_client_age, doc_lgbtq, doc_therapy_type, email, user_photo, doc_avatar, {l}, {s}, {e}, {m} '
                f'FROM doctors LEFT JOIN languages ON doctors.doc_id = languages.doc_id LEFT JOIN symptoms ON doctors.doc_id = symptoms.doc_id LEFT JOIN educations ON doctors.doc_id = educations.doc_id LEFT JOIN methods ON doctors.doc_id = methods.doc_id LEFT JOIN users ON doctors.doc_id = users.id WHERE doctors.doc_id = {data.user_id}')
         cur.execute(sql)
         fetch = cur.fetchall()
@@ -2598,6 +2598,26 @@ def admin_get_therapist(data: GetSomeoneData):
         cur.execute(sql_edu)
         fetch_edu = cur.fetchall()
 
+        user_photo = fetch[0][11]
+        doc_avatar = fetch[0][12]
+        sql_photos = f'SELECT * FROM images WHERE img_id IN ({user_photo})'
+        cur.execute(sql_photos)
+        fetch_photos = cur.fetchall()
+        print(fetch_photos)
+        fetch_cols = cur.description
+        print(fetch_cols)
+
+        photos = [{'data': photo[3] + ';' + photo[1].decode(), 'name': photo[2]} for photo in fetch_photos]
+        photo = {'avatar': [],
+                 'document': []}
+        for item in photos:
+            if item['name'] == 'avatar':
+                item.pop('name', None)
+                photo['avatar'].append(item)
+            else:
+                item.pop('name', None)
+                photo['document'].append(item)
+
         doc_name = fetch[0][1]
         doc_gender = fetch[0][2]
         doc_phone = fetch[0][3]
@@ -2608,8 +2628,10 @@ def admin_get_therapist(data: GetSomeoneData):
         doc_lgbtq = fetch[0][8]
         doc_therapy_type = fetch[0][9]
         doc_email = fetch[0][10]
+        doc_photos = photos
+        doc_avatar = doc_avatar
 
-        doc_photo = None
+        # doc_photo = None
         doc_grade = None
         doc_card = None
         doc_cashflow = None
@@ -2654,7 +2676,8 @@ def admin_get_therapist(data: GetSomeoneData):
         out['doc_phone'] = doc_phone
         out['doc_date_of_birth'] = doc_age
         out['doc_email'] = doc_email
-        out['doc_photo'] = doc_photo
+        out['doc_photo'] = photo
+        out['doc_avatar'] = doc_avatar
         out['doc_card'] = doc_card
         out['doc_sessions_count'] = doc_sessions
         out['doc_session_cost'] = doc_grade
