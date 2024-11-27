@@ -367,7 +367,7 @@ def return_client_data(data: SingleToken):
             print('out')
             print(out)
 
-            if fetch_0[0][13] != 'None':
+            if fetch_0[0][13] != None:
                 sql_photo = f'SELECT * FROM images WHERE img_id = {int(fetch_0[0][13])}'
                 cur.execute(sql_photo)
                 fetch_photo = cur.fetchall()
