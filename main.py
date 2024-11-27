@@ -335,7 +335,7 @@ def return_client_data(data: SingleToken):
         cur.execute(sql_1)
         desc = cur.description
         fetch_0 = cur.fetchall()
-        print('fetch_0')
+        print('fetch_0 338')
         print(fetch_0)
         pre_out = {}
         try:
@@ -364,13 +364,21 @@ def return_client_data(data: SingleToken):
         if pre_out:
             for i in range(0, 14):
                 out[desc[i][0]] = fetch_0[0][i]
-            print('out')
+            print('out 367')
             print(out)
+            print('fetc 0 13')
+            print(fetch_0)
+            print(fetch_0[0][13])
 
-            if fetch_0[0][13] != None:
+            photo_check = True
+            if fetch_0[0][13] == 'None' or fetch_0[0][13] == None:
+                photo_check = False
+
+            if photo_check:
                 sql_photo = f'SELECT * FROM images WHERE img_id = {int(fetch_0[0][13])}'
                 cur.execute(sql_photo)
                 fetch_photo = cur.fetchall()
+                print('out_user_photo')
                 out["user_photo"] = str(fetch_photo[0][3]) + ';' + str(fetch_photo[0][1])
                 print(out["user_photo"])
             else:
@@ -379,10 +387,11 @@ def return_client_data(data: SingleToken):
             #    out['user_photo'] = ""
             print(out)
 
+            print('382')
         else:
             out['client_id'] = fetch_0[0][0]
             out['name'] = fetch_0[0][1]
-            out['email'] = fetch_0[0][13]
+            out['email'] = fetch_0[0][10]
             out["user_age"] = None
             out["user_experience"] = None
             out["user_type"] = None
@@ -399,6 +408,7 @@ def return_client_data(data: SingleToken):
         out['user_symptoms'] = user_symptoms
         out['user_languages'] = user_languages
 
+        print('402')
         if out["has_therapist"]:
             sql = f"SELECT doc_name, date_time, pending_change, sh_id, accepted FROM schedule JOIN doctors ON schedule.doctor_id = doctors.doc_id WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]} AND pending_change IN (0, 1)"
             cur.execute(sql)
@@ -1212,14 +1222,14 @@ def get_doc_data(data: SingleToken):
         cur = con.cursor()
         cur.execute(sql)
         f = cur.fetchall()
-        d = cur.description
-        print('______________________________')
-        for i, x in enumerate(d):
-            print(f'{i} / {x[0]} / {f[0][i]}')
-        print('______________________________')
-        con.commit()
-        cur.close()
-        con.close()
+        # d = cur.description
+        # print('______________________________')
+        # for i, x in enumerate(d):
+        #     print(f'{i} / {x[0]} / {f[0][i]}')
+        # print('______________________________')
+        # con.commit()
+        # cur.close()
+        # con.close()
 
         doc_id, doc_photos_ids = f[0][0], f[0][26]
 
