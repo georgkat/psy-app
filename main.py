@@ -2592,6 +2592,7 @@ def admin_get_therapist(data: GetSomeoneData):
         for i, item in enumerate(fetch[0]):
             di[fetch_cols[i][0]] = item
 
+        print('di')
         print(di)
 
         sql_edu = f'SELECT year, university, faculty, degree FROM educations_main WHERE doc_id = {data.user_id}'
@@ -2600,23 +2601,31 @@ def admin_get_therapist(data: GetSomeoneData):
 
         user_photo = fetch[0][11]
         doc_avatar = fetch[0][12]
-        sql_photos = f'SELECT * FROM images WHERE img_id IN ({user_photo})'
-        cur.execute(sql_photos)
-        fetch_photos = cur.fetchall()
-        print(fetch_photos)
-        fetch_cols = cur.description
-        print(fetch_cols)
+        if user_photo:
+            sql_photos = f'SELECT * FROM images WHERE img_id IN ({user_photo})'
+            print(sql_photos)
+            cur.execute(sql_photos)
+            fetch_photos = cur.fetchall()
+            print(fetch_photos)
+            fetch_cols = cur.description
+            print(fetch_cols)
 
-        photos = [{'img_id': photo[0], 'data': photo[3] + ';' + photo[1].decode(), 'name': photo[2]} for photo in fetch_photos]
-        photo = {'avatar': [],
-                 'document': []}
-        for item in photos:
-            if item['name'] == 'avatar':
-                item.pop('name', None)
-                photo['avatar'].append(item)
-            else:
-                item.pop('name', None)
-                photo['document'].append(item)
+            photos = [{'img_id': photo[0], 'data': photo[3] + ';' + photo[1].decode(), 'name': photo[2]} for photo in
+                      fetch_photos]
+            photo = {'avatar': [],
+                     'document': []}
+
+            for item in photos:
+                if item['name'] == 'avatar':
+                    item.pop('name', None)
+                    photo['avatar'].append(item)
+                else:
+                    item.pop('name', None)
+                    photo['document'].append(item)
+
+        else:
+            photos = {}
+            photo = {}
 
         doc_name = fetch[0][1]
         doc_gender = fetch[0][2]
