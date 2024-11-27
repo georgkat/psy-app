@@ -1112,8 +1112,8 @@ def register_therapist(data: DocRegister):
 
 @app.post('/get_doc_data')
 def get_doc_data(data: SingleToken):
-
-    try:
+    # try:
+    if True:
         token = data.session_token
         sql = (f'SELECT '  # 0
                f'doctors.doc_id, '  # 0
@@ -1326,11 +1326,11 @@ def get_doc_data(data: SingleToken):
                'user_photo': fph}
         print(out)
         return out
-    except Exception as e:
-        print({'status': False,
-                'error': f'get_doc_data error: {e}, {traceback.extract_stack()}'})
-        return {'status': False,
-                'error': f'get_doc_data error: {e}, {traceback.extract_stack()}'}
+    # except Exception as e:
+    #     print({'status': False,
+    #             'error': f'get_doc_data error: {e}, {traceback.extract_stack()}'})
+    #     return {'status': False,
+    #             'error': f'get_doc_data error: {e}, {traceback.extract_stack()}'}
 
 @app.post('/doctor_schedule')
 def doctor_schedule(data: DocScheldure):
