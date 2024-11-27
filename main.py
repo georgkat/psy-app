@@ -2731,7 +2731,8 @@ def admin_update_therapist(data: AdminUpdateDoc):
     doc_language = data.doc_language
     doc_method = data.doc_method
 
-    sql_email = f'UPDATE users SET email = {doc_email} WHERE id = {doc_id}'
+    sql_email = f'UPDATE users SET email = "{doc_email}" WHERE id = {doc_id}'
+
     sql_main = (f'UPDATE doctors SET '
                 f'doc_name = "{doc_name}", '
                 f'doc_gender = {doc_gender}, '
