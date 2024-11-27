@@ -2727,7 +2727,10 @@ def admin_update_therapist(data: AdminUpdateDoc):
     doc_gender = data.doc_gender
     doc_phone = data.doc_phone
     doc_session_cost = data.doc_session_cost
-    doc_avatar = data.doc_avatar
+    if data.doc_avatar == 0:
+        doc_avatar = "NULL"
+    else:
+        doc_avatar = data.doc_avatar
     doc_language = data.doc_language
     doc_method = data.doc_method
 
@@ -2740,6 +2743,8 @@ def admin_update_therapist(data: AdminUpdateDoc):
                 f'doc_avatar = {doc_avatar}, '
                 f'doc_session_cost = {doc_session_cost} '
                 f'WHERE doc_id = {doc_id}')
+
+    print(sql_main)
 
     l_c = [f'l_{i}' for i in range(0, 3)]
     l_v = [f'0' for i in range(0, 3)]

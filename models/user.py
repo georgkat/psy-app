@@ -137,7 +137,7 @@ class AdminUpdateDoc(CoreModel):
     doc_gender: int
     doc_phone: str
     doc_session_cost: int
-    doc_avatar: Optional[int] = 0
+    doc_avatar: Optional[int] = None
     doc_language: list
     doc_method: list
 
