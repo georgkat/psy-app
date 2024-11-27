@@ -2607,7 +2607,7 @@ def admin_get_therapist(data: GetSomeoneData):
         fetch_cols = cur.description
         print(fetch_cols)
 
-        photos = [{'data': photo[3] + ';' + photo[1].decode(), 'name': photo[2]} for photo in fetch_photos]
+        photos = [{'img_id': photo[0], 'data': photo[3] + ';' + photo[1].decode(), 'name': photo[2]} for photo in fetch_photos]
         photo = {'avatar': [],
                  'document': []}
         for item in photos:
