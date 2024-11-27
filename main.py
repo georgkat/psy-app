@@ -798,10 +798,11 @@ def register_therapist(data: DocRegister):
             for key in data.user_photo:
                 if key == 'avatar':
                     name = 'avatar'
-                    photo_splitteed = data.user_photo[key].split(';')
-                    photo_type = photo_splitteed[0]
-                    base_64 = photo_splitteed[1]
-                    img_data.append((base_64, name, photo_type))
+                    for item in data.user_photo[key]:
+                        photo_splitteed = item.split(';')
+                        photo_type = photo_splitteed[0]
+                        base_64 = photo_splitteed[1]
+                        img_data.append((base_64, name, photo_type))
                 else:
                     name = 'document'
                     for item in data.user_photo[key]:
@@ -814,6 +815,7 @@ def register_therapist(data: DocRegister):
             img_data = [str(x) for x in img_data]
             img_data = ', '.join(img_data)
             sql_4 = f"INSERT INTO images (data, name, type) VALUES {img_data} RETURNING img_id"
+            # sql_4 = f"INSERT INTO images VALUES {img_data} RETURNING img_id"
             print(sql_4)
             cur.execute(sql_4)
             photo_id = cur.fetchall()
@@ -1012,7 +1014,7 @@ def register_therapist(data: DocRegister):
             # cur.close()
             # con.close()
 
-            fph = [{'data': ph[2] + ';' + ph[0], 'name': ph[1].decode()} for ph in fph]
+            fph = [{'data': ph[2] + ';' + ph[0].decode(), 'name': ph[1]} for ph in fph]
         else:
             fph = []
 
