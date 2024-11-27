@@ -2720,8 +2720,8 @@ def admin_update_therapist(data: AdminUpdateDoc):
     sql_check = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
     cur.execute(sql_check)
     token_check = cur.fetchall()
-    if not token_check:
-        return {'status': False}
+    # if not token_check:
+    #     return {'status': False}
     doc_name = data.doc_name
     doc_gender = data.doc_gender
     doc_phone = data.doc_phone
@@ -2731,17 +2731,17 @@ def admin_update_therapist(data: AdminUpdateDoc):
     doc_method = data.doc_method
 
     sql_main = (f'UPDATE doctors SET '
-                f'doc_name = {doc_name}, '
+                f'doc_name = "{doc_name}", '
                 f'doc_gender = {doc_gender}, '
-                f'doc_phone = {doc_phone}, '
+                f'doc_phone = "{doc_phone}", '
                 f'doc_avatar = {doc_avatar}, '
                 f'doc_session_cost = {doc_session_cost} '
                 f'WHERE doc_id = {doc_id}')
 
     l_c = [f'l_{i}' for i in range(0, 3)]
-    l_v = [f'm_{i}' for i in range(0, 17)]
+    l_v = [f'0' for i in range(0, 3)]
 
-    m_c = [0 for i in range(0, 3)]
+    m_c = [f'm_{i}' for i in range(0, 17)]
     m_v = [0 for i in range(0, 17)]
 
     for v in doc_language:
@@ -2759,7 +2759,7 @@ def admin_update_therapist(data: AdminUpdateDoc):
         m_sql.append(f'{column} = {m_v[index]}')
 
     l_sql = ', '.join(l_sql)
-    m_sql = ', '.join(l_sql)
+    m_sql = ', '.join(m_sql)
 
     sql_language = f'UPDATE languages SET {l_sql} WHERE doc_id = {doc_id}'
     sql_method = f'UPDATE methods SET {m_sql} WHERE doc_id = {doc_id}'

@@ -131,11 +131,12 @@ class AdminReport(CoreModel):
 
 class AdminUpdateDoc(CoreModel):
     session_token: str
+    doc_id: int
     doc_name: str
     doc_gender: int
     doc_phone: str
     doc_session_cost: int
-    doc_avatar: Optional[int] = None
+    doc_avatar: Optional[int] = 0
     doc_language: list
     doc_method: list
 
