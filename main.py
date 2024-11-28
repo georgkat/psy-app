@@ -714,7 +714,8 @@ def get_therapist_list(data: SingleToken):
             if client_symptoms[0] <= doc_info[1:]:
                 valid_docs.append(str(doc_info[0]))
 
-        sql_2 = f'SELECT doc_id, doc_name, doc_additional_info FROM doctors WHERE doc_id IN ({", ".join(valid_docs)})'
+        sql_2 = f'SELECT doctors.doc_id, doctors.doc_name, doctors.doc_additional_info, images.name, images.data, images.type FROM doctors LEFT JOIN images ON doctors.doc_avatar = images.img_id WHERE doc_id IN ({", ".join(valid_docs)})'
+        # sql_photos = f'SELECT doc_id,  '
         print(sql_2)
         cur.execute(sql_2)
         out_docs = cur.fetchall()
@@ -737,7 +738,13 @@ def get_therapist_list(data: SingleToken):
             degree = row[4]
             edu_dict[int(doc_id)].append({'year': year, 'university': university, 'faculty': faculty, 'degree': degree})
 
+        print('edu_dict')
         print(edu_dict)
+
+        #cur.execute(sql_photos)
+        #fetch_photos = cur.fetchall()
+
+
 
         sql_4 = f'SELECT doctor_id, sh_id, date_time FROM schedule WHERE client IS NULL and doctor_id IN ({", ".join(valid_docs)})'
         cur.execute(sql_4)
@@ -757,7 +764,7 @@ def get_therapist_list(data: SingleToken):
 
         # print(sh_dict)
 
-        out_docs = [{"doc_id": row[0], "doc_name": row[1], "doc_additional_info": row[2], "doc_edu": edu_dict[row[0]], "doc_schedule": sh_dict[row[0]]} for row in out_docs]
+        out_docs = [{"doc_id": row[0], "doc_name": row[1], "doc_additional_info": row[2], "doc_edu": edu_dict[row[0]], "doc_schedule": sh_dict[row[0]], "user_photo": row[5] + ';' + row[4].decode() if row[4] else None} for row in out_docs]
         cur.close()
         con.close()
 
