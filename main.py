@@ -2339,7 +2339,19 @@ def get_user_data(data: GetSomeoneData):
             doc_id = fetch[0][0]
             s = [f's_{i}' for i in range(0, 29)]
             s = ', '.join(s)
-            sql = f'SELECT clients.client_id, name, user_age, NULL, schedule.pending_change, {s} FROM clients JOIN schedule ON clients.client_id = schedule.client JOIN client_symptoms ON clients.client_id = client_symptoms.client_id WHERE clients.client_id = {data.user_id} AND schedule.doctor_id = {doc_id}'
+            sql = (f'SELECT clients.client_id, '
+                   f'clients.name, '
+                   f'user_age, '
+                   f'NULL, '
+                   f'schedule.pending_change, '
+                   f'images.data, '
+                   f'images.type, '
+                   f'{s} '
+                   f'FROM clients '
+                   f'JOIN schedule ON clients.client_id = schedule.client '
+                   f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
+                   f'LEFT JOIN images ON clients.user_photo = images.img_id '
+                   f'WHERE clients.client_id = {data.user_id} AND schedule.doctor_id = {doc_id}')
             print(sql)
             cur.execute(sql)
             fetch = cur.fetchall()
@@ -2347,8 +2359,9 @@ def get_user_data(data: GetSomeoneData):
                 client_id = fetch[0][0]
                 client_name = fetch[0][1]
                 client_age = fetch[0][2]
+                client_photo = fetch[0][6] + ';' + fetch[0][5].decode() if fetch[0][5] else None
                 client_sessions_count = fetch[0][3]
-                s = fetch[0][6:]
+                s = fetch[0][8:]
                 s_out = []
                 for idx, i in enumerate(s):
                     if i != 0:
@@ -2387,13 +2400,23 @@ def get_user_data(data: GetSomeoneData):
                 s = [f's_{i}' for i in range(0, 29)]
                 s = ', '.join(s)
 
-                sql = f'SELECT name, user_age, NULL, {s} from clients JOIN client_symptoms ON clients.client_id = client_symptoms.client_id WHERE clients.client_id = {data.user_id}'
+                sql = (f'SELECT '
+                       f'clients.name, '
+                       f'user_age, '
+                       f'NULL, '
+                       f'images.data, '
+                       f'images.type, '
+                       f'{s} '
+                       f'FROM clients '
+                       f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
+                       f'LEFT JOIN images ON clients.user_photo = images.img_id '
+                       f'WHERE clients.client_id = {data.user_id}')
                 print(sql)
                 cur.execute(sql)
                 fetch_others = cur.fetchall()
 
-                s = fetch_others[0][3:]
-
+                s = fetch_others[0][5:]
+                print('s')
                 s_out = []
                 for idx, i in enumerate(s):
                     if i != 0:
@@ -2402,6 +2425,8 @@ def get_user_data(data: GetSomeoneData):
                 client_id = data.user_id
                 client_name = fetch_others[0][0]
                 client_age = fetch_others[0][1]
+                print('cliph')
+                client_photo = fetch_others[0][4] + ';' + fetch_others[0][3].decode() if fetch_others[0][3] else None
                 user_age = 0
                 sch_data = []
 
@@ -2411,6 +2436,7 @@ def get_user_data(data: GetSomeoneData):
                     'client_id': client_id,
                     'name': client_name,
                     'age': client_age,
+                    'client_photo': client_photo,
                     'sessions_count': 0,
                     'sch_data': sch_data,
                     'client_symptoms': s_out}
