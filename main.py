@@ -293,7 +293,7 @@ def register(data:UserCreate):
 
 
 @app.post("/get_client_data")
-def return_client_data(data: SingleToken):
+def get_client_data(data: SingleToken):
     try:
         token = data.session_token
 
@@ -410,7 +410,16 @@ def return_client_data(data: SingleToken):
 
         print('402')
         if out["has_therapist"]:
-            sql = f"SELECT doc_name, date_time, pending_change, sh_id, accepted FROM schedule JOIN doctors ON schedule.doctor_id = doctors.doc_id WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]} AND pending_change IN (0, 1)"
+            sql = (f"SELECT doc_name, "
+                   f"date_time, "
+                   f"pending_change, "
+                   f"sh_id, "
+                   f"accepted,"
+                   f"doc_avatar "
+                   f"FROM schedule "
+                   f"JOIN doctors ON schedule.doctor_id = doctors.doc_id "
+                   f"WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]} AND pending_change IN (0, 1)")
+            print(sql)
             cur.execute(sql)
             fetch = cur.fetchall()
             if fetch:
@@ -418,6 +427,14 @@ def return_client_data(data: SingleToken):
                 print(fetch)
                 pending = fetch[0][2]
                 accepted = fetch[0][4]
+                doc_avatar = fetch[0][5]
+                if doc_avatar:
+                    sql_avatar = f'SELECT data, type FROM images WHERE img_id = {doc_avatar}'
+                    cur.execute(sql_avatar)
+                    fetch_avatar = cur.fetchall()
+                    avatar = fetch_avatar[1] + ';' + fetch_avatar[0].decode() if fetch_avatar else None
+                else:
+                    avatar = None
                 new_time = ''
                 old_sh_id = fetch[0][3]
                 new_sh_id = None
@@ -433,12 +450,15 @@ def return_client_data(data: SingleToken):
                     fetch_1 = cur.fetchall()
                     new_time = fetch_1[0][0]
                 print(fetch)
-                out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'sh_id': old_sh_id, 'sch_time': fetch[0][1], 'pending': pending, 'new_sh_id': new_sh_id, 'new_sch_time': new_time, 'accepted': accepted}
+                out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_photo': avatar, 'doc_name': fetch[0][0], 'sh_id': old_sh_id, 'sch_time': fetch[0][1], 'pending': pending, 'new_sh_id': new_sh_id, 'new_sch_time': new_time, 'accepted': accepted}
             else:
-                sql = f"SELECT doc_name FROM doctors WHERE doc_id = {out['has_therapist']}"
+                print('else')
+                sql = f"SELECT doc_name, images.data, images.type FROM doctors LEFT JOIN images ON doctors.doc_avatar = images.img_id WHERE doc_id = {out['has_therapist']}"
+                print(sql)
                 cur.execute(sql)
                 fetch = cur.fetchall()
-                out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'sh_id': None,
+                avatar = fetch[0][2] + ';' + fetch[0][1].decode() if fetch[0][1] else None
+                out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_name': fetch[0][0], 'doc_photo': avatar, 'sh_id': None,
                                         'sch_time': None, 'pending': None, 'new_sh_id': None,
                                         'new_sch_time': None, 'accepted': None}
 
