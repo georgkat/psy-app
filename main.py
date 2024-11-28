@@ -475,8 +475,8 @@ def get_client_data(data: SingleToken):
 
 @app.post("/update_client_data")
 def update_user(data: UserClient):
-    # try:
-    if True:
+    try:
+    # if True:
         token = data.session_token
 
         con = mariadb.connect(**config)
@@ -541,11 +541,11 @@ def update_user(data: UserClient):
         con.close()
         return {'status': True}
 
-    # except Exception as e:
-    #     print({'status': False,
-    #             'error': f'update_client error: {e}, {traceback.extract_stack()}'})
-    #     return {'status': False,
-    #             'error': f'update_client error: {e}, {traceback.extract_stack()}'}
+    except Exception as e:
+        print({'status': False,
+                'error': f'update_client error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'update_client error: {e}, {traceback.extract_stack()}'}
 
 
 @app.post("/user_therapist_cancel_review")
