@@ -513,8 +513,9 @@ def update_user(data: UserClient):
         sql_2 = f"INSERT INTO client_languages (client_id, {', '.join(sql_2_cols)}) VALUES ({client_id}, {', '.join(sql_2_vals)}) ON DUPLICATE KEY UPDATE {update_data}"
         cur.execute(sql_2)
 
-        sql_3_cols = [f's_{i}' for i in range(0, 28)]
-        sql_3_vals = ["0" for i in range(0, 28)]
+        sql_3_cols = [f's_{i}' for i in range(0, 29)]
+        sql_3_vals = ["0" for i in range(0, 29)]
+        print(data.user_symptoms)
         if data.user_symptoms:
             for index in data.user_symptoms:
                 sql_3_vals[index] = "1"
