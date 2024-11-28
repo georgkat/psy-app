@@ -430,12 +430,16 @@ def get_client_data(data: SingleToken):
                 doc_avatar = fetch[0][5]
                 if doc_avatar:
                     sql_avatar = f'SELECT data, type FROM images WHERE img_id = {doc_avatar}'
+                    print(sql_avatar)
                     cur.execute(sql_avatar)
                     fetch_avatar = cur.fetchall()
-                    avatar = fetch_avatar[1] + ';' + fetch_avatar[0].decode() if fetch_avatar else None
+                    print('fetch_avatar')
+                    avatar = fetch_avatar[0][1] + ';' + fetch_avatar[0][0].decode() if fetch_avatar else None
+                    print('avatar')
                 else:
                     avatar = None
                 new_time = ''
+                print('old_sh_id')
                 old_sh_id = fetch[0][3]
                 new_sh_id = None
                 if pending:
