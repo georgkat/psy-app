@@ -2439,6 +2439,7 @@ def get_user_data(data: GetSomeoneData):
             cur.close()
             con.close()
 
+
             return {'status': True,
                     'client_id': client_id,
                     'name': client_name,
