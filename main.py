@@ -1418,7 +1418,7 @@ def doctor_schedule(data: DocScheldure):
             doc_id = f[0][0]
         # TODO Возврат timezone
         if not data.schedule:
-            sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON client.client_id = schedule.client WHERE doctor_id = {doc_id}'
+            sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id}'
             con = mariadb.connect(**config)
             cur = con.cursor()
             cur.execute(sql)
@@ -1480,7 +1480,7 @@ def doctor_schedule(data: DocScheldure):
         cur.close()
         con.close()
 
-        sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON client.client_id = schedule.client WHERE doctor_id = {doc_id}'
+        sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id}'
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
