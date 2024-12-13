@@ -1406,10 +1406,10 @@ def doctor_schedule(data: DocScheldure):
         cur = con.cursor()
         cur.execute(sql)
         f = cur.fetchall()
-        cur.close()
-        con.close()
 
         if not f:
+            cur.close()
+            con.close()
             print({'status': False,
                     'error': """doctor_schedule error: user not auth-ed"""})
             return {'status': False,
@@ -1423,9 +1423,6 @@ def doctor_schedule(data: DocScheldure):
             cur = con.cursor()
             cur.execute(sql)
             fetch = cur.fetchall()
-            con.commit()
-            cur.close()
-            con.close()
             out = []
             for item in fetch:
                 item_time = datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M')
@@ -1438,18 +1435,16 @@ def doctor_schedule(data: DocScheldure):
 
             # формирую словарик
             print({'status': True, 'schedule': out, 'timezone': timezone})
+            cur.close()
+            con.close()
             return {'status': True, 'schedule': out, 'timezone': timezone}
 
 
         sh_list = []
 
         sql = f'DELETE FROM schedule WHERE doctor_id = "{doc_id}" AND client IS NULL'
-        con = mariadb.connect(**config)
-        cur = con.cursor()
+
         cur.execute(sql)
-        con.commit()
-        cur.close()
-        con.close()
 
         to_sql = ''
         to_sql_check = ''
@@ -1473,21 +1468,14 @@ def doctor_schedule(data: DocScheldure):
         # TODO check
 
         sql = f'INSERT INTO schedule (doctor_id, date_time, client) values {to_sql}'
-        con = mariadb.connect(**config)
-        cur = con.cursor()
+
         cur.execute(sql)
         con.commit()
-        cur.close()
-        con.close()
 
         sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id}'
-        con = mariadb.connect(**config)
-        cur = con.cursor()
+
         cur.execute(sql)
         fetch = cur.fetchall()
-        con.commit()
-        cur.close()
-        con.close()
 
         out = []
         for item in fetch:
@@ -1505,6 +1493,8 @@ def doctor_schedule(data: DocScheldure):
 
         # формирую словарик
         print({'status': True, 'schedule': out, 'timezone': timezone})
+        cur.close()
+        con.close()
         return {'status': True, 'schedule': out, 'timezone': timezone}
     except Exception as e:
         print({'status': False,
