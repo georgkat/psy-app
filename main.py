@@ -2356,7 +2356,7 @@ def get_user_data(data: GetSomeoneData):
                    f'JOIN schedule ON clients.client_id = schedule.client '
                    f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
                    f'LEFT JOIN images ON clients.user_photo = images.img_id '
-                   f'WHERE clients.client_id = {data.user_id} AND schedule.doctor_id = {doc_id}')
+                   f'WHERE clients.client_id = {data.user_id} AND schedule.doctor_id = {doc_id}')  # TODO добавить has_therapist = doc_id
             print(sql)
             cur.execute(sql)
             fetch = cur.fetchall()
@@ -2435,7 +2435,9 @@ def get_user_data(data: GetSomeoneData):
                 user_age = 0
                 sch_data = []
 
-
+            con.commit()
+            cur.close()
+            con.close()
 
             return {'status': True,
                     'client_id': client_id,
