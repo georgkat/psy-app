@@ -1418,7 +1418,7 @@ def doctor_schedule(data: DocScheldure):
             doc_id = f[0][0]
         # TODO Возврат timezone
         if not data.schedule:
-            sql = f'SELECT date_time, client FROM schedule WHERE doctor_id = {doc_id}'
+            sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON client.client_id = schedule.client WHERE doctor_id = {doc_id}'
             con = mariadb.connect(**config)
             cur = con.cursor()
             cur.execute(sql)
@@ -1428,7 +1428,13 @@ def doctor_schedule(data: DocScheldure):
             con.close()
             out = []
             for item in fetch:
-                out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
+                item_time = datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M')
+                out_item = {'sh_id': item[2],
+                            'date_time': item_time,
+                            'client_id': item[1],
+                            'client_name': item[3]}
+                out.append(out_item)
+                # out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
 
             # формирую словарик
             print({'status': True, 'schedule': out, 'timezone': timezone})
@@ -1474,7 +1480,7 @@ def doctor_schedule(data: DocScheldure):
         cur.close()
         con.close()
 
-        sql = f'SELECT date_time, client FROM schedule WHERE doctor_id = {doc_id}'
+        sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON client.client_id = schedule.client WHERE doctor_id = {doc_id}'
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
@@ -1485,7 +1491,17 @@ def doctor_schedule(data: DocScheldure):
 
         out = []
         for item in fetch:
-            out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
+            item_time = datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M')
+            out_item = {'sh_id': item[2],
+                        'date_time': item_time,
+                        'client_id': item[1],
+                        'client_name': item[3],
+                        'accepted': item[4],
+                        'pending_change': item[5]}
+            # out_item = {item[2]: datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M')}
+            out.append(out_item)
+            # out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
+
 
         # формирую словарик
         print({'status': True, 'schedule': out, 'timezone': timezone})
