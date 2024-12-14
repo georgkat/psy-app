@@ -30,6 +30,7 @@ from models.user import (UserCreate,
                          ReSelectTime,
                          GetSomeoneData,
                          CancelTherapy,
+                         DocAppoint,
                          DocRegister,
                          DocScheldure,
                          ApproveTherapistToken,
@@ -2888,6 +2889,52 @@ def admin_update_therapist(data: AdminUpdateDoc):
 
     return {'status': True}
 
+@app.post('/doctor_appoint_client')
+def doctor_appoint_client(data: DocAppoint):
+    try:
+        token = data.session_token
+        user_id = data.user_id
+        date_time = datetime.datetime.strptime(data.date_time, '%d-%m-%Y %H:%M')
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_token)
+        doc_id = cur.fetchall()[0][0]
+
+        sql_has_theraipst = f'SELECT has_therapist FROM clients WHERE client_id = {user_id}'
+        cur.execute(sql_has_theraipst)
+
+        check_id = cur.fetchall()[0][0]
+
+        if check_id == doc_id:
+            sql_appoint = f'INSERT INTO schedule (doctor_id, date_time, client, accepted) VALUES ({doc_id}, {date_time}, {user_id}, 1)'
+            cur.execute(sql_appoint)
+
+        else:
+            con.commit()
+            cur.close()
+            con.close()
+            return {'status': False,
+                    'error': f'doctor_appoint_client error: данные клиента не соответствуют даммым доктора'}
+
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {'status': True}
+
+
+
+    except Exception as e:
+        print({'status': False,
+               'error': f'doctor_appoint_client error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'doctor_appoint_client error: {e}, {traceback.extract_stack()}'}
+
+
         # Session_data
 
     #     sql = f'SELECT sh_id, date_time, pending_change FROM schedule WHERE client = {data.user_id}'
@@ -2906,7 +2953,7 @@ def admin_update_therapist(data: AdminUpdateDoc):
     #             sch_data = {}
     #             sch_data['pending'] = True
     #             sch_data['ch_id'] = fetch_pending[0][0]
-    #             sch_data['old_sh_id'] = fetch_pending[0][1]
+   #             sch_data['old_sh_id'] = fetch_pending[0][1]
     #             sch_data['old_sh_date_time'] = fetch_pending[0][2]
     #             sch_data['new_sh_id'] = fetch_pending[0][3]
     #             sch_data['new_sh_date_time'] = fetch_pending[0][4]

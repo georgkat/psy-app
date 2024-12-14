@@ -197,6 +197,11 @@ class SingleToken(CoreModel):
     session_token: str
 
 
+class DocAppoint(CoreModel):
+    session_token: str
+    user_id: int
+    date_time: str
+
 class GetSomeoneData(CoreModel):
     session_token: str
     user_id: int
