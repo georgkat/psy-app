@@ -29,6 +29,7 @@ from models.user import (UserCreate,
                          SelectTime,
                          ReSelectTime,
                          GetSomeoneData,
+                         GetSomeoneDataBatch,
                          CancelTherapy,
                          DocAppoint,
                          DocRegister,
@@ -1430,7 +1431,9 @@ def doctor_schedule(data: DocScheldure):
                 out_item = {'sh_id': item[2],
                             'date_time': item_time,
                             'client_id': item[1],
-                            'client_name': item[3]}
+                            'client_name': item[3],
+                            'accepted': item[4],
+                            'pending_change': item[5]}
                 out.append(out_item)
                 # out.append(datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M'))
 
@@ -2297,7 +2300,7 @@ def get_clients_therapist_schedule(data: SingleToken):
         doc_id = fetch[0][1]
 
         if doc_id:
-            sql_1 = f'SELECT sh_id, date_time, client, accepted FROM schedule WHERE client IS NULL OR client = {client_id} AND doctor_id = {doc_id} '
+            sql_1 = f'SELECT sh_id, date_time, client, accepted FROM schedule WHERE doctor_id = {doc_id} AND (client IS NULL OR client = {client_id})'
             cur.execute(sql_1)
             fetch = cur.fetchall()
             # print(fetch)
@@ -2465,6 +2468,142 @@ def get_user_data(data: GetSomeoneData):
                'error': f'get_user_data error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'get_user_data error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/get_user_data_batch')
+def get_user_data_batch(data: GetSomeoneDataBatch):
+    try:
+        token = data.session_token
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        sql = f'SELECT user_id, is_therapist FROM tokens JOIN users ON tokens.user_id = users.id WHERE token = "{token}"'
+        cur.execute(sql)
+
+        fetch = cur.fetchall()
+        is_therapist = fetch[0][1]
+
+        if is_therapist:
+            print('is therapist')
+            doc_id = fetch[0][0]
+            s = [f's_{i}' for i in range(0, 29)]
+            s = ', '.join(s)
+            sql = (f'SELECT clients.client_id, '
+                   f'clients.name, '
+                   f'user_age, '
+                   f'NULL, '
+                   f'schedule.pending_change, '
+                   f'images.data, '
+                   f'images.type, '
+                   f'{s} '
+                   f'FROM clients '
+                   f'JOIN schedule ON clients.client_id = schedule.client '
+                   f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
+                   f'LEFT JOIN images ON clients.user_photo = images.img_id '
+                   f'WHERE clients.client_id = {data.user_id} AND schedule.doctor_id = {doc_id}')  # TODO добавить has_therapist = doc_id
+            print(sql)
+            cur.execute(sql)
+            fetch = cur.fetchall()
+            if fetch:
+                client_id = fetch[0][0]
+                client_name = fetch[0][1]
+                client_age = fetch[0][2]
+                client_photo = fetch[0][6] + ';' + fetch[0][5].decode() if fetch[0][5] else None
+                client_sessions_count = fetch[0][3]
+                s = fetch[0][8:]
+                s_out = []
+                for idx, i in enumerate(s):
+                    if i != 0:
+                        s_out.append(idx)
+
+                pending = fetch[0][4]
+                if pending:
+                    sql = f'SELECT ch_id, old_sh_id, old_sh.date_time, new_sh_id, new_sh.date_time, who_asked FROM change_schedule JOIN schedule AS old_sh ON change_schedule.old_sh_id = old_sh.sh_id JOIN schedule AS new_sh ON change_schedule.new_sh_id = new_sh.sh_id WHERE change_schedule.client_id = {data.user_id} AND change_schedule.doc_id = {doc_id}'
+                    print(sql)
+                    cur.execute(sql)
+                    fetch_pending = cur.fetchall()
+                    sch_data = {}
+                    sch_data['pending'] = True
+                    sch_data['ch_id'] = fetch_pending[0][0]
+                    sch_data['old_sh_id'] = fetch_pending[0][1]
+                    sch_data['old_sh_date_time'] = fetch_pending[0][2]
+                    sch_data['new_sh_id'] = fetch_pending[0][3]
+                    sch_data['new_sh_date_time'] = fetch_pending[0][4]
+                    sch_data['who_asked'] = fetch_pending[0][5]
+                    sch_data['accepted'] = 0
+                else:
+                    sql = f'SELECT sh_id, date_time, accepted FROM schedule WHERE client = {data.user_id} AND doctor_id = {doc_id}'
+                    print(sql)
+                    cur.execute(sql)
+                    fetch_normal = cur.fetchall()
+                    sch_data = {}
+                    sch_data['pending'] = False
+                    sch_data['ch_id'] = None
+                    sch_data['old_sh_id'] = fetch_normal[0][0]
+                    sch_data['old_sh_date_time'] = fetch_normal[0][1]
+                    sch_data['new_sh_id'] = None
+                    sch_data['new_sh_date_time'] = None
+                    sch_data['who_asked'] = None
+                    sch_data['accepted'] = fetch_normal[0][2]
+            else:
+                s = [f's_{i}' for i in range(0, 29)]
+                s = ', '.join(s)
+
+                sql = (f'SELECT '
+                       f'clients.name, '
+                       f'user_age, '
+                       f'NULL, '
+                       f'images.data, '
+                       f'images.type, '
+                       f'{s} '
+                       f'FROM clients '
+                       f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
+                       f'LEFT JOIN images ON clients.user_photo = images.img_id '
+                       f'WHERE clients.client_id = {data.user_id}')
+                print(sql)
+                cur.execute(sql)
+                fetch_others = cur.fetchall()
+
+                s = fetch_others[0][5:]
+                print('s')
+                s_out = []
+                for idx, i in enumerate(s):
+                    if i != 0:
+                        s_out.append(idx)
+
+                client_id = data.user_id
+                client_name = fetch_others[0][0]
+                client_age = fetch_others[0][1]
+                print('cliph')
+                client_photo = fetch_others[0][4] + ';' + fetch_others[0][3].decode() if fetch_others[0][3] else None
+                user_age = 0
+                sch_data = []
+
+            con.commit()
+            cur.close()
+            con.close()
+
+
+            return {'status': True,
+                    'client_id': client_id,
+                    'name': client_name,
+                    'age': client_age,
+                    'client_photo': client_photo,
+                    'sessions_count': 0,
+                    'sch_data': sch_data,
+                    'client_symptoms': s_out}
+
+        con.commit()
+        cur.close()
+        con.close()
+        return {'status': False}
+    except Exception as e:
+        print({'status': False,
+               'error': f'get_user_data_batch error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'get_user_data_batch error: {e}, {traceback.extract_stack()}'}
+
 
 
 @app.post('/cancel_session')
@@ -2909,7 +3048,7 @@ def doctor_appoint_client(data: DocAppoint):
         check_id = cur.fetchall()[0][0]
 
         if check_id == doc_id:
-            sql_appoint = f'INSERT INTO schedule (doctor_id, date_time, client, accepted) VALUES ({doc_id}, {date_time}, {user_id}, 1)'
+            sql_appoint = f'INSERT INTO schedule (doctor_id, date_time, client, accepted) VALUES ({doc_id}, "{date_time}", {user_id}, 1)'
             cur.execute(sql_appoint)
 
         else:
