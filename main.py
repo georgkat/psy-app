@@ -3065,6 +3065,8 @@ def doctor_appoint_client(data: DocAppoint):
         check_id = cur.fetchall()[0][0]
 
         if check_id == doc_id:
+            sql_deactivate = f'DELETE FROM schedule WHERE doctor_id = {doc_id} AND client = {user_id}'
+            cur.execute(sql_deactivate)
             sql_appoint = f'INSERT INTO schedule (doctor_id, date_time, client, accepted) VALUES ({doc_id}, "{date_time}", {user_id}, 1)'
             cur.execute(sql_appoint)
 
