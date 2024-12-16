@@ -206,6 +206,12 @@ class GetSomeoneData(CoreModel):
     session_token: str
     user_id: int
 
+
+class GetSomeoneDataBatch(CoreModel):
+    session_token: str
+    user_id: list
+
+
 class ApproveTherapistToken(CoreModel):
     session_token: str
     doc_id: int
