@@ -141,6 +141,14 @@ def send_email_func(to_addr, sender = '', noreply = True, author = None, passwor
         except:
             raise Exception
 
+
+def create_session_func(doc_id, client_id, sh_id):
+    room_id = uuid.uuid4()
+
+    sql_create_session = f'INSERT INTO sessions (room_id, doc_id, client_id, sh_id) VALUES ("{room_id}", {doc_id}, {client_id}, {sh_id})'
+
+    return {'status': True, 'room_id': room_id}
+
 @app.get("/doc")
 def read_docs():
     return get_swagger_ui_html(openapi_url="/openapi.json")
@@ -2484,11 +2492,14 @@ def get_user_data_batch(data: GetSomeoneDataBatch):
         fetch = cur.fetchall()
         is_therapist = fetch[0][1]
 
+        clients_out = []
+
         if is_therapist:
             print('is therapist')
             doc_id = fetch[0][0]
             s = [f's_{i}' for i in range(0, 29)]
             s = ', '.join(s)
+            clients = str(tuple(data.user_id))
             sql = (f'SELECT clients.client_id, '
                    f'clients.name, '
                    f'user_age, '
@@ -2501,51 +2512,56 @@ def get_user_data_batch(data: GetSomeoneDataBatch):
                    f'JOIN schedule ON clients.client_id = schedule.client '
                    f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
                    f'LEFT JOIN images ON clients.user_photo = images.img_id '
-                   f'WHERE clients.client_id = {data.user_id} AND schedule.doctor_id = {doc_id}')  # TODO добавить has_therapist = doc_id
+                   f'WHERE clients.client_id IN {clients} AND schedule.doctor_id = {doc_id}')  # TODO добавить has_therapist = doc_id
             print(sql)
             cur.execute(sql)
             fetch = cur.fetchall()
-            if fetch:
-                client_id = fetch[0][0]
-                client_name = fetch[0][1]
-                client_age = fetch[0][2]
-                client_photo = fetch[0][6] + ';' + fetch[0][5].decode() if fetch[0][5] else None
-                client_sessions_count = fetch[0][3]
-                s = fetch[0][8:]
-                s_out = []
-                for idx, i in enumerate(s):
-                    if i != 0:
-                        s_out.append(idx)
 
-                pending = fetch[0][4]
-                if pending:
-                    sql = f'SELECT ch_id, old_sh_id, old_sh.date_time, new_sh_id, new_sh.date_time, who_asked FROM change_schedule JOIN schedule AS old_sh ON change_schedule.old_sh_id = old_sh.sh_id JOIN schedule AS new_sh ON change_schedule.new_sh_id = new_sh.sh_id WHERE change_schedule.client_id = {data.user_id} AND change_schedule.doc_id = {doc_id}'
-                    print(sql)
-                    cur.execute(sql)
-                    fetch_pending = cur.fetchall()
-                    sch_data = {}
-                    sch_data['pending'] = True
-                    sch_data['ch_id'] = fetch_pending[0][0]
-                    sch_data['old_sh_id'] = fetch_pending[0][1]
-                    sch_data['old_sh_date_time'] = fetch_pending[0][2]
-                    sch_data['new_sh_id'] = fetch_pending[0][3]
-                    sch_data['new_sh_date_time'] = fetch_pending[0][4]
-                    sch_data['who_asked'] = fetch_pending[0][5]
-                    sch_data['accepted'] = 0
-                else:
-                    sql = f'SELECT sh_id, date_time, accepted FROM schedule WHERE client = {data.user_id} AND doctor_id = {doc_id}'
-                    print(sql)
-                    cur.execute(sql)
-                    fetch_normal = cur.fetchall()
-                    sch_data = {}
-                    sch_data['pending'] = False
-                    sch_data['ch_id'] = None
-                    sch_data['old_sh_id'] = fetch_normal[0][0]
-                    sch_data['old_sh_date_time'] = fetch_normal[0][1]
-                    sch_data['new_sh_id'] = None
-                    sch_data['new_sh_date_time'] = None
-                    sch_data['who_asked'] = None
-                    sch_data['accepted'] = fetch_normal[0][2]
+            if fetch:
+                # print(fetch)
+                for row in range(0, len(fetch)):
+                    client_id = fetch[row][0]
+                    client_name = fetch[row][1]
+                    client_age = fetch[row][2]
+                    client_photo = fetch[row][6] + ';' + fetch[row][5].decode() if fetch[row][5] else None
+                    client_sessions_count = fetch[row][3]
+                    s = fetch[row][8:]
+                    s_out = []
+                    for idx, i in enumerate(s):
+                        if i != 0:
+                            s_out.append(idx)
+
+                    pending = fetch[row][4]
+                    if pending:
+                        sql = f'SELECT ch_id, old_sh_id, old_sh.date_time, new_sh_id, new_sh.date_time, who_asked FROM change_schedule JOIN schedule AS old_sh ON change_schedule.old_sh_id = old_sh.sh_id JOIN schedule AS new_sh ON change_schedule.new_sh_id = new_sh.sh_id WHERE change_schedule.client_id = {client_id} AND change_schedule.doc_id = {doc_id}'
+                        print(sql)
+                        cur.execute(sql)
+                        fetch_pending = cur.fetchall()
+                        sch_data = {}
+                        sch_data['pending'] = True
+                        sch_data['ch_id'] = fetch_pending[0][0]
+                        sch_data['old_sh_id'] = fetch_pending[0][1]
+                        sch_data['old_sh_date_time'] = fetch_pending[0][2]
+                        sch_data['new_sh_id'] = fetch_pending[0][3]
+                        sch_data['new_sh_date_time'] = fetch_pending[0][4]
+                        sch_data['who_asked'] = fetch_pending[0][5]
+                        sch_data['accepted'] = 0
+                    else:
+                        sql = f'SELECT sh_id, date_time, accepted FROM schedule WHERE client IN {clients} AND doctor_id = {doc_id}'
+                        print(sql)
+                        cur.execute(sql)
+                        fetch_normal = cur.fetchall()
+                        for row in range(0, len(fetch_normal)):
+                            sch_data = {}
+                            sch_data['pending'] = False
+                            sch_data['ch_id'] = None
+                            sch_data['old_sh_id'] = fetch_normal[row][0]
+                            sch_data['old_sh_date_time'] = fetch_normal[row][1]
+                            sch_data['new_sh_id'] = None
+                            sch_data['new_sh_date_time'] = None
+                            sch_data['who_asked'] = None
+                            sch_data['accepted'] = fetch_normal[row][2]
+                        clients_out.append({'client_id': client_id, 'name': client_name, 'age': client_age, 'client_photo': client_photo, 'sessions_count': 0, 'sch_data': sch_data, 'client_symptoms': s_out})
             else:
                 s = [f's_{i}' for i in range(0, 29)]
                 s = ', '.join(s)
@@ -2579,20 +2595,21 @@ def get_user_data_batch(data: GetSomeoneDataBatch):
                 client_photo = fetch_others[0][4] + ';' + fetch_others[0][3].decode() if fetch_others[0][3] else None
                 user_age = 0
                 sch_data = []
+                clients_out.append({'client_id': client_id, 'name': client_name, 'age': client_age, 'client_photo': client_photo, 'sessions_count': 0, 'sch_data': sch_data, 'client_symptoms': s_out})
 
             con.commit()
             cur.close()
             con.close()
 
 
-            return {'status': True,
-                    'client_id': client_id,
-                    'name': client_name,
-                    'age': client_age,
-                    'client_photo': client_photo,
-                    'sessions_count': 0,
-                    'sch_data': sch_data,
-                    'client_symptoms': s_out}
+            return {'status': True, 'clients_data': clients_out}
+                    # 'client_id': client_id,
+                    # 'name': client_name,
+                    # 'age': client_age,
+                    # 'client_photo': client_photo,
+                    # 'sessions_count': 0,
+                    # 'sch_data': sch_data,
+                    # 'client_symptoms': s_out}
 
         con.commit()
         cur.close()
@@ -3033,7 +3050,7 @@ def doctor_appoint_client(data: DocAppoint):
     try:
         token = data.session_token
         user_id = data.user_id
-        date_time = datetime.datetime.strptime(data.date_time, '%d-%m-%Y %H:%M')
+        date_time = datetime.datetime.strptime(data.date_time, '%Y-%m-%d %H:%M')
 
         con = mariadb.connect(**config)
         cur = con.cursor()
