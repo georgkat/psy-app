@@ -309,7 +309,7 @@ def register(data:UserCreate):
             con.close()
 
             content=f'Hello!\nYou have registred on Speakyourmind.help!\nYour new password is {password}'
-            send_email_func(to_addr=f'{data.user_email}', subject='SYM New Password', content=content)
+            send_email_func(to_addr=f'{data.user_email}', subject='SYM Registration', content=content)
 
             return {'status': True,
                     'token': f'{token}',
