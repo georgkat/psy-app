@@ -41,7 +41,7 @@ class UserCreate(CoreModel):
     """
     user_name: str
     user_email: EmailStr
-    password: Optional[constr(min_length=1, max_length=100)]
+    password: Optional[constr(min_length=1, max_length=100)] = None
 
     # @validator("username", pre=True)
     # def username_is_valid(cls, username: str) -> str:
