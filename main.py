@@ -284,12 +284,16 @@ def login(data: ActionUserLogin):
 def register(data:UserCreate):
     # TODO добавить токен
     try:
+        if not data.password:
+            password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
+        else:
+            password = data.password
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(f"SELECT * FROM users WHERE email = '{data.user_email}';")
         f = cur.fetchall()
         if f == []:
-            cur.execute(f"INSERT INTO users (email, password) VALUES ('{data.user_email}', '{data.password}') RETURNING id;")
+            cur.execute(f"INSERT INTO users (email, password) VALUES ('{data.user_email}', '{password}') RETURNING id;")
             f = cur.fetchall()
             client_id = f[0][0]
             cur.execute(f"INSERT INTO clients (client_id, name) VALUES ('{client_id}', '{data.user_name}');")
@@ -303,8 +307,13 @@ def register(data:UserCreate):
             con.commit()
             cur.close()
             con.close()
+
+            content=f'Hello!\nYou have registred on Speakyourmind.help!\nYour new password is {password}'
+            send_email_func(to_addr=f'{data.user_email}', subject='SYM New Password', content=content)
+
             return {'status': True,
-                    'token': f'{token}'}
+                    'token': f'{token}',
+                    'password': password}
         else:
             cur.close()
             con.close()
