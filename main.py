@@ -333,7 +333,7 @@ def register(data:UserCreate):
 
 @app.post("/get_client_data")
 def get_client_data(data: SingleToken):
-    try:
+    if True:
         token = data.session_token
 
         data_cols = 'clients.client_id, clients.name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo'
@@ -486,6 +486,8 @@ def get_client_data(data: SingleToken):
                     sql_1 = f"SELECT new_sh_id, who_asked FROM change_schedule WHERE old_sh_id = {old_sh_id}"
                     cur.execute(sql_1)
                     fetch_1 = cur.fetchall()
+                    print(sql_1)
+                    print(fetch_1)
                     new_sh_id = fetch_1[0][0]
                     pending = fetch_1[0][1]
                     sql_1 = f"SELECT date_time FROM schedule WHERE sh_id = {new_sh_id}"
@@ -510,11 +512,11 @@ def get_client_data(data: SingleToken):
         con.close()
 
         return out
-    except Exception as e:
-        print({'status': False,
-                'error': f'return_client_data error: {e}, {traceback.extract_stack()}'})
-        return {'status': False,
-                'error': f'return_client_data error: {e}, {traceback.extract_stack()}'}
+    # except Exception as e:
+    #     print({'status': False,
+    #             'error': f'return_client_data error: {e}, {traceback.extract_stack()}'})
+    #     return {'status': False,
+    #             'error': f'return_client_data error: {e}, {traceback.extract_stack()}'}
 
 @app.post("/update_client_data")
 def update_user(data: UserClient):
@@ -2282,7 +2284,7 @@ def recieve_sessions_for_therapist(data: SingleToken):
             normal_sessions_list.append(out_normal)
 
         pending_sessions_list = []
-        sql_1 = f'SELECT ch_id, ch.client_id, name, old_sh_id, new_sh_id, old_sh.date_time, new_sh.date_time FROM testdb.change_schedule ch JOIN schedule old_sh ON ch.old_sh_id = old_sh.sh_id JOIN schedule new_sh ON ch.new_sh_id = new_sh.sh_id JOIN clients ON ch.client_id = clients.client_id WHERE ch.doc_id = {doc_id} ORDER BY ch_id DESC;'
+        sql_1 = f'SELECT ch_id, ch.client_id, name, old_sh_id, new_sh_id, old_sh.date_time, new_sh.date_time, new_sh.pending_change FROM testdb.change_schedule ch JOIN schedule old_sh ON ch.old_sh_id = old_sh.sh_id JOIN schedule new_sh ON ch.new_sh_id = new_sh.sh_id JOIN clients ON ch.client_id = clients.client_id WHERE ch.doc_id = {doc_id} ORDER BY ch_id DESC;'
         cur.execute(sql_1)
         fetch_1 = cur.fetchall()
         for row in fetch_1:
@@ -2294,6 +2296,7 @@ def recieve_sessions_for_therapist(data: SingleToken):
             out_pending['new_sh_id'] = row[4]
             out_pending['old_time'] = row[5]
             out_pending['new_time'] = row[6]
+            out_pending['pending'] = row[7]
 
             pending_sessions_list.append(out_pending)
 
