@@ -181,6 +181,8 @@ def gen_password(data: UserLoginGen):
         fetch = cur.fetchall()
 
         if not fetch:
+            cur.close()
+            con.close()
             return {'status': False,
                     'error': f"Can't find user with email {email}"}
 
