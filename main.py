@@ -165,17 +165,30 @@ def send_email():
 
 @app.post("/generate_password")
 def gen_password(data: UserLoginGen):
-    # TODO оправлять фалсе если пользователя нет
     try:
         email = data.user_email
         password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
-        sql = f'UPDATE users SET password = "{password}" WHERE email = "{email}";'
+
         con = mariadb.connect(**config)
         cur = con.cursor()
+
+        sql_0 = f'SELECT * FROM users WHERE email = "{email}";'
+        cur.execute(sql_0)
+        fetch = cur.fetchall()
+
+        if not fetch:
+            return {'status': False,
+                    'error': f"Can't find user with email {email}"}
+
+        sql = f'UPDATE users SET password = "{password}" WHERE email = "{email}";'
+
         cur.execute(sql)
         con.commit()
         cur.close()
         con.close()
+
+        content = f'Hello!\n Your new password is {password}'
+        send_email_func(to_addr=f'{email}', subject='SYM New Password', content=content)
 
         print({"status": True,
                "password": password})
@@ -3065,7 +3078,7 @@ def doctor_appoint_client(data: DocAppoint):
         check_id = cur.fetchall()[0][0]
 
         if check_id == doc_id:
-            sql_deactivate = f'DELETE FROM schedule WHERE doctor_id = {doc_id} AND client = {user_id}'
+            sql_deactivate = f'DELETE FROM schedule WHERE doctor_id = {doc_id} AND client = {user_id}' # TODO сделать отправку в архив
             cur.execute(sql_deactivate)
             sql_appoint = f'INSERT INTO schedule (doctor_id, date_time, client, accepted) VALUES ({doc_id}, "{date_time}", {user_id}, 1)'
             cur.execute(sql_appoint)
