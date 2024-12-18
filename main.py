@@ -140,6 +140,7 @@ def send_email_func(to_addr, sender = '', noreply = True, author = None, passwor
                 conn.quit()
         except:
             print('SEND MAIL ERROR')
+            # TODO 550 ERROR RETURN
             pass
 
 
