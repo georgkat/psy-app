@@ -6,6 +6,7 @@
 import copy
 import datetime
 
+import asyncio
 import mariadb
 import uuid
 import string
@@ -122,7 +123,8 @@ def db_connection(sql: str):
     cur.close()
     con.close()
 
-def send_email_func(to_addr, sender = '', noreply = True, author = None, password = None, subject = '', content = ''):
+async def send_email_func(to_addr, sender = '', noreply = True, author = None, password = None, subject = '', content = ''):
+    # Попробовать асинх
     if noreply:
         try:
             password = 'BPW-XGN-r7g-p8v'
