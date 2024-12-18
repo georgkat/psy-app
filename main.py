@@ -139,7 +139,8 @@ def send_email_func(to_addr, sender = '', noreply = True, author = None, passwor
             finally:
                 conn.quit()
         except:
-            raise Exception
+            print('SEND MAIL ERROR')
+            pass
 
 
 def create_session_func(doc_id, client_id, sh_id):
@@ -320,6 +321,7 @@ def register(data:UserCreate):
             return {'status': False,
                     'error': 'registration error, user exists'}
     except Exception as e:
+        print(e)
         return {'status': False,
                 'error': f'/register error: {e} {traceback.extract_stack()}'}
 
