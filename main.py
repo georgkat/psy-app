@@ -335,7 +335,7 @@ def register(data:UserCreate):
 
 @app.post("/get_client_data")
 def get_client_data(data: SingleToken):
-    if True:
+    try:
         token = data.session_token
 
         data_cols = 'clients.client_id, clients.name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo'
@@ -514,11 +514,11 @@ def get_client_data(data: SingleToken):
         con.close()
 
         return out
-    # except Exception as e:
-    #     print({'status': False,
-    #             'error': f'return_client_data error: {e}, {traceback.extract_stack()}'})
-    #     return {'status': False,
-    #             'error': f'return_client_data error: {e}, {traceback.extract_stack()}'}
+    except Exception as e:
+        print({'status': False,
+                'error': f'return_client_data error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'return_client_data error: {e}, {traceback.extract_stack()}'}
 
 @app.post("/update_client_data")
 def update_user(data: UserClient):
