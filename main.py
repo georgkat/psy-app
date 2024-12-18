@@ -192,7 +192,7 @@ def gen_password(data: UserLoginGen):
         con.close()
 
         content = f'Hello!\n Your new password is {password}'
-        send_email_func(to_addr=f'{email}', subject='SYM New Password', content=content)
+        asyncio.run(send_email_func(to_addr=f'{email}', subject='SYM New Password', content=content))
 
         print({"status": True,
                "password": password})
@@ -308,12 +308,14 @@ def register(data:UserCreate):
             cur.execute(sql)
             sql = f"INSERT INTO client_symptoms (client_id) VALUES ('{client_id}');"
             cur.execute(sql)
+
+            content=f'Hello!\nYou have registred on Speakyourmind.help!\nYour new password is {password}'
+            asyncio.run(send_email_func(to_addr=f'{data.user_email}', subject='SYM Registration', content=content))
+
+
             con.commit()
             cur.close()
             con.close()
-
-            content=f'Hello!\nYou have registred on Speakyourmind.help!\nYour new password is {password}'
-            send_email_func(to_addr=f'{data.user_email}', subject='SYM Registration', content=content)
 
             return {'status': True,
                     'token': f'{token}',
@@ -1967,12 +1969,14 @@ def send_report_to_admin(data: AdminReport):
             # report_name = 'None'
 
         report_name = data.user_name if data.user_name else "anonymous"
-        send_email_func(to_addr='admin@speakyourmind.help',
+        asyncio.run(
+        asyncio.run(send_email_func(to_addr='admin@speakyourmind.help',
                         sender=report_email,
                         noreply=True,
                         author=report_email,
                         subject=data.report_subject + f': {str(datetime.datetime.now().ctime())}',
                         content=f'REPORT FROM {report_name} ({report_email}):\n' + data.report_text)
+        ))
         return {"status": True}
     except Exception as e:
         print({'status': False,
