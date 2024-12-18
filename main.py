@@ -866,8 +866,8 @@ def get_therapist_list(data: SingleToken):
 @app.post('/register_therapist')
 # TODO сделать генерацию пользователя
 def register_therapist(data: DocRegister):
-    # try:
-    if True:
+    try:
+    # if True:
         mail = data.doc_email
         password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
         con = mariadb.connect(**config)
@@ -1197,16 +1197,16 @@ def register_therapist(data: DocRegister):
                'user_photo': fph}
         print(out)
         return out
-    # except ValidationError as e:
-    #     print({'status': False,
-    #             'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'})
-    #     return {'status': False,
-    #             'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'}
-    # except Exception as e:
-    #     print({'status': False,
-    #             'error': f'register_therapist error: {e}, {traceback.extract_stack()}'})
-    #     return {'status': False,
-    #             'error': f'register_therapist error: {e}, {traceback.extract_stack()}'}
+    except ValidationError as e:
+        print({'status': False,
+                'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'})
+        return {'status': False,
+                'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'}
+    except Exception as e:
+        print({'status': False,
+                'error': f'register_therapist error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'register_therapist error: {e}, {traceback.extract_stack()}'}
 
 
 
