@@ -38,7 +38,8 @@ from models.user import (UserCreate,
                          ApproveTherapistToken,
                          AdminReport,
                          DocUpdate,
-                         AdminUpdateDoc)
+                         AdminUpdateDoc,
+                         DBHandler)
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -1440,6 +1441,7 @@ def get_doc_data(data: SingleToken):
 def doctor_schedule(data: DocScheldure):
     try:
         # разбираю данные с фронта
+        print('STARTING doctor_schedule')
         token = data.session_token
         schedule = data.schedule
         timezone = 0
@@ -1514,8 +1516,9 @@ def doctor_schedule(data: DocScheldure):
 
         # TODO check
 
-        sql = f'INSERT INTO schedule (doctor_id, date_time, client) values {to_sql}'
-
+        sql = f'INSERT INTO schedule (doctor_id, date_time, client) values {to_sql} ON DUPLICATE KEY UPDATE doctor_id = doctor_id, date_time = date_time'
+        print('SQL')
+        print(sql)
         cur.execute(sql)
         con.commit()
 
@@ -3133,6 +3136,25 @@ def doctor_appoint_client(data: DocAppoint):
                'error': f'doctor_appoint_client error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'doctor_appoint_client error: {e}, {traceback.extract_stack()}'}
+
+@app.post('/db_handler')
+def db_handler(data: DBHandler):
+    # e6c8e073-5c78-4b5a-9600-2c2cad20c868 - send old schedules to archive
+    # 11c4759b-a175-4451-b8a5-f879cf8afcb0
+    # 7d3e6b2b-84a8-4abd-a1f1-1f5bfd07b4f8
+    # b7617a99-9125-49de-a741-607279df76b2
+    # ef471a8e-06ee-4f25-8381-8e5983c918f8
+    # 18cbd8c9-430d-4ab1-ac3a-7f3285e9ce37
+    # 3e2076a9-b1ac-43b1-8706-d45d5fca21e6
+    # 1d73f702-3ba0-4b55-91a1-1fb5bda5fe1b
+    # 8fc25a83-eab3-494b-b188-d4f86f986b0e
+    # 95680ddd-3b1b-42fd-aa39-d661dac6e36d
+    if data.code == 'e6c8e073-5c78-4b5a-9600-2c2cad20c868':
+        sql = ('INSERT INTO archive_schedule (sh_id, doctor_id, date_time, client, accepted, pending_change) '
+               'SELECT * FROM schedule '
+               'WHERE date_time < NOW() '
+               'AND sh_id NOT IN (SELECT new_sh_id FROM change_schedule) '
+               'ON DUPLICATE KEY UPDATE archive_schedule.sh_id = schedule.sh_id;')
 
 
         # Session_data

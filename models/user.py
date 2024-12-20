@@ -302,3 +302,7 @@ class UserInDB(IDModelMixin, DateTimeModelMixin, UserBase):
     # @validator("password", pre=True)
     # def password_is_valid(cls, password: str) -> str:
     #     return validate_password(password)
+
+
+class DBHandler(CoreModel):
+    db_code: str
