@@ -460,7 +460,7 @@ def get_client_data(data: SingleToken):
                    f"doc_avatar "
                    f"FROM schedule "
                    f"JOIN doctors ON schedule.doctor_id = doctors.doc_id "
-                   f"WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]} AND pending_change IN (0, 1)")
+                   f"WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]} AND pending_change IN (0, 1) AND date_time > NOW() ")
             print(sql)
             cur.execute(sql)
             fetch = cur.fetchall()
@@ -1522,7 +1522,7 @@ def doctor_schedule(data: DocScheldure):
         cur.execute(sql)
         con.commit()
 
-        sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id} AND date_time > NOW()'
+        sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id} AND pending_change = 0'
 
         cur.execute(sql)
         fetch = cur.fetchall()
