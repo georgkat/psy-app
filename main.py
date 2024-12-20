@@ -673,18 +673,21 @@ def update_user_main(data: UserMainData):
         cur.execute(sql_1)
         cur.execute(sql_2)
 
-        # if data.user_photo:
-        photo_splitteed = data.user_photo.split(';')
-        photo_type = photo_splitteed[0]
-        base_64 = photo_splitteed[1]
-        sql_4 = f"INSERT INTO images (data, name, type) VALUES ('{base_64}', 'avatar', '{photo_type}') RETURNING img_id"
-        print(sql_4)
-        cur.execute(sql_4)
-        photo_id = cur.fetchall()[0][0]
-        print(photo_id)
+        if data.user_photo:
+            photo_splitteed = data.user_photo.split(';')
+            photo_type = photo_splitteed[0]
+            base_64 = photo_splitteed[1]
+            sql_4 = f"INSERT INTO images (data, name, type) VALUES ('{base_64}', 'avatar', '{photo_type}') RETURNING img_id"
+            print(sql_4)
+            cur.execute(sql_4)
+            photo_id = cur.fetchall()[0][0]
+            print(photo_id)
 
-        sql_5 = f'''UPDATE clients SET user_photo = {photo_id} WHERE client_id = {client_id}'''
-        cur.execute(sql_5)
+            sql_5 = f'''UPDATE clients SET user_photo = {photo_id} WHERE client_id = {client_id}'''
+            cur.execute(sql_5)
+        else:
+            sql_5 = f'''UPDATE clients SET user_photo = NULL WHERE client_id = {client_id}'''
+            cur.execute(sql_5)
 
         con.commit()
         cur.close()
