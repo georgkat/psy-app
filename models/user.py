@@ -97,11 +97,11 @@ class UserClient(CoreModel):
 
 class UserMainData(CoreModel):
     session_token: str
-    name: str
-    email: str
-    user_languages: list
-    user_timezone: int
-    user_photo: str
+    name: Optional[str] = None
+    email: Optional[str] = None
+    user_languages: Optional[list] = None
+    user_timezone: Optional[int] = None
+    user_photo: Optional[str] = None
     # user_photo: Optional[str] = None  # TODO CHANGE
 
 

@@ -660,19 +660,21 @@ def update_user_main(data: UserMainData):
             raise Exception
         client_id = fetch[0][0]
 
-        sql_0 = f"UPDATE users SET email = '{email}' WHERE id = {client_id}"
-        sql_1 = f"UPDATE clients SET name = '{name}', user_timezone = {user_timezone} WHERE client_id = {client_id}"
-
-        languages = [0, 0, 0]
-        for i in user_languages:
-            languages[i] = 1
-
-        sql_2 = f"UPDATE client_languages SET l_0 = {languages[0]}, l_1 = {languages[1]}, l_2 = {languages[2]} WHERE client_id = {client_id}"
-
-        cur.execute(sql_0)
-        cur.execute(sql_1)
-        cur.execute(sql_2)
-
+        if email:
+            sql_0 = f"UPDATE users SET email = '{email}' WHERE id = {client_id}"
+            cur.execute(sql_0)
+        if name:
+            sql_1 = f"UPDATE clients SET name = '{name}' WHERE client_id = {client_id}"
+            cur.execute(sql_1)
+        if user_languages:
+            languages = [0, 0, 0]
+            for i in user_languages:
+                languages[i] = 1
+            sql_2 = f"UPDATE client_languages SET l_0 = {languages[0]}, l_1 = {languages[1]}, l_2 = {languages[2]} WHERE client_id = {client_id}"
+            cur.execute(sql_2)
+        if user_timezone:
+            sql_3 = f"UPDATE clients SET user_timezone = {user_timezone} WHERE client_id = {client_id}"
+            cur.execute(sql_3)
         if data.user_photo:
             photo_splitteed = data.user_photo.split(';')
             photo_type = photo_splitteed[0]
@@ -684,9 +686,6 @@ def update_user_main(data: UserMainData):
             print(photo_id)
 
             sql_5 = f'''UPDATE clients SET user_photo = {photo_id} WHERE client_id = {client_id}'''
-            cur.execute(sql_5)
-        else:
-            sql_5 = f'''UPDATE clients SET user_photo = NULL WHERE client_id = {client_id}'''
             cur.execute(sql_5)
 
         con.commit()
