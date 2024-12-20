@@ -2305,7 +2305,7 @@ def recieve_sessions_for_therapist(data: SingleToken):
         sql_2 = f'SELECT client_id, clients.name, user_photo, images.data, images.type FROM clients LEFT JOIN images ON clients.user_photo = images.img_id WHERE has_therapist = {doc_id}'
         cur.execute(sql_2)
         fetch_2 = cur.fetchall()
-
+        print(fetch_2)
         clients_out = []
         if fetch_2:
             for row in fetch_2:
