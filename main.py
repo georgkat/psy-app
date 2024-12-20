@@ -2302,7 +2302,7 @@ def recieve_sessions_for_therapist(data: SingleToken):
 
             pending_sessions_list.append(out_pending)
 
-        sql_2 = f'SELECT client_id, name FROM clients WHERE has_therapist = {doc_id}'
+        sql_2 = f'SELECT client_id, clients.name, user_photo, images.data, images.type FROM clients JOIN images ON clients.user_photo = images.img_id WHERE has_therapist = {doc_id}'
         cur.execute(sql_2)
         fetch_2 = cur.fetchall()
 
@@ -2312,6 +2312,10 @@ def recieve_sessions_for_therapist(data: SingleToken):
                 client_out = {}
                 client_out['client_id'] = row[0]
                 client_out['name'] = row[1]
+                if row[3]:
+                    client_out['avatar'] = row[4] + ';' + row[3].decode()
+                else:
+                    client_out['avatar'] = None
                 clients_out.append(client_out)
 
         con.commit()
