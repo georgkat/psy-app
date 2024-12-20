@@ -1522,7 +1522,7 @@ def doctor_schedule(data: DocScheldure):
         cur.execute(sql)
         con.commit()
 
-        sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id}'
+        sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id} AND date_time > NOW()'
 
         cur.execute(sql)
         fetch = cur.fetchall()
