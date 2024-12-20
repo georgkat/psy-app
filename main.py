@@ -460,7 +460,7 @@ def get_client_data(data: SingleToken):
                    f"doc_avatar "
                    f"FROM schedule "
                    f"JOIN doctors ON schedule.doctor_id = doctors.doc_id "
-                   f"WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]} AND pending_change IN (0, 1) AND date_time > NOW() ")
+                   f"WHERE doctor_id = {out['has_therapist']} AND client = {fetch_0[0][0]} AND pending_change IN (0, 1)")
             print(sql)
             cur.execute(sql)
             fetch = cur.fetchall()
