@@ -2255,13 +2255,17 @@ def client_change_session_time(data: ReSelectTime):
         # cur.execute(sql_check_accepted)
         # accepted = cur.fetchall()[0][0]
 
+         print(2)
         sql_2 = f'UPDATE schedule SET pending_change = 1, accepted = 0 WHERE sh_id = {old_sh_id}'
         cur.execute(sql_2)
 
+        print(3)
         sql_3 = f'UPDATE schedule SET client = {client_id}, pending_change = 1 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
         cur.execute(sql_3)
 
+        print(4)
         sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 1)'
+        print(sql_4)
         cur.execute(sql_4)
 
         ch_id = None
@@ -2274,16 +2278,22 @@ def client_change_session_time(data: ReSelectTime):
         except:
             pass
 
+        print(4.5)
+
+
         if not ch_id:
             ch_id = data.ch_id
 
         if ch_id:
+            print(5)
             sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {ch_id}'
             cur.execute(sql)
             fetch = cur.fetchall()
             old_sh_id = fetch[0][0]
+            print(6)
             sql = f'UPDATE schedule SET client = NULL WHERE sh_id = {old_sh_id}'
             cur.execute(sql)
+            print(7)
             sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
             cur.execute(sql)
 
@@ -2315,25 +2325,30 @@ def therapist_change_session_time(data: ReSelectTime):
         con = mariadb.connect(**config)
         cur = con.cursor()
 
+        print(0)
         sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
         print(sql_0)
         cur.execute(sql_0)
         doc_id = cur.fetchall()[0][0]
 
+        print(1)
         sql_1 = f'SELECT client FROM schedule WHERE sh_id = {old_sh_id}'
         print(sql_1)
         cur.execute(sql_1)
         client_id = cur.fetchall()[0][0]
         print(client_id)
 
+        print(2)
         sql_2 = f'UPDATE schedule SET pending_change = 2, accepted = 0 WHERE sh_id = {old_sh_id}'
         print(sql_2)
         cur.execute(sql_2)
 
+        print(3)
         sql_3 = f'UPDATE schedule SET client = {client_id}, pending_change = 2 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
         print(sql_3)
         cur.execute(sql_3)
 
+        print(4)
         sql_4 = f'INSERT INTO change_schedule (client_id, doc_id, old_sh_id, new_sh_id, who_asked) VALUES ({client_id}, {doc_id}, {old_sh_id}, {sh_id}, 2)'
         print(sql_4)
         cur.execute(sql_4)
@@ -2446,7 +2461,6 @@ def recieve_sessions_for_therapist(data: SingleToken):
         sql_2 = f'SELECT client_id, clients.name, user_photo, images.data, images.type FROM clients LEFT JOIN images ON clients.user_photo = images.img_id WHERE has_therapist = {doc_id}'
         cur.execute(sql_2)
         fetch_2 = cur.fetchall()
-        print(fetch_2)
         clients_out = []
         if fetch_2:
             for row in fetch_2:
@@ -2566,7 +2580,6 @@ def get_user_data(data: GetSomeoneData):
                    f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
                    f'LEFT JOIN images ON clients.user_photo = images.img_id '
                    f'WHERE clients.client_id = {data.user_id} AND schedule.doctor_id = {doc_id}')  # TODO добавить has_therapist = doc_id
-            print(sql)
             cur.execute(sql)
             fetch = cur.fetchall()
             if fetch:
@@ -2625,7 +2638,6 @@ def get_user_data(data: GetSomeoneData):
                        f'JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
                        f'LEFT JOIN images ON clients.user_photo = images.img_id '
                        f'WHERE clients.client_id = {data.user_id}')
-                print(sql)
                 cur.execute(sql)
                 fetch_others = cur.fetchall()
 
