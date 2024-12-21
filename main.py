@@ -1862,6 +1862,7 @@ def approve_time_therapist(data: ApproveTime):
         doc_id = cur.fetchall()[0][0]
 
         if data.approved:
+            print('data.approved')
             sql_0 = f'UPDATE schedule SET accepted = 1, pending_change = 0 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
             print(sql_0)
             cur.execute(sql_0)
@@ -1879,6 +1880,7 @@ def approve_time_therapist(data: ApproveTime):
                 fetch_2 = cur.fetchall()
                 ch_id = fetch_2[0][0]
                 print(f'ch_id = {ch_id}')
+                print('we got ch_id')
             except:
                 pass
 
@@ -1899,7 +1901,7 @@ def approve_time_therapist(data: ApproveTime):
                 sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id} OR (doc_id = {doc_id} AND client_id = {client_id})'
                 print(sql)
                 cur.execute(sql)
-                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} OR (doctor_id = {doc_id} AND client = {client_id})'
+                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} OR (doctor_id = {doc_id} AND client = {client_id}) AND accepted = 0'
                 print(sql)
                 cur.execute(sql)
 
@@ -2274,7 +2276,7 @@ def client_change_session_time(data: ReSelectTime):
         cur.execute(sql_4)
 
         ch_id = None
-
+        print(5)
         try:
             sql_2 = f'SELECT ch_id FROM change_schedule WHERE client_id = {client_id} AND doc_id = {doc_id} AND new_sh_id = {old_sh_id}'
             cur.execute(sql_2)
