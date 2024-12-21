@@ -486,7 +486,7 @@ def get_client_data(data: SingleToken):
                 new_sh_id = None
                 if pending:
                     old_sh_id = fetch[0][3]
-                    sql_1 = f"SELECT new_sh_id, who_asked FROM change_schedule WHERE old_sh_id = {old_sh_id} OR new_sh_id = {old_sh_id} "
+                    sql_1 = f"SELECT new_sh_id, who_asked, old_sh_id FROM change_schedule WHERE old_sh_id = {old_sh_id} OR new_sh_id = {old_sh_id} "
                     cur.execute(sql_1)
                     fetch_1 = cur.fetchall()
                     print(sql_1)
@@ -495,10 +495,15 @@ def get_client_data(data: SingleToken):
                     pending = fetch_1[0][1]
                     sql_1 = f"SELECT date_time FROM schedule WHERE sh_id = {new_sh_id}"
                     cur.execute(sql_1)
-                    fetch_1 = cur.fetchall()
-                    new_time = fetch_1[0][0]
+                    fetch_2 = cur.fetchall()
+
+                    sql_1 = f"SELECT date_time FROM schedule WHERE sh_id = {fetch_1[0][2]}"
+                    cur.execute(sql_1)
+                    fetch_3 = cur.fetchall()
+                    new_time = fetch_2[0][0]
+                    old_time = fetch_3[0][0]
                 print(fetch)
-                out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_photo': avatar, 'doc_name': fetch[0][0], 'sh_id': old_sh_id, 'sch_time': fetch[0][1], 'pending': pending, 'new_sh_id': new_sh_id, 'new_sch_time': new_time, 'accepted': accepted}
+                out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_photo': avatar, 'doc_name': fetch[0][0], 'sh_id': old_sh_id, 'sch_time': old_time, 'pending': pending, 'new_sh_id': new_sh_id, 'new_sch_time': new_time, 'accepted': accepted}
             else:
                 print('else')
                 sql = f"SELECT doc_name, images.data, images.type FROM doctors LEFT JOIN images ON doctors.doc_avatar = images.img_id WHERE doc_id = {out['has_therapist']}"
@@ -2131,6 +2136,7 @@ def client_change_session_time(data: ReSelectTime):
         sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
         cur.execute(sql_0)
         client_id = cur.fetchall()[0][0]
+        print(f'client id = {client_id}')
 
         sql_1 = f'SELECT has_therapist FROM clients WHERE client_id = {client_id}'
         cur.execute(sql_1)
