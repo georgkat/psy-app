@@ -1888,14 +1888,19 @@ def approve_time_therapist(data: ApproveTime):
             if ch_id:
                 print(ch_id)
                 sql = f'SELECT old_sh_id FROM change_schedule WHERE ch_id = {ch_id}'
+                print(sql)
                 cur.execute(sql)
                 fetch = cur.fetchall()
                 old_sh_id = fetch[0][0]
+                print(old_sh_id)
                 sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id}'
+                print(sql)
                 cur.execute(sql)
-                sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id} OR (doc_id = {doc_id} AND client = {client_id})'
+                sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id} OR (doc_id = {doc_id} AND client_id = {client_id})'
+                print(sql)
                 cur.execute(sql)
-                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} OR (doc_id = {doc_id} AND client = {client_id})'
+                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} OR (doctor_id = {doc_id} AND client = {client_id})'
+                print(sql)
                 cur.execute(sql)
 
 
