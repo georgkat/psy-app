@@ -2255,7 +2255,7 @@ def client_change_session_time(data: ReSelectTime):
         # cur.execute(sql_check_accepted)
         # accepted = cur.fetchall()[0][0]
 
-         print(2)
+        print(2)
         sql_2 = f'UPDATE schedule SET pending_change = 1, accepted = 0 WHERE sh_id = {old_sh_id}'
         cur.execute(sql_2)
 
