@@ -203,6 +203,11 @@ def gen_password(data: UserLoginGen):
         return {"status": True,
                 "password": password}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'/login error: {e} {traceback.extract_stack()}'})
         return {'status': False,
@@ -283,6 +288,11 @@ def login(data: ActionUserLogin):
             return {'status': False,
                     'error': 'login error: incorrect email/password'}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         return {'status': False,
                 'error': f'/login error: {e} {traceback.extract_stack()}'}
 
@@ -329,6 +339,11 @@ def register(data:UserCreate):
             return {'status': False,
                     'error': 'registration error, user exists'}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print(e)
         return {'status': False,
                 'error': f'/register error: {e} {traceback.extract_stack()}'}
@@ -480,7 +495,8 @@ def get_client_data(data: SingleToken):
                     print('avatar')
                 else:
                     avatar = None
-                new_time = ''
+                old_time = fetch[0][1]
+                new_time = fetch[0][1]
                 print('old_sh_id')
                 old_sh_id = fetch[0][3]
                 new_sh_id = None
@@ -521,6 +537,11 @@ def get_client_data(data: SingleToken):
 
         return out
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'return_client_data error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -595,6 +616,11 @@ def update_user(data: UserClient):
         return {'status': True}
 
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'update_client error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -641,6 +667,11 @@ def update_user_main(data: UserTherapistReview):
         return {'status': True}
 
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                'error': f'user_therpist_cancel_review error: {e}, {traceback.extract_stack()}'})
 
@@ -700,6 +731,11 @@ def update_user_main(data: UserMainData):
 
         return {'status': True}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'update_client_main_data error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -756,6 +792,11 @@ def update_client_request(data: UserRequestData):
 
         return {'status': True}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'/update_user_request error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -865,6 +906,11 @@ def get_therapist_list(data: SingleToken):
                "list_of_doctors": out_docs}
         return out
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'list_therapist for client error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -1208,11 +1254,21 @@ def register_therapist(data: DocRegister):
         print(out)
         return out
     except ValidationError as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'})
         return {'status': False,
                 'error': f'register_therapist error: validation error, {e}, {traceback.extract_stack()}, ЭТО ЗНАЧИТ С ФРОНТА ПРИШЛО ЧТО-ТО НЕ ТО!'}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'register_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -1552,6 +1608,11 @@ def doctor_schedule(data: DocScheldure):
         con.close()
         return {'status': True, 'schedule': out, 'timezone': timezone}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'doctor_schedule error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -1675,6 +1736,11 @@ def update_therapist(data: DocUpdate):
             print({'status': True})
             return {'status': True}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'update_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -1727,6 +1793,11 @@ def get_available_slots(data: SingleToken):
         print({'status': True, 'slots': sh_list})
         return {'status': True, 'slots': sh_list}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False, 'error': f'get_available_slots error: {e}, {traceback.extract_stack()}'})
         return {'status': False, 'error': f'get_available_slots error: {e}, {traceback.extract_stack()}'}
 
@@ -1822,8 +1893,11 @@ def approve_time_therapist(data: ApproveTime):
                 old_sh_id = fetch[0][0]
                 sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id}'
                 cur.execute(sql)
-                sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
+                sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id} OR (doc_id = {doc_id} AND client = {client_id})'
                 cur.execute(sql)
+                sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} OR (doc_id = {doc_id} AND client = {client_id})'
+                cur.execute(sql)
+
 
         con.commit()
         cur.close()
@@ -1831,6 +1905,11 @@ def approve_time_therapist(data: ApproveTime):
 
         return {'status': True}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False, 'error': f'approve_time_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False, 'error': f'approve_time_therapist error: {e}, {traceback.extract_stack()}'}
 
@@ -1907,6 +1986,11 @@ def approve_time_client(data: ApproveTime):
 
         return {'status': True}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False, 'error': f'approve_time_client error: {e}, {traceback.extract_stack()}'})
         return {'status': False, 'error': f'approve_time_client error: {e}, {traceback.extract_stack()}'}
 
@@ -1956,6 +2040,11 @@ def login_admin(data: ActionUserLogin):
             return {'status': False,
                     'error': 'login_admin error: incorrect email/password'}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'login_admin error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -1997,6 +2086,11 @@ def send_report_to_admin(data: AdminReport):
         ))
         return {"status": True}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                'error': f'report_to_admin error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -2030,6 +2124,11 @@ def approve_therapist(data: ApproveTherapistToken):
         return {'status': False,
                 'error': 'approve_therapist error: no such admin, or admin not logged in'}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'approve_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -2070,6 +2169,11 @@ def list_therapists(data: SingleToken):
             return {'status': True,
                     'list': out}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'list_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -2112,6 +2216,11 @@ def list_clients(data: SingleToken):
         cur.close()
 
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                 'error': f'list_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -2184,6 +2293,11 @@ def client_change_session_time(data: ReSelectTime):
 
         return {"status": True}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                'error': f'client_change_session_time error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -2210,6 +2324,7 @@ def therapist_change_session_time(data: ReSelectTime):
         print(sql_1)
         cur.execute(sql_1)
         client_id = cur.fetchall()[0][0]
+        print(client_id)
 
         sql_2 = f'UPDATE schedule SET pending_change = 2, accepted = 0 WHERE sh_id = {old_sh_id}'
         print(sql_2)
@@ -2253,6 +2368,11 @@ def therapist_change_session_time(data: ReSelectTime):
 
         return {"status": True}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                'error': f'therapist_change_session_time error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -2348,6 +2468,11 @@ def recieve_sessions_for_therapist(data: SingleToken):
                 'pending_sessions_list': pending_sessions_list,
                 'clients_list': clients_out}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                'error': f'recieve_sessions_list_for_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -2397,6 +2522,11 @@ def get_clients_therapist_schedule(data: SingleToken):
             con.close()
             return {'status': False, 'error': 'Client have no therapist'}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                'error': f'get_clients_therapist_schedule error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -2533,6 +2663,11 @@ def get_user_data(data: GetSomeoneData):
         con.close()
         return {'status': False}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                'error': f'get_user_data error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -2677,6 +2812,11 @@ def get_user_data_batch(data: GetSomeoneDataBatch):
         con.close()
         return {'status': False}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                'error': f'get_user_data_batch error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -2771,6 +2911,11 @@ def cancel_session(data: CancelSession):
 
         return {'status': True}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                'error': f'cancel_session error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -2873,6 +3018,12 @@ def admin_get_client(data: GetSomeoneData):
         con.close()
         return {'status': False}
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
+
         print({'status': False,
                'error': f'admin_get_client error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -3027,6 +3178,11 @@ def admin_get_therapist(data: GetSomeoneData):
         return out
 
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                'error': f'admin_get_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
@@ -3034,77 +3190,87 @@ def admin_get_therapist(data: GetSomeoneData):
 
 @app.post('/admin_update_therapist')
 def admin_update_therapist(data: AdminUpdateDoc):
+    try:
+        con = mariadb.connect(**config)
+        cur = con.cursor()
 
-    con = mariadb.connect(**config)
-    cur = con.cursor()
+        token = data.session_token
+        doc_id = data.doc_id
+        sql_check = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
+        cur.execute(sql_check)
+        token_check = cur.fetchall()
+        # if not token_check:
+        #     return {'status': False}
+        doc_email = data.doc_email
+        doc_name = data.doc_name
+        doc_gender = data.doc_gender
+        doc_phone = data.doc_phone
+        doc_session_cost = data.doc_session_cost
+        if data.doc_avatar == 0:
+            doc_avatar = "NULL"
+        else:
+            doc_avatar = data.doc_avatar
+        doc_language = data.doc_language
+        doc_method = data.doc_method
 
-    token = data.session_token
-    doc_id = data.doc_id
-    sql_check = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
-    cur.execute(sql_check)
-    token_check = cur.fetchall()
-    # if not token_check:
-    #     return {'status': False}
-    doc_email = data.doc_email
-    doc_name = data.doc_name
-    doc_gender = data.doc_gender
-    doc_phone = data.doc_phone
-    doc_session_cost = data.doc_session_cost
-    if data.doc_avatar == 0:
-        doc_avatar = "NULL"
-    else:
-        doc_avatar = data.doc_avatar
-    doc_language = data.doc_language
-    doc_method = data.doc_method
+        sql_email = f'UPDATE users SET email = "{doc_email}" WHERE id = {doc_id}'
 
-    sql_email = f'UPDATE users SET email = "{doc_email}" WHERE id = {doc_id}'
+        sql_main = (f'UPDATE doctors SET '
+                    f'doc_name = "{doc_name}", '
+                    f'doc_gender = {doc_gender}, '
+                    f'doc_phone = "{doc_phone}", '
+                    f'doc_avatar = {doc_avatar}, '
+                    f'doc_session_cost = {doc_session_cost} '
+                    f'WHERE doc_id = {doc_id}')
 
-    sql_main = (f'UPDATE doctors SET '
-                f'doc_name = "{doc_name}", '
-                f'doc_gender = {doc_gender}, '
-                f'doc_phone = "{doc_phone}", '
-                f'doc_avatar = {doc_avatar}, '
-                f'doc_session_cost = {doc_session_cost} '
-                f'WHERE doc_id = {doc_id}')
+        print(sql_main)
 
-    print(sql_main)
+        l_c = [f'l_{i}' for i in range(0, 3)]
+        l_v = [f'0' for i in range(0, 3)]
 
-    l_c = [f'l_{i}' for i in range(0, 3)]
-    l_v = [f'0' for i in range(0, 3)]
+        m_c = [f'm_{i}' for i in range(0, 17)]
+        m_v = [0 for i in range(0, 17)]
 
-    m_c = [f'm_{i}' for i in range(0, 17)]
-    m_v = [0 for i in range(0, 17)]
+        for v in doc_language:
+            l_v[v] = 1
+        for v in doc_method:
+            m_v[v] = 1
 
-    for v in doc_language:
-        l_v[v] = 1
-    for v in doc_method:
-        m_v[v] = 1
+        l_sql = []
+        m_sql = []
 
-    l_sql = []
-    m_sql = []
+        for index, column in enumerate(l_c):
+            l_sql.append(f'{column} = {l_v[index]}')
 
-    for index, column in enumerate(l_c):
-        l_sql.append(f'{column} = {l_v[index]}')
+        for index, column in enumerate(m_c):
+            m_sql.append(f'{column} = {m_v[index]}')
 
-    for index, column in enumerate(m_c):
-        m_sql.append(f'{column} = {m_v[index]}')
+        l_sql = ', '.join(l_sql)
+        m_sql = ', '.join(m_sql)
 
-    l_sql = ', '.join(l_sql)
-    m_sql = ', '.join(m_sql)
+        sql_language = f'UPDATE languages SET {l_sql} WHERE doc_id = {doc_id}'
+        sql_method = f'UPDATE methods SET {m_sql} WHERE doc_id = {doc_id}'
 
-    sql_language = f'UPDATE languages SET {l_sql} WHERE doc_id = {doc_id}'
-    sql_method = f'UPDATE methods SET {m_sql} WHERE doc_id = {doc_id}'
+        cur.execute(sql_email)
+        cur.execute(sql_main)
+        cur.execute(sql_language)
+        cur.execute(sql_method)
 
-    cur.execute(sql_email)
-    cur.execute(sql_main)
-    cur.execute(sql_language)
-    cur.execute(sql_method)
+        con.commit()
+        cur.close()
+        con.close()
 
-    con.commit()
-    cur.close()
-    con.close()
-
-    return {'status': True}
+        return {'status': True}
+    except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
+        print({'status': False,
+               'error': f'admin_update_therapist error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'admin_update_therapist error: {e}, {traceback.extract_stack()}'}
 
 @app.post('/doctor_appoint_client')
 def doctor_appoint_client(data: DocAppoint):
@@ -3148,6 +3314,11 @@ def doctor_appoint_client(data: DocAppoint):
 
 
     except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
         print({'status': False,
                'error': f'doctor_appoint_client error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
