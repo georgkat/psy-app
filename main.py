@@ -1737,6 +1737,10 @@ def select_slot_client(data: SelectTime):
     sql_0 = f'SELECT user_id FROM tokens WHERE token = "{token}"'
     cur.execute(sql_0)
     client_id = cur.fetchall()[0][0]
+    # TODO Сохранение в архив
+    sql_1 = f'UPDATE schedule SET client = NULL WHERE client = {client_id} AND doctor_id = {doc_id}'
+    print(sql_1)
+    cur.execute(sql_1)
 
     sql_1 = f'UPDATE schedule SET client = {client_id} WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
     print(sql_1)
