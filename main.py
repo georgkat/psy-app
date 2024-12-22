@@ -39,6 +39,7 @@ from models.user import (UserCreate,
                          AdminReport,
                          DocUpdate,
                          AdminUpdateDoc,
+                         CardData,
                          DBHandler)
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
@@ -3343,6 +3344,103 @@ def doctor_appoint_client(data: DocAppoint):
                'error': f'doctor_appoint_client error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'doctor_appoint_client error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/add_card')
+def add_card(data: CardData):
+    try:
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        token = data.session_token
+
+        sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_token)
+        user_id = cur.fetchall()[0][0]
+
+        sql = f"INSERT INTO card_data (user_id, card_number, card_holdar, card_cvc) VALUES ({user_id}, {data.card_number}, {data.card_holder}, {data.card_cvc})"
+        cur.execute(sql)
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {'status': True}
+    except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
+        print({'status': False,
+               'error': f'add_card error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'add_card error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/update_card')
+def update_card(data: CardData):
+    try:
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        token = data.session_token
+
+        sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_token)
+        user_id = cur.fetchall()[0][0]
+
+        sql = f"UPDATE card_data SET card_number = {data.card_number}, card_holdar = {data.card_holder}, card_cvc = {data.card_cvc}) WHERE user_id = {user_id}"
+        cur.execute(sql)
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {'status': True}
+    except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
+        print({'status': False,
+               'error': f'update_card error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'update_card error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/delete_card')
+def delete_card(data: SingleToken):
+    try:
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        token = data.session_token
+
+        sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_token)
+        user_id = cur.fetchall()[0][0]
+
+        sql = f"DELETE FROM card_data  WHERE user_id = {user_id}"
+        cur.execute(sql)
+
+        con.commit()
+        cur.close()
+        con.close()
+
+        return {'status': True}
+    except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
+        print({'status': False,
+               'error': f'update_card error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'update_card error: {e}, {traceback.extract_stack()}'}
+
 
 @app.post('/db_handler')
 def db_handler(data: DBHandler):

@@ -129,6 +129,13 @@ class AdminReport(CoreModel):
     report_text: str
 
 
+class CardData(CoreModel):
+    session_token: str
+    card_number: int
+    card_holder: str
+    card_cvc: int
+
+
 class AdminUpdateDoc(CoreModel):
     session_token: str
     doc_id: int
