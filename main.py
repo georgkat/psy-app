@@ -3498,7 +3498,9 @@ def check_sessionn(data: SingleToken):
 
         rooms = []
         for row in cur.fetchall():
+            print(row)
             rooms.append({'room': row[0], 'time': datetime.datetime.strftime(row[1], '%d-%m-%Y %H:%M')})
+            print(rooms)
 
         return {'status': True, 'rooms': rooms}
 
