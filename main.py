@@ -3384,6 +3384,8 @@ def add_card(data: CardData):
         sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
         cur.execute(sql_token)
         user_id = cur.fetchall()[0][0]
+        if not user_id:
+            return {'status': False}
 
         sql = f"INSERT INTO card_data (user_id, card_number, card_holder, card_cvc, card_valid_to) VALUES ({user_id}, {data.card_number}, '{data.card_holder}', {data.card_cvc}, '{data.card_valid_to}')"
         print(sql)
@@ -3420,6 +3422,8 @@ def update_card(data: CardData):
         sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
         cur.execute(sql_token)
         user_id = cur.fetchall()[0][0]
+        if not user_id:
+            return {'status': False}
 
         sql = f"UPDATE card_data SET card_number = {data.card_number}, card_holder = '{data.card_holder}', card_cvc = {data.card_cvc}, card_valid_to = '{data.card_valid_to}' WHERE user_id = {user_id}"
         cur.execute(sql)
@@ -3452,8 +3456,10 @@ def delete_card(data: SingleToken):
         sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
         cur.execute(sql_token)
         user_id = cur.fetchall()[0][0]
+        if not user_id:
+            return {'status': False}
 
-        sql = f"DELETE FROM card_data  WHERE user_id = {user_id}"
+        sql = f"DELETE FROM card_data WHERE user_id = {user_id}"
         cur.execute(sql)
 
         con.commit()
