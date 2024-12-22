@@ -3314,7 +3314,7 @@ def doctor_appoint_client(data: DocAppoint):
         if check_id == doc_id:
             sql_deactivate = f'DELETE FROM schedule WHERE doctor_id = {doc_id} AND client = {user_id}' # TODO сделать отправку в архив
             cur.execute(sql_deactivate)
-            sql_appoint = f'INSERT INTO schedule (doctor_id, date_time, client, accepted) VALUES ({doc_id}, "{date_time}", {user_id}, 1)'
+            sql_appoint = f'INSERT INTO schedule (doctor_id, date_time, client, accepted) VALUES ({doc_id}, "{date_time}", {user_id}, 1) ON DUPLICATE KEY UPDATE doctor_id = {doc_id}, date_time = {date_time}, client = {user_id}, accepted = 1'
             cur.execute(sql_appoint)
 
         else:
