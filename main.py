@@ -356,7 +356,7 @@ def get_client_data(data: SingleToken):
     try:
         token = data.session_token
 
-        data_cols = 'clients.client_id, clients.name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo'
+        data_cols = 'clients.client_id, clients.name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo, card_number '
         language_list = [f'l_{i}' for i in range(0,3)]
         language_cols = ', '.join(language_list)
         symptoms_list = [f's_{i}' for i in range(0,28)]
@@ -368,6 +368,7 @@ def get_client_data(data: SingleToken):
                  f'LEFT JOIN client_languages ON clients.client_id = client_languages.client_id '
                  f'LEFT JOIN client_symptoms ON clients.client_id = client_symptoms.client_id '
                  f'LEFT JOIN users ON clients.client_id = users.id '
+                 f'LEFT JOIN card_data ON clients.client_id = card_data.user_id '
                  f'WHERE token = "{token}";')
 
         print(sql_1)
@@ -444,6 +445,7 @@ def get_client_data(data: SingleToken):
                 out['user_photo'] = ""
             #except:
             #    out['user_photo'] = ""
+            out['user_card_data'] = str(fetch_0[0][14])[12:] if fetch_0[0][14] else ''
             print(out)
 
             print('382')
@@ -451,6 +453,7 @@ def get_client_data(data: SingleToken):
             out['client_id'] = fetch_0[0][0]
             out['name'] = fetch_0[0][1]
             out['email'] = fetch_0[0][10]
+            out['user_card_data'] = str(fetch_0[0][14])[12:] if fetch_0[0][14] else ''
             out["user_age"] = None
             out["user_experience"] = None
             out["user_type"] = None
