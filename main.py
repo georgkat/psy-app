@@ -75,6 +75,7 @@ config_serv = {
 
 configs = [config_serv, config_dock, config_pc]
 
+# app = FastAPI(ssl_keyfile = "../psycerts/key.pem", ssl_certfile = "../psycerts/cert.pem")
 app = FastAPI()
 
 # origins = ['http://localhost:3000', 'https://localhost:3000', 'http://127.0.0.1:3000', 'http://0.0.0.0:3000', 'http://www.speakyourmind.help/*', 'http://www.speakyourmind.help/']
