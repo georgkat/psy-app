@@ -665,6 +665,8 @@ def update_user_main(data: UserTherapistReview):
         cur.execute(sql_1)
         sql_2 = f'UPDATE clients SET has_therapist = NULL WHERE client_id = {client_id} AND has_therapist = {doc_id}'
         cur.execute(sql_2)
+        sql_3 = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id} AND doc_id = {doc_id}'
+        cur.execute(sql_3)
         con.commit()
         cur.close()
         con.close()
@@ -1879,6 +1881,9 @@ def approve_time_therapist(data: ApproveTime):
             cur.execute(sql_1)
             fetch_1 = cur.fetchall()
             client_id = fetch_1[0][0]
+            sql_2 = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id} AND doc_id = {doc_id}'
+            print(sql_2)
+            cur.execute(sql_2)
 
             ch_id = None
 
@@ -1911,6 +1916,9 @@ def approve_time_therapist(data: ApproveTime):
                 print(sql)
                 cur.execute(sql)
                 sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} OR (doctor_id = {doc_id} AND client = {client_id}) AND accepted = 0'
+                print(sql)
+                cur.execute(sql)
+                sql = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id} AND doc_id = {doc_id}'
                 print(sql)
                 cur.execute(sql)
 
@@ -1994,6 +2002,9 @@ def approve_time_client(data: ApproveTime):
                 sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id} AND pending_change = 2'
                 cur.execute(sql)
                 sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id} AND who_asked = 2'
+                cur.execute(sql)
+                sql = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id} AND doc_id = {doc_id}'
+                print(sql)
                 cur.execute(sql)
 
         con.commit()
@@ -2275,6 +2286,9 @@ def client_change_session_time(data: ReSelectTime):
         sql_2 = f'UPDATE schedule SET pending_change = 1, accepted = 0 WHERE sh_id = {old_sh_id}'
         cur.execute(sql_2)
 
+        sql_2 = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id} AND doc_id = {doc_id}'
+        cur.execute(sql_2)
+
         print(3)
         sql_3 = f'UPDATE schedule SET client = {client_id}, pending_change = 1 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
         cur.execute(sql_3)
@@ -2359,6 +2373,10 @@ def therapist_change_session_time(data: ReSelectTime):
         print(sql_2)
         cur.execute(sql_2)
 
+        sql_2 = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id} AND doc_id = {doc_id}'
+        print(sql_2)
+        cur.execute(sql_2)
+
         print(3)
         sql_3 = f'UPDATE schedule SET client = {client_id}, pending_change = 2 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
         print(sql_3)
@@ -2391,6 +2409,9 @@ def therapist_change_session_time(data: ReSelectTime):
             sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {old_sh_id}'
             cur.execute(sql)
             sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
+            cur.execute(sql)
+            sql = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id} AND doc_id = {doc_id}'
+            print(sql_2)
             cur.execute(sql)
 
         con.commit()
@@ -2889,6 +2910,10 @@ def cancel_session(data: CancelSession):
         if is_therapist:
             doc_id = user_id
 
+            sql = f'DELETE FROM ongoing_sessions WHERE client_id = (SELECT client FROM schedule WHERE sh_id = {sh_id} AND doctor_id = {doc_id}) AND doc_id = {doc_id}'
+            print(sql)
+            cur.execute(sql)
+
             sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {sh_id} AND doctor_id = {doc_id}'
             print(sql)
             cur.execute(sql)
@@ -2923,6 +2948,9 @@ def cancel_session(data: CancelSession):
                 sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
                 print(sql)
                 cur.execute(sql)
+                sql = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id}'
+                print(sql)
+                cur.execute(sql)
             else:
                 sql = f'SELECT sh_id FROM schedule WHERE client = {client_id}'
                 print(sql)
@@ -2932,6 +2960,10 @@ def cancel_session(data: CancelSession):
                 sql = f'UPDATE schedule SET client = NULL, accepted = 0, pending_change = 0 WHERE sh_id = {sh_id} AND client = {client_id}'
                 print(sql)
                 cur.execute(sql)
+                sql = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id}'
+                print(sql)
+                cur.execute(sql)
+
 
         con.commit()
         cur.close()
@@ -3482,26 +3514,70 @@ def delete_card(data: SingleToken):
 @app.post('/check_session')
 def check_sessionn(data: SingleToken):
     try:
+        t_0 = datetime.datetime.now()
         con = mariadb.connect(**config)
         cur = con.cursor()
 
         token = data.session_token
 
-        sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        sql_token = f'SELECT user_id, is_therapist FROM tokens JOIN users on tokens.user_id = users.id WHERE token = "{token}"'
         cur.execute(sql_token)
-        user_id = cur.fetchall()[0][0]
+        user_data = cur.fetchall()
+        user_id = user_data[0][0]
+        is_therapist = user_data[0][1]
         if not user_id:
             return {'status': False}
 
-        sql = f'SELECT therapy_session, time FROM ongoing_sessions WHERE client_id = {user_id} OR doc_id = {user_id}'
-        cur.execute(sql)
+        # sql = f'SELECT therapy_session, time FROM ongoing_sessions WHERE client_id = {user_id} OR doc_id = {user_id} ORDER BY time DESC'
+        # cur.execute(sql)
+
+        # sessions = cur.fetchall()
+        sessions = False
+        if not sessions:
+            if is_therapist:
+                sql = f'SELECT client, date_time FROM schedule WHERE client IS NOT NULL AND doctor_id = {user_id} AND accepted = 1'
+                print(sql)
+                cur.execute(sql)
+                fetch = cur.fetchall()
+                values = []
+                for row in fetch:
+                    values.append((str(uuid.uuid4()), user_id, row[0], str(row[1])))
+                values = ', '.join([str(x) for x in values])
+                print(values)
+                sql = f'INSERT INTO ongoing_sessions (therapy_session, doc_id, client_id, time) VALUES {values} ON DUPLICATE KEY UPDATE therapy_session_id = therapy_session_id'
+                print(sql)
+                cur.execute(sql)
+            else:
+                sql = f'SELECT has_therapist FROM clients WHERE client_id = {user_id}'
+                print(sql)
+                cur.execute(sql)
+                doc_id = cur.fetchall()[0][0]
+                sql = f'SELECT date_time FROM schedule WHERE client = {user_id} AND doctor_id = {doc_id} AND accepted = 1'
+                print(sql)
+                cur.execute(sql)
+                time = cur.fetchall()[0][0]
+                sql = f'INSERT INTO ongoing_sessions (therapy_session, doc_id, client_id, time) VALUES {str(uuid.uuid4()), doc_id, user_id, str(time)} ON DUPLICATE KEY UPDATE therapy_session_id = therapy_session_id'
+                print(sql)
+                cur.execute(sql)
+            con.commit()
+            sql = f'SELECT therapy_session, time FROM ongoing_sessions WHERE client_id = {user_id} OR doc_id = {user_id} ORDER BY time DESC'
+            cur.execute(sql)
+
+            sessions = cur.fetchall()
 
         rooms = []
-        for row in cur.fetchall():
+        for row in sessions:
             print(row)
             rooms.append({'room': row[0], 'time': datetime.datetime.strftime(row[1], '%d-%m-%Y %H:%M')})
             print(rooms)
 
+        # con.commit()
+        cur.close()
+        con.close()
+
+        t_1 = datetime.datetime.now()
+        print('TIME')
+        print(t_1 - t_0)
         return {'status': True, 'rooms': rooms}
 
     except Exception as e:
@@ -3511,9 +3587,9 @@ def check_sessionn(data: SingleToken):
         except:
             pass
         print({'status': False,
-               'error': f'delete_card error: {e}, {traceback.extract_stack()}'})
+               'error': f'check_session error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
-                'error': f'delete_card error: {e}, {traceback.extract_stack()}'}
+                'error': f'check_session error: {e}, {traceback.extract_stack()}'}
 
 
 
