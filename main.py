@@ -3474,9 +3474,45 @@ def delete_card(data: SingleToken):
         except:
             pass
         print({'status': False,
-               'error': f'update_card error: {e}, {traceback.extract_stack()}'})
+               'error': f'delete_card error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
-                'error': f'update_card error: {e}, {traceback.extract_stack()}'}
+                'error': f'delete_card error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/check_session')
+def check_sessionn(data: SingleToken):
+    try:
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        token = data.session_token
+
+        sql_token = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql_token)
+        user_id = cur.fetchall()[0][0]
+        if not user_id:
+            return {'status': False}
+
+        sql = f'SELECT therapy_session, time FROM ongoing_sessions WHERE client_id = {user_id} OR doc_id = {user_id}'
+        cur.execute(sql)
+
+        rooms = []
+        for row in cur.fetchall():
+            rooms.append({'room': row[0], 'time': datetime.datetime.strftime(row[1], '%d-%m-%Y %H:%M')})
+
+        return {'status': True, 'rooms': rooms}
+
+    except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
+        print({'status': False,
+               'error': f'delete_card error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'delete_card error: {e}, {traceback.extract_stack()}'}
+
 
 
 @app.post('/db_handler')
