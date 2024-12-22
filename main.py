@@ -1367,13 +1367,16 @@ def get_doc_data(data: SingleToken):
                
                f'doc_client_age, '  # 80
                f'doc_lgbtq, '  # 81
-               f'doc_therapy_type '  # 82
+               f'doc_therapy_type, '  # 82
+               
+               f'card_number '
                f'FROM doctors '
                f'JOIN tokens ON doctors.doc_id = tokens.user_id '
                f'JOIN languages ON doctors.doc_id = languages.doc_id '
                f'JOIN methods ON doctors.doc_id = methods.doc_id '
                f'JOIN educations ON doctors.doc_id = educations.doc_id '
                f'JOIN doc_symptoms ON doctors.doc_id = doc_symptoms.doc_id '
+               f'LEFT JOIN card_data ON doctors.doc_id = card_data.user_id '
                f'WHERE token = "{token}"')
 
         con = mariadb.connect(**config)
@@ -1490,6 +1493,7 @@ def get_doc_data(data: SingleToken):
                'doc_client_age': f[0][80],
                'doc_lgbtq': f[0][81],
                'doc_therapy_type': f[0][82],
+               'doc_card_data': str(f[0][83])[12:] if f[0][83] else '',
                'doc_symptoms': doc_symptoms_out,
                'user_photo': fph}
         print(out)
@@ -3346,9 +3350,29 @@ def doctor_appoint_client(data: DocAppoint):
                 'error': f'doctor_appoint_client error: {e}, {traceback.extract_stack()}'}
 
 
+def card_validator(data: CardData):
+    try:
+        month = data.card_valid_to.split('-')[0]
+        year = data.card_valid_to.split('-')[0]
+        print('len(data.card_number) == 16', len(str(data.card_number)) == 16)
+        print('type(int(data.card_number)) == int', type(data.card_number) == int)
+        print('len(data.card_cvc) == 3', len(str(data.card_cvc)) == 3)
+        print('len(month) == 2', len(month) == 2)
+        print('len(year) == 2', len(year) == 2)
+        print('1 <= month <= 12', 1 <= int(month) <= 12)
+        if len(str(data.card_number)) == 16 and type(data.card_number) == int and len(str(data.card_cvc)) == 3 and len(month) == 2 and len(year) == 2 and 1 <= int(month) <= 12:
+            return True
+        else:
+            return False
+    except:
+        return False
+
+
 @app.post('/add_card')
 def add_card(data: CardData):
     try:
+        if not card_validator(data):
+            return {'status': False}
         con = mariadb.connect(**config)
         cur = con.cursor()
 
@@ -3358,7 +3382,8 @@ def add_card(data: CardData):
         cur.execute(sql_token)
         user_id = cur.fetchall()[0][0]
 
-        sql = f"INSERT INTO card_data (user_id, card_number, card_holdar, card_cvc) VALUES ({user_id}, {data.card_number}, {data.card_holder}, {data.card_cvc})"
+        sql = f"INSERT INTO card_data (user_id, card_number, card_holder, card_cvc, card_valid_to) VALUES ({user_id}, {data.card_number}, '{data.card_holder}', {data.card_cvc}, '{data.card_valid_to}')"
+        print(sql)
         cur.execute(sql)
 
         con.commit()
@@ -3381,6 +3406,9 @@ def add_card(data: CardData):
 @app.post('/update_card')
 def update_card(data: CardData):
     try:
+        if not card_validator(data):
+            print('not')
+            return {'status': False}
         con = mariadb.connect(**config)
         cur = con.cursor()
 
@@ -3390,7 +3418,7 @@ def update_card(data: CardData):
         cur.execute(sql_token)
         user_id = cur.fetchall()[0][0]
 
-        sql = f"UPDATE card_data SET card_number = {data.card_number}, card_holdar = {data.card_holder}, card_cvc = {data.card_cvc}) WHERE user_id = {user_id}"
+        sql = f"UPDATE card_data SET card_number = {data.card_number}, card_holder = '{data.card_holder}', card_cvc = {data.card_cvc}, card_valid_to = '{data.card_valid_to}' WHERE user_id = {user_id}"
         cur.execute(sql)
 
         con.commit()

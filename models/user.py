@@ -134,6 +134,7 @@ class CardData(CoreModel):
     card_number: int
     card_holder: str
     card_cvc: int
+    card_valid_to: str
 
 
 class AdminUpdateDoc(CoreModel):
