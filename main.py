@@ -3544,9 +3544,12 @@ def check_sessionn(data: SingleToken):
                     values.append((str(uuid.uuid4()), user_id, row[0], str(row[1])))
                 values = ', '.join([str(x) for x in values])
                 print(values)
-                sql = f'INSERT INTO ongoing_sessions (therapy_session, doc_id, client_id, time) VALUES {values} ON DUPLICATE KEY UPDATE therapy_session_id = therapy_session_id'
-                print(sql)
-                cur.execute(sql)
+                try:
+                    sql = f'INSERT INTO ongoing_sessions (therapy_session, doc_id, client_id, time) VALUES {values} ON DUPLICATE KEY UPDATE therapy_session_id = therapy_session_id'
+                    print(sql)
+                    cur.execute(sql)
+                except:
+                    pass
             else:
                 sql = f'SELECT has_therapist FROM clients WHERE client_id = {user_id}'
                 print(sql)
@@ -3556,9 +3559,12 @@ def check_sessionn(data: SingleToken):
                 print(sql)
                 cur.execute(sql)
                 time = cur.fetchall()[0][0]
-                sql = f'INSERT INTO ongoing_sessions (therapy_session, doc_id, client_id, time) VALUES {str(uuid.uuid4()), doc_id, user_id, str(time)} ON DUPLICATE KEY UPDATE therapy_session_id = therapy_session_id'
-                print(sql)
-                cur.execute(sql)
+                try:
+                    sql = f'INSERT INTO ongoing_sessions (therapy_session, doc_id, client_id, time) VALUES {str(uuid.uuid4()), doc_id, user_id, str(time)} ON DUPLICATE KEY UPDATE therapy_session_id = therapy_session_id'
+                    print(sql)
+                    cur.execute(sql)
+                except:
+                    pass
             con.commit()
             sql = f'SELECT therapy_session, time FROM ongoing_sessions WHERE client_id = {user_id} OR doc_id = {user_id} ORDER BY time DESC'
             cur.execute(sql)
