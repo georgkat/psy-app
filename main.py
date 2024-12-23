@@ -13,6 +13,8 @@ import string
 import traceback # for debug
 from fastapi import FastAPI, applications, Request, HTTPException
 from pydantic import ValidationError
+from operator import sub
+from collections import OrderedDict
 import random
 from json_actions import parse_doctor_register
 from models.actions import ActionUserLogin
@@ -815,28 +817,56 @@ def update_client_request(data: UserRequestData):
 def get_therapist_list(data: SingleToken):
     # TODO ДОПИЛИТЬ ФИЛЬТРЫ ПО ЯЗЫКУ И ПОЛУ
     try:
-        token = data.session_token
-        symptoms = [f's_{i}' for i in range(0, 28)]
-        sql_0 = f'SELECT {", ".join(symptoms)} FROM client_symptoms JOIN tokens ON client_symptoms.client_id = tokens.user_id WHERE token = "{token}"'
-
         con = mariadb.connect(**config)
         cur = con.cursor()
+        token = str(data.session_token)
+        sql = f'SELECT user_id FROM tokens WHERE token = "{token}"'
+        cur.execute(sql)
+        client_id = cur.fetchall()[0][0]
+        symptoms = [f's_{i}' for i in range(0, 28)]
+        sql_0 = f'SELECT {", ".join(symptoms)} FROM client_symptoms WHERE client_id = {client_id};'
+        print(sql_0)
         cur.execute(sql_0)
-        client_symptoms = cur.fetchall()
+        client_symptoms = cur.fetchall()[0]
 
-        sql_1 = f'SELECT doc_id, {", ".join(symptoms)} from doc_symptoms'
+        sql_0 = f'SELECT clients.user_therapist_gender, clients.user_type, client_languages.l_0, client_languages.l_1, client_languages.l_2 FROM clients JOIN client_languages WHERE clients.client_id = "{client_id}"'
+        cur.execute(sql_0)
+        fetch = cur.fetchall()
+        client_gender_pref = fetch[0][0]
+        client_therapy_type = fetch[0][1]
+        client_languages = fetch[0][2:]
+
+        sql_1 = f'SELECT doc_symptoms.doc_id, doctors.doc_gender, doctors.doc_therapy_type, languages.l_0, languages.l_1, languages.l_2, {", ".join(symptoms)} FROM doc_symptoms JOIN doctors ON doc_symptoms.doc_id = doctors.doc_id JOIN languages ON doc_symptoms.doc_id = languages.doc_id'
         cur.execute(sql_1)
         docs = cur.fetchall()
 
         print(client_symptoms)
-        print(docs)
+        print('docs')
+        for doc in docs:
+            print(doc)
 
-        valid_docs = []
-        print(client_symptoms)
+        valid_docs = {}
+
         for doc_info in docs:
-            print(doc_info)
-            if client_symptoms[0] <= doc_info[1:]:
-                valid_docs.append(str(doc_info[0]))
+            doc_gender = doc_info[1]
+            doc_therapy_type = doc_info[2]
+            doc_langauges = doc_info[3:6]
+
+            if client_therapy_type == doc_therapy_type:
+                if sum(tuple(map(sub, doc_langauges, client_languages))) > 0:
+                # if client_gender_pref == doc_gender or client_gender_pref == 2:
+                    intersections = sum(tuple(map(sub, doc_info[4:], client_symptoms)))
+                    if intersections > 0:
+                        valid_docs[doc_info[0]] = intersections
+
+        valid_docs = list({k: v for k, v in sorted(valid_docs.items(), key=lambda item: item[1], reverse=True)}.keys())
+        #for item in docs:
+
+
+        valid_docs = [str(x) for x in valid_docs]
+
+        if not valid_docs:
+            valid_docs = ['0']
 
         sql_2 = (f'SELECT doctors.doc_id, '
                  f'doctors.doc_name, '
@@ -882,7 +912,6 @@ def get_therapist_list(data: SingleToken):
         sql_4 = f'SELECT doctor_id, sh_id, date_time FROM schedule WHERE client IS NULL and doctor_id IN ({", ".join(valid_docs)})'
         cur.execute(sql_4)
         out_sch = cur.fetchall()
-        # print(out_sch)
 
         sh_dict = {}
         for doc_id in valid_docs:
@@ -3577,8 +3606,8 @@ def check_sessionn(data: SingleToken):
             x = datetime.datetime.now() - datetime.timedelta(hours=1, minutes=5)
             y = datetime.datetime.now() + datetime.timedelta(hours=1, minutes=5)
             try:
-                if x < row[1] < y:
-                    rooms.append({'room': row[0], 'time': datetime.datetime.strftime(row[1], '%d-%m-%Y %H:%M')})
+                # if x < row[1] < y:
+                rooms.append({'room': row[0], 'time': datetime.datetime.strftime(row[1], '%d-%m-%Y %H:%M')})
             except:
                 pass
             print(rooms)
