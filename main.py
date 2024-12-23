@@ -3574,7 +3574,13 @@ def check_sessionn(data: SingleToken):
         rooms = []
         for row in sessions:
             print(row)
-            rooms.append({'room': row[0], 'time': datetime.datetime.strftime(row[1], '%d-%m-%Y %H:%M')})
+            x = datetime.datetime.now() - datetime.timedelta(hours=1, minutes=5)
+            y = datetime.datetime.now() + datetime.timedelta(hours=1, minutes=5)
+            try:
+                if x < row[1] < y:
+                    rooms.append({'room': row[0], 'time': datetime.datetime.strftime(row[1], '%d-%m-%Y %H:%M')})
+            except:
+                pass
             print(rooms)
 
         # con.commit()
