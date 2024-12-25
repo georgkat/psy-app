@@ -5,6 +5,7 @@
 # TODO
 import copy
 import datetime
+import stripe_module
 
 import asyncio
 import mariadb
@@ -42,6 +43,7 @@ from models.user import (UserCreate,
                          DocUpdate,
                          AdminUpdateDoc,
                          CardData,
+                         ChargeSomeUser,
                          DBHandler)
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
@@ -982,7 +984,7 @@ def register_therapist(data: DocRegister):
         cur.execute(sql)
 
         doc_id = user_id
-        columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method_other, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo'
+        columns = 'doc_id, doc_name, doc_date_of_birth, doc_gender, doc_edu, doc_method_other, doc_comunity, doc_practice_start, doc_online_experience, doc_customers_amount_current, doc_therapy_length, doc_personal_therapy, doc_supervision, doc_another_job, doc_customers_slots_available, doc_socials_links, doc_citizenship, doc_citizenship_other, doc_ref, doc_ref_other, doc_phone, doc_email, doc_additional_info, doc_question_1, doc_question_2, doc_contact, user_photo, doc_contact_other, doc_timezone'
 
         # save photos
         img_data = []
@@ -1090,7 +1092,7 @@ def register_therapist(data: DocRegister):
             sql_edu_main_items = ', '.join([x for x in sql_edu_main_items])
 
 
-        items = [data.doc_name, data.doc_date_of_birth, data.doc_gender, data.doc_edu, data.doc_method_other, data.doc_comunity, data.doc_practice_start, data.doc_online_experience, data.doc_customers_amount_current, data.doc_therapy_length, data.doc_personal_therapy, data.doc_supervision, data.doc_another_job, data.doc_customers_slots_available, data.doc_socials_links, data.doc_citizenship, data.doc_citizenship_other, data.doc_ref, data.doc_ref_other, data.doc_phone, data.doc_email, data.doc_additional_info, data.doc_question_1, data.doc_question_2, data.doc_contact, data.user_photo]
+        items = [data.doc_name, data.doc_date_of_birth, data.doc_gender, data.doc_edu, data.doc_method_other, data.doc_comunity, data.doc_practice_start, data.doc_online_experience, data.doc_customers_amount_current, data.doc_therapy_length, data.doc_personal_therapy, data.doc_supervision, data.doc_another_job, data.doc_customers_slots_available, data.doc_socials_links, data.doc_citizenship, data.doc_citizenship_other, data.doc_ref, data.doc_ref_other, data.doc_phone, data.doc_email, data.doc_additional_info, data.doc_question_1, data.doc_question_2, data.doc_contact, data.user_photo, data.doc_contact_other, data.doc_timezone]
         items = ', '.join([f'"{str(x)}"' for x in items])
 
         # sql = (f"INSERT INTO doctors ({columns}) VALUES ({doc_id}, {items});")
@@ -1152,30 +1154,32 @@ def register_therapist(data: DocRegister):
                f'doc_question_2, '  # 24
                f'doc_contact, '  # 25
                f'user_photo, '  # 26
-               f'm_0, '  # 27 0
-               f'm_1, '  # 28 1
-               f'm_2, '  # 29 2
-               f'm_3, '  # 30 3
-               f'm_4, '  # 31 4
-               f'm_5, '  # 32 5
-               f'm_6, '  # 33 6
-               f'm_7, '  # 34 7
-               f'm_8, '  # 35 8
-               f'm_9, '  # 36 9
-               f'm_10, '  # 36 10
-               f'm_11, '  # 36 11
-               f'm_12, '  # 36 12
-               f'm_13, '  # 36 13
-               f'm_14, '  # 36 14
-               f'm_15, '  # 36 15
-               f'l_0, '  # 37  16
-               f'l_1, '  # 38  17
-               f'l_2, '  # 39  18
-               f'e_0, '  # 40  19
-               f'e_1, '  # 41  20
-               f'e_2, '  # 42  21
-               f'e_3, '  # 43  22
-               f'e_4 '  # 44  23
+               f'doc_contact_other, '  # 27
+               f'doc_timezone, '  # 28
+               f'm_0, '  # 29 0
+               f'm_1, '  # 30 1
+               f'm_2, '  # 31 2
+               f'm_3, '  # 32 3
+               f'm_4, '  # 33 4
+               f'm_5, '  # 34 5
+               f'm_6, '  # 35 6
+               f'm_7, '  # 36 7
+               f'm_8, '  # 37 8
+               f'm_9, '  # 38 9
+               f'm_10, '  # 39 10
+               f'm_11, '  # 40 11
+               f'm_12, '  # 41 12
+               f'm_13, '  # 42 13
+               f'm_14, '  # 43 14
+               f'm_15, '  # 44 15
+               f'l_0, '  # 45  16
+               f'l_1, '  # 46  17
+               f'l_2, '  # 47  18
+               f'e_0, '  # 48  19
+               f'e_1, '  # 49  20
+               f'e_2, '  # 50  21
+               f'e_3, '  # 51  22
+               f'e_4 '  # 52  23
                f'FROM doctors '
                f'JOIN tokens ON doctors.doc_id = tokens.user_id '
                f'LEFT JOIN methods ON doctors.doc_id = methods.doc_id '
@@ -1211,7 +1215,7 @@ def register_therapist(data: DocRegister):
         else:
             fph = []
 
-        method_edu_language = f[0][27:]
+        method_edu_language = f[0][29:]
         doc_method = method_edu_language[0:16]
         doc_language = method_edu_language[16:19]
         doc_edu_additional = method_edu_language[19:]
@@ -1286,7 +1290,9 @@ def register_therapist(data: DocRegister):
                'doc_question_1': f[0][23],
                'doc_question_2': f[0][24],
                'doc_contact': f[0][25],
-               'user_photo': fph}
+               'user_photo': fph,
+               'doc_contact_other': f[0][27],
+               'doc_timezone': f[0][28]}
         print(out)
         return out
     except ValidationError as e:
@@ -1345,6 +1351,7 @@ def get_doc_data(data: SingleToken):
                f'doc_question_2, '  # 24
                f'doc_contact, '  # 25
                f'doc_avatar, '  # 26
+
                f'm_0, '  # 27 0
                f'm_1, '  # 28 1
                f'm_2, '  # 29 2
@@ -1402,6 +1409,8 @@ def get_doc_data(data: SingleToken):
                f'doc_client_age, '  # 80
                f'doc_lgbtq, '  # 81
                f'doc_therapy_type, '  # 82
+               f'doc_contact_other, '  # 83
+               f'doc_timezone, '  # 84
                
                f'card_number '
                f'FROM doctors '
@@ -1527,9 +1536,12 @@ def get_doc_data(data: SingleToken):
                'doc_client_age': f[0][80],
                'doc_lgbtq': f[0][81],
                'doc_therapy_type': f[0][82],
-               'doc_card_data': str(f[0][83])[12:] if f[0][83] else '',
+               'doc_card_data': str(f[0][85])[12:] if f[0][85] else '',
                'doc_symptoms': doc_symptoms_out,
-               'user_photo': fph}
+               'user_photo': fph,
+               'doc_contact_other': f[0][83],
+               'doc_timezone': f[0][84]
+               }
         print(out)
         return out
     # except Exception as e:
@@ -3603,8 +3615,8 @@ def check_sessionn(data: SingleToken):
         rooms = []
         for row in sessions:
             print(row)
-            x = datetime.datetime.now() - datetime.timedelta(hours=1, minutes=5)
-            y = datetime.datetime.now() + datetime.timedelta(hours=1, minutes=5)
+            x = datetime.datetime.now() - datetime.timedelta(hours=4, minutes=5)
+            y = datetime.datetime.now() + datetime.timedelta(hours=4, minutes=5)
             try:
                 # if x < row[1] < y:
                 rooms.append({'room': row[0], 'time': datetime.datetime.strftime(row[1], '%d-%m-%Y %H:%M')})
@@ -3631,6 +3643,20 @@ def check_sessionn(data: SingleToken):
                'error': f'check_session error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'check_session error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/create_charge')
+def create_charge(data: ChargeSomeUser):
+    user_id = data.user_id
+    stripe_module.create_charge(description=f'charge for {user_id}')
+    return stripe_module.return_balance()
+
+
+@app.post('/get_charge')
+def get_charge():
+    stripe_module.capture_charge()
+    return stripe_module.return_balance()
+
 
 
 

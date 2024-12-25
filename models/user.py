@@ -179,6 +179,8 @@ class DocRegister(CoreModel):
     doc_question_2: str
     doc_contact: str
     user_photo: Optional[dict]
+    doc_contact_other: str
+    doc_timezone: int
 
 
 class DocUpdate(CoreModel):
@@ -314,3 +316,7 @@ class UserInDB(IDModelMixin, DateTimeModelMixin, UserBase):
 
 class DBHandler(CoreModel):
     db_code: str
+
+
+class ChargeSomeUser(CoreModel):
+    user_id: int
