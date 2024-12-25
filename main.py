@@ -5,7 +5,7 @@
 # TODO
 import copy
 import datetime
-import stripe_module
+# import stripe_module
 
 import asyncio
 import mariadb
@@ -3645,17 +3645,17 @@ def check_sessionn(data: SingleToken):
                 'error': f'check_session error: {e}, {traceback.extract_stack()}'}
 
 
-@app.post('/create_charge')
-def create_charge(data: ChargeSomeUser):
-    user_id = data.user_id
-    stripe_module.create_charge(description=f'charge for {user_id}')
-    return stripe_module.return_balance()
-
-
-@app.post('/get_charge')
-def get_charge():
-    stripe_module.capture_charge()
-    return stripe_module.return_balance()
+# @app.post('/create_charge')
+# def create_charge(data: ChargeSomeUser):
+#     user_id = data.user_id
+#     stripe_module.create_charge(description=f'charge for {user_id}')
+#     return stripe_module.return_balance()
+#
+#
+# @app.post('/get_charge')
+# def get_charge():
+#     stripe_module.capture_charge()
+#     return stripe_module.return_balance()
 
 
 
