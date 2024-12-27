@@ -1584,15 +1584,21 @@ def doctor_schedule(data: DocScheldure):
         if f:
             doc_id = f[0][0]
         # TODO Возврат timezone
+        sql_tz = f'SELECT doc_timezone FROM doctors WHERE doc_id = {doc_id}'
+        cur.execute(sql_tz)
+        timezone = cur.fetchall()[0][0]
+
         if not data.schedule:
+            print('not schedule')
             sql = f'SELECT date_time, client, sh_id, clients.name, accepted, pending_change FROM schedule LEFT JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id}'
             con = mariadb.connect(**config)
             cur = con.cursor()
             cur.execute(sql)
             fetch = cur.fetchall()
-            sql_tz = f'SELECT doc_timezone FROM doctors WHERE doc_id = {doc_id}'
-            cur.execute(sql_tz)
-            timezone = cur.fetchall()[0][0]
+
+            print('tz')
+            print(timezone)
+            print(type(timezone))
 
             out = []
             for item in fetch:
@@ -1623,7 +1629,10 @@ def doctor_schedule(data: DocScheldure):
         to_sql = ''
         to_sql_check = ''
         if schedule:
+            print('schedule')
             for item in schedule:
+                print(item)
+                print(datetime.datetime.strptime(item, '%d-%m-%Y %H:%M'))
                 date_time = format_time(time=datetime.datetime.strptime(item, '%d-%m-%Y %H:%M'), timezone=timezone, to_utc=True)
                 # date_time = datetime.datetime.strftime(date_time, '%d-%m-%Y %H:%M:%S')
                 # if item[1]:
