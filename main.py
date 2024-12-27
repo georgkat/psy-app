@@ -634,7 +634,7 @@ def update_user(data: UserClient):
 
 
 @app.post("/user_therapist_cancel_review")
-def update_user_main(data: UserTherapistReview):
+def user_therapist_cancel_review(data: UserTherapistReview):
     try:
         token = data.session_token
         problems = ['0' for i in range(0, 11)]
@@ -916,10 +916,14 @@ def get_therapist_list(data: SingleToken):
         for doc_id in valid_docs:
             sh_dict[int(doc_id)] = []
 
+        sql_tz = f'SELECT user_timezone FROM clients WHERE client_id = {client_id}'
+        cur.execute(sql_tz)
+        timezone = cur.fetchall()[0][0]
+
         for row in out_sch:
             doc_id = row[0]
             sh_id = row[1]
-            date_time = row[2]
+            date_time = format_time(time=row[2], timezone=timezone, to_utc=False)
             # print(doc_id, sh_id, date_time)
             sh_dict[int(doc_id)].append({'sh_id': sh_id, 'time': date_time})
         for key in sh_dict.keys():
@@ -1724,6 +1728,8 @@ def update_therapist(data: DocUpdate):
         sql_sympthoms = []
         sql_sympthoms_items = []
 
+        timezone = data.doc_timezone
+
         # DATA doc_method
         # if str(data.doc_method):
         #     for code in data.doc_method:
@@ -1763,7 +1769,12 @@ def update_therapist(data: DocUpdate):
         cur = con.cursor()
         print(sql)
         cur.execute(sql)
-        cur.execute(sql)
+
+        if timezone:
+            sql = f'UPDATE doctors SET doc_timezone = {timezone} WHERE doc_id = {doc_id};'
+            print(sql)
+            cur.execute(sql)
+
         sql = f"DELETE FROM languages WHERE doc_id= {doc_id};"
         cur.execute(sql)
         sql = f"INSERT INTO languages (doc_id, {sql_language}) VALUES ({doc_id}, {sql_language_items});"
@@ -1900,7 +1911,7 @@ def select_slot_client(data: SelectTime):
     cur.execute(sql_2)
     try:
         date_time = cur.fetchall()[0][0]
-        sql_tz = f'SELECT user_timezone FROM clients WHERE client_id = {doc_id}'
+        sql_tz = f'SELECT user_timezone FROM clients WHERE client_id = {client_id}'
         cur.execute(sql_tz)
         timezone = cur.fetchall()[0][0]
         date_time = format_time(time=date_time, timezone=timezone, to_utc=False)
