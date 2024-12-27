@@ -908,7 +908,7 @@ def get_therapist_list(data: SingleToken):
 
 
 
-        sql_4 = f'SELECT doctor_id, sh_id, date_time FROM schedule WHERE client IS NULL and doctor_id IN ({", ".join(valid_docs)})'
+        sql_4 = f'SELECT doctor_id, sh_id, date_time FROM schedule WHERE client IS NULL and doctor_id IN ({", ".join(valid_docs)}) AND date_time > NOW()'
         cur.execute(sql_4)
         out_sch = cur.fetchall()
 
@@ -922,6 +922,9 @@ def get_therapist_list(data: SingleToken):
             date_time = row[2]
             # print(doc_id, sh_id, date_time)
             sh_dict[int(doc_id)].append({'sh_id': sh_id, 'time': date_time})
+        for key in sh_dict.keys():
+            print(key)
+            print(sh_dict[key])
 
         # print(sh_dict)
 
@@ -934,11 +937,16 @@ def get_therapist_list(data: SingleToken):
                      "doc_edu": edu_dict[row[0]],
                      "doc_schedule": sh_dict[row[0]],
                      "user_photo": row[5] + ';' + row[4].decode() if row[4] else None} for row in out_docs]
+
+        out_docs_new = []
+        for item in out_docs:
+            if item['doc_schedule']:
+                out_docs_new.append(item)
         cur.close()
         con.close()
 
         out = {"status": True,
-               "list_of_doctors": out_docs}
+               "list_of_doctors": out_docs_new}
         return out
     except Exception as e:
         try:
