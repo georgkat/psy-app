@@ -357,7 +357,21 @@ def get_client_data(data: SingleToken):
     try:
         token = data.session_token
 
-        data_cols = 'clients.client_id, clients.name, user_age, user_experience, user_type, user_therapist_gender, user_time, user_specific_date_time, user_price, user_phone, email, has_therapist, user_timezone, user_photo, card_number '
+        data_cols = ('clients.client_id, '
+                     'clients.name, '
+                     'user_age, '
+                     'user_experience, '
+                     'user_type, '
+                     'user_therapist_gender, '
+                     'user_time, '
+                     'user_specific_date_time, '
+                     'user_price, '
+                     'user_phone, '
+                     'email, '
+                     'has_therapist, '
+                     'user_timezone, '
+                     'user_photo, '
+                     'card_number ')
         language_list = [f'l_{i}' for i in range(0,3)]
         language_cols = ', '.join(language_list)
         symptoms_list = [f's_{i}' for i in range(0,28)]
@@ -396,8 +410,10 @@ def get_client_data(data: SingleToken):
         cur.execute(sql_1)
         desc = cur.description
         fetch_0 = cur.fetchall()
-        print('fetch_0 338')
-        print(fetch_0)
+
+        timezone = fetch_0[0][12]
+        print('timezone')
+        print(timezone)
         pre_out = {}
         try:
             for i in range(10, len(fetch_0[0])):
@@ -501,8 +517,8 @@ def get_client_data(data: SingleToken):
                     print('avatar')
                 else:
                     avatar = None
-                old_time = fetch[0][1]
-                new_time = fetch[0][1]
+                old_time = format_time(time=fetch[0][1], timezone=timezone)
+                new_time = format_time(time=fetch[0][1], timezone=timezone)
                 print('old_sh_id')
                 old_sh_id = fetch[0][3]
                 new_sh_id = None
@@ -522,8 +538,8 @@ def get_client_data(data: SingleToken):
                     sql_1 = f"SELECT date_time FROM schedule WHERE sh_id = {fetch_1[0][2]}"
                     cur.execute(sql_1)
                     fetch_3 = cur.fetchall()
-                    new_time = fetch_2[0][0]
-                    old_time = fetch_3[0][0]
+                    new_time = format_time(time=fetch_2[0][0], timezone=timezone)
+                    old_time = format_time(time=fetch_3[0][0], timezone=timezone)
                 print(fetch)
                 out["has_therapist"] = {'doc_id': out['has_therapist'], 'doc_photo': avatar, 'doc_name': fetch[0][0], 'sh_id': old_sh_id, 'sch_time': old_time, 'pending': pending, 'new_sh_id': new_sh_id, 'new_sch_time': new_time, 'accepted': accepted}
             else:
