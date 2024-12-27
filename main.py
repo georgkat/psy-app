@@ -2172,6 +2172,7 @@ def approve_therapist(data: ApproveTherapistToken):
         doc_id = data.doc_id
 
         sql = f"SELECT id FROM tokens JOIN users ON users.id = tokens.user_id WHERE token = '{token}' AND users.is_admin = 1"
+        print(sql)
 
         con = mariadb.connect(**config)
         cur = con.cursor()
@@ -2189,7 +2190,7 @@ def approve_therapist(data: ApproveTherapistToken):
             cur.close()
             print({'status': True})
             return {'status': True}
-        elif f and not data.deactivate:
+        elif f and data.deactivate == 1:
             sql = f"UPDATE doctors SET approved = 0 WHERE doc_id = {doc_id}"
             con = mariadb.connect(**config)
             cur = con.cursor()
@@ -3302,6 +3303,141 @@ def admin_get_therapist(data: GetSomeoneData):
                'error': f'admin_get_therapist error: {e}, {traceback.extract_stack()}'})
         return {'status': False,
                 'error': f'admin_get_therapist error: {e}, {traceback.extract_stack()}'}
+
+
+@app.post('/admin_get_therapist_interview')
+def admin_get_therapist_interview(data: GetSomeoneData):
+    try:
+        token = data.session_token
+
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+
+        sql = f'SELECT users.id FROM users JOIN tokens ON users.id = tokens.user_id WHERE is_admin = 1 AND token = "{token}"'
+        cur.execute(sql)
+        if not cur.fetchall():
+            raise Exception
+
+        main_columns = ('doc_name, '
+                        'doc_date_of_birth, '
+                        'doc_gender, '
+                        'doc_edu_additional, '
+                        'doc_comunity, '
+                        'doc_practice_start, '
+                        'doc_online_experience, '
+                        'doc_citizenship_other, '
+                        'doc_ref, '
+                        'doc_ref_other, '
+                        'doc_customers_amount_current, '
+                        'doc_therapy_length, '
+                        'doc_personal_therapy, '
+                        'doc_supervision, '
+                        'doc_another_job, '
+                        'doc_customers_slots_available, '
+                        'doc_socials_links, '
+                        'doc_citizenship, '
+                        'doc_email, '
+                        'doc_additional_info, '
+                        'doc_question_1, '
+                        'doc_question_2, '
+                        'doc_contact, '
+                        'doc_client_age, '
+                        'doc_lgbtq, '
+                        'doc_therapy_type, '
+                        'doc_phone, '
+                        'approved, '
+                        'doc_session_cost, '
+                        'doc_timezone, '
+                        'doc_contact_other')
+        l = [f'l_{i}' for i in range(0, 3)]
+        s = [f's_{i}' for i in range(0, 29)]
+        e = [f'e_{i}' for i in range(0, 5)]
+        m = [f'm_{i}' for i in range(0, 17)]
+
+        sql = (f'SELECT {main_columns}, {", ".join(l)}, {", ".join(s)}, {", ".join(e)}, {", ".join(m)} '
+               f'FROM doctors LEFT JOIN languages ON doctors.doc_id = languages.doc_id '
+               f'LEFT JOIN doc_symptoms ON doctors.doc_id = doc_symptoms.doc_id '
+               f'LEFT JOIN educations ON doctors.doc_id = educations.doc_id '
+               f'LEFT JOIN methods ON doctors.doc_id = methods.doc_id '
+               f'LEFT JOIN users ON doctors.doc_id = users.id '
+               f'WHERE doctors.doc_id = {data.user_id}')
+
+        cur.execute(sql)
+        fetch = cur.fetchall()
+        fetch_cols = cur.description
+
+        di = {}
+
+        for i, item in enumerate(fetch[0]):
+            di[fetch_cols[i][0]] = item
+
+        sql_edu = f'SELECT year, university, faculty, degree FROM educations_main WHERE doc_id = {data.user_id}'
+        cur.execute(sql_edu)
+        fetch_edu = cur.fetchall()
+
+        doc_languages = []
+        doc_symptoms = []
+        doc_additional_educations = []
+        doc_methods = []
+
+        for key in di.keys():
+            if key in l:
+                if di[key] == 1:
+                    doc_languages.append(l.index(key))
+            elif key in s:
+                if di[key] == 1:
+                    doc_symptoms.append(s.index(key))
+            elif key in e:
+                if di[key] == 1:
+                    doc_additional_educations.append(e.index(key))
+            elif key in m:
+                if di[key] == 1:
+                    doc_methods.append(m.index(key))
+
+        doc_educations = []
+        for row in fetch_edu:
+            main_edu = {}
+            main_edu['year'] = row[0]
+            main_edu['university'] = row[1]
+            main_edu['faculty'] = row[2]
+            main_edu['degree'] = row[3]
+            doc_educations.append(main_edu)
+
+        cur.close()
+        con.close()
+
+        print(doc_symptoms)
+        print(doc_languages)
+        print(doc_methods)
+        print(doc_educations)
+        print(doc_additional_educations)
+
+        print(di)
+
+        out = {'status': True}
+
+        for column in main_columns.split(', '):
+            out[column] = di[column]
+        out['doc_sympoms'] = doc_symptoms
+        out['doc_languages'] = doc_languages
+        out['doc_methods'] = doc_methods
+        out['doc_educations'] = doc_educations
+        out['doc_additional_educations'] = doc_additional_educations
+
+
+        return out
+
+    except Exception as e:
+        try:
+            cur.close()
+            con.close()
+        except:
+            pass
+        print({'status': False,
+               'error': f'admin_get_therapist_interview error: {e}, {traceback.extract_stack()}'})
+        return {'status': False,
+                'error': f'admin_get_therapist_interview error: {e}, {traceback.extract_stack()}'}
+
 
 @app.post('/admin_update_therapist')
 def admin_update_therapist(data: AdminUpdateDoc):
