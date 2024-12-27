@@ -838,7 +838,7 @@ def get_therapist_list(data: SingleToken):
         client_therapy_type = fetch[0][1]
         client_languages = fetch[0][2:]
 
-        sql_1 = f'SELECT doc_symptoms.doc_id, doctors.doc_gender, doctors.doc_therapy_type, languages.l_0, languages.l_1, languages.l_2, {", ".join(symptoms)} FROM doc_symptoms JOIN doctors ON doc_symptoms.doc_id = doctors.doc_id JOIN languages ON doc_symptoms.doc_id = languages.doc_id'
+        sql_1 = f'SELECT doc_symptoms.doc_id, doctors.doc_gender, doctors.doc_therapy_type, languages.l_0, languages.l_1, languages.l_2, {", ".join(symptoms)} FROM doc_symptoms JOIN doctors ON doc_symptoms.doc_id = doctors.doc_id JOIN languages ON doc_symptoms.doc_id = languages.doc_id WHERE doctors.approved = 1'
         cur.execute(sql_1)
         docs = cur.fetchall()
 
