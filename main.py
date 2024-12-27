@@ -1602,7 +1602,7 @@ def doctor_schedule(data: DocScheldure):
 
             out = []
             for item in fetch:
-                non_utc_time = format_time(time=item[0], timezone=timezone)
+                non_utc_time = format_time(time=item[0], timezone=timezone, to_utc=False)
                 item_time = datetime.datetime.strftime(non_utc_time, '%d-%m-%Y %H:%M')
                 out_item = {'sh_id': item[2],
                             'date_time': item_time,
