@@ -3480,6 +3480,7 @@ def admin_update_therapist(data: AdminUpdateDoc):
                     f'doc_name = "{doc_name}", '
                     f'doc_gender = {doc_gender}, '
                     f'doc_phone = "{doc_phone}", '
+                    f'doc_email = "{doc_email}", '
                     f'doc_avatar = {doc_avatar}, '
                     f'doc_session_cost = {doc_session_cost} '
                     f'WHERE doc_id = {doc_id}')
