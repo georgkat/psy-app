@@ -1663,7 +1663,9 @@ def doctor_schedule(data: DocScheldure):
 
         out = []
         for item in fetch:
-            item_time = datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M')
+            #item_time = datetime.datetime.strptime(item[0], '%d-%m-%Y %H:%M')
+            print('tz')
+            item_time = format_time(time=item[0], timezone=timezone, to_utc=False)
             out_item = {'sh_id': item[2],
                         'date_time': item_time,
                         'client_id': item[1],
