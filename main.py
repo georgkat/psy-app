@@ -186,6 +186,16 @@ def gen_password(data: UserLoginGen):
         sql_0 = f'SELECT * FROM users WHERE email = "{email}";'
         cur.execute(sql_0)
         fetch = cur.fetchall()
+        print(fetch)
+
+        if fetch[0][3] == 1:
+            sql_0 = f'SELECT approved FROM doctors JOIN users ON users.id = doctors.doc_id WHERE users.email = "{email}";'
+            cur.execute(sql_0)
+            fetch_0 = cur.fetchall()
+            print(fetch_0)
+            if fetch_0[0][0] == 0:
+                return {'status': False,
+                        'error': f"Therapist not approved"}
 
         if not fetch:
             cur.close()
