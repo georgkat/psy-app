@@ -160,6 +160,12 @@ def create_session_func(doc_id, client_id, sh_id):
 
     return {'status': True, 'room_id': room_id}
 
+def format_time(time, timezone: int, to_utc: bool = True):
+    if to_utc:
+        return time - datetime.timedelta(hours=timezone)
+    elif not to_utc:
+        return time + datetime.timedelta(hours=timezone)
+
 @app.get("/doc")
 def read_docs():
     return get_swagger_ui_html(openapi_url="/openapi.json")
@@ -231,25 +237,6 @@ def gen_password(data: UserLoginGen):
 
 
 
-
-# DEBUG DELETE THIS FUNC
-@app.post("/make_admin")
-def make_admin():
-    email = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)]) + '@' + 'admin.adm'
-    password = ''.join([random.choice(string.ascii_letters) + random.choice(string.digits) for i in range(0, 4)])
-    sql = f"INSERT INTO users (email, password, is_therapist, is_admin) VALUES ('{email}', '{password}', 0, 1)"
-    con = mariadb.connect(**config)
-    cur = con.cursor()
-    cur.execute(sql)
-    con.commit()
-    cur.close()
-    con.close()
-
-    print({"email": email,
-            "password": password})
-
-    return {"email": email,
-            "password": password}
 
 
 @app.post("/logout")
@@ -1595,9 +1582,14 @@ def doctor_schedule(data: DocScheldure):
             cur = con.cursor()
             cur.execute(sql)
             fetch = cur.fetchall()
+            sql_tz = f'SELECT doc_timezone FROM doctors WHERE doc_id = {doc_id}'
+            cur.execute(sql_tz)
+            timezone = cur.fetchall()[0][0]
+
             out = []
             for item in fetch:
-                item_time = datetime.datetime.strftime(item[0], '%d-%m-%Y %H:%M')
+                non_utc_time = format_time(time=item[0], timezone=timezone)
+                item_time = datetime.datetime.strftime(non_utc_time, '%d-%m-%Y %H:%M')
                 out_item = {'sh_id': item[2],
                             'date_time': item_time,
                             'client_id': item[1],
@@ -1624,7 +1616,7 @@ def doctor_schedule(data: DocScheldure):
         to_sql_check = ''
         if schedule:
             for item in schedule:
-                date_time = datetime.datetime.strptime(item, '%d-%m-%Y %H:%M')
+                date_time = format_time(time=datetime.datetime.strptime(item, '%d-%m-%Y %H:%M'), timezone=timezone, to_utc=True)
                 # date_time = datetime.datetime.strftime(date_time, '%d-%m-%Y %H:%M:%S')
                 # if item[1]:
                 #     client_id = item[1]
@@ -1817,7 +1809,7 @@ def get_available_slots(data: SingleToken):
         # sql part
         token = data.session_token
 
-        sql = f'SELECT user_id FROM tokens WHERE token = {token}'
+        sql = f'SELECT user_id FROM tokens WHERE token = "{token}"'
         con = mariadb.connect(**config)
         cur = con.cursor()
         cur.execute(sql)
@@ -1889,6 +1881,11 @@ def select_slot_client(data: SelectTime):
     cur.execute(sql_2)
     try:
         date_time = cur.fetchall()[0][0]
+        sql_tz = f'SELECT user_timezone FROM clients WHERE client_id = {doc_id}'
+        cur.execute(sql_tz)
+        timezone = cur.fetchall()[0][0]
+        date_time = format_time(time=date_time, timezone=timezone, to_utc=False)
+
     except:
         date_time = None
 
@@ -2532,13 +2529,16 @@ def recieve_sessions_for_therapist(data: SingleToken):
         sql_0 = f'SELECT client_id, name, sh_id, date_time, accepted, pending_change FROM schedule JOIN clients ON clients.client_id = schedule.client WHERE doctor_id = {doc_id} AND pending_change = 0'
         cur.execute(sql_0)
         fetch_0 = cur.fetchall()
+        sql_tz = f'SELECT doc_timezone FROM doctors WHERE doc_id = {doc_id}'
+        cur.execute(sql_tz)
+        timezone = cur.fetchall()[0][0]
         normal_sessions_list = []
         for row in fetch_0:
             out_normal = {}
             out_normal['client_id'] = row[0]
             out_normal['name'] = row[1]
             out_normal['sh_id'] = row[2]
-            out_normal['time'] = row[3]
+            out_normal['time'] = format_time(time=row[3], timezone=timezone, to_utc=False)
             out_normal['accepted'] = row[4]
             normal_sessions_list.append(out_normal)
 
@@ -2553,8 +2553,8 @@ def recieve_sessions_for_therapist(data: SingleToken):
             out_pending['name'] = row[2]
             out_pending['old_sh_id'] = row[3]
             out_pending['new_sh_id'] = row[4]
-            out_pending['old_time'] = row[5]
-            out_pending['new_time'] = row[6]
+            out_pending['old_time'] = format_time(time=row[5], timezone=timezone, to_utc=False)
+            out_pending['new_time'] = format_time(time=row[6], timezone=timezone, to_utc=False)
             out_pending['pending'] = row[7]
 
             pending_sessions_list.append(out_pending)
@@ -2612,13 +2612,16 @@ def get_clients_therapist_schedule(data: SingleToken):
             sql_1 = f'SELECT sh_id, date_time, client, accepted FROM schedule WHERE doctor_id = {doc_id} AND (client IS NULL OR client = {client_id})'
             cur.execute(sql_1)
             fetch = cur.fetchall()
+            sql_tz = f'SELECT user_timezone FROM clients WHERE client_id = {client_id}'
+            cur.execute(sql_tz)
+            timezone = cur.fetchall()[0][0]
             # print(fetch)
             sh_out = []
             for row in fetch:
                 # print(row)
                 sh_row = {}
                 sh_row['sh_id'] = row[0]
-                sh_row['date_time'] = row[1]
+                sh_row['date_time'] = format_time(time=row[1], timezone=timezone, to_utc=False)
                 sh_row['client'] = row[2] if row[2] else None
                 sh_row['accepted'] = row[3] if row[3] else None
 
@@ -2683,6 +2686,11 @@ def get_user_data(data: GetSomeoneData):
                    f'WHERE clients.client_id = {data.user_id} AND schedule.doctor_id = {doc_id}')  # TODO добавить has_therapist = doc_id
             cur.execute(sql)
             fetch = cur.fetchall()
+
+            sql_tz = f'SELECT user_timezone FROM clients WHERE client_id = {data.user_id}'
+            cur.execute(sql_tz)
+            timezone = cur.fetchall()[0][0]
+
             if fetch:
                 client_id = fetch[0][0]
                 client_name = fetch[0][1]
@@ -2705,9 +2713,9 @@ def get_user_data(data: GetSomeoneData):
                     sch_data['pending'] = True
                     sch_data['ch_id'] = fetch_pending[0][0]
                     sch_data['old_sh_id'] = fetch_pending[0][1]
-                    sch_data['old_sh_date_time'] = fetch_pending[0][2]
+                    sch_data['old_sh_date_time'] = format_time(time=fetch_pending[0][2], timezone=timezone, to_utc=False)
                     sch_data['new_sh_id'] = fetch_pending[0][3]
-                    sch_data['new_sh_date_time'] = fetch_pending[0][4]
+                    sch_data['new_sh_date_time'] = format_time(time=fetch_pending[0][4], timezone=timezone, to_utc=False)
                     sch_data['who_asked'] = fetch_pending[0][5]
                     sch_data['accepted'] = 0
                 else:
@@ -2719,7 +2727,7 @@ def get_user_data(data: GetSomeoneData):
                     sch_data['pending'] = False
                     sch_data['ch_id'] = None
                     sch_data['old_sh_id'] = fetch_normal[0][0]
-                    sch_data['old_sh_date_time'] = fetch_normal[0][1]
+                    sch_data['old_sh_date_time'] = format_time(time=fetch_normal[0][1], timezone=timezone, to_utc=False)
                     sch_data['new_sh_id'] = None
                     sch_data['new_sh_date_time'] = None
                     sch_data['who_asked'] = None
@@ -3079,6 +3087,10 @@ def admin_get_client(data: GetSomeoneData):
             date_time = fetch[0][1]
             pending_change = fetch[0][2]
 
+            sql_tz = f'SELECT user_timezone FROM clients WHERE client_id = {data.user_id}'
+            cur.execute(sql_tz)
+            timezone = cur.fetchall()[0][0]
+
             if pending_change:
                 sql = f'SELECT ch_id, old_sh_id, old_sh.date_time, new_sh_id, new_sh.date_time, who_asked FROM change_schedule JOIN schedule AS old_sh ON change_schedule.old_sh_id = old_sh.sh_id JOIN schedule AS new_sh ON change_schedule.new_sh_id = new_sh.sh_id WHERE change_schedule.client_id = {data.user_id}'
                 print(sql)
@@ -3088,9 +3100,9 @@ def admin_get_client(data: GetSomeoneData):
                 sch_data['pending'] = True
                 sch_data['ch_id'] = fetch_pending[0][0]
                 sch_data['old_sh_id'] = fetch_pending[0][1]
-                sch_data['old_sh_date_time'] = fetch_pending[0][2]
+                sch_data['old_sh_date_time'] = format_time(time=fetch_pending[0][2], timezone=timezone, to_utc=False)
                 sch_data['new_sh_id'] = fetch_pending[0][3]
-                sch_data['new_sh_date_time'] = fetch_pending[0][4]
+                sch_data['new_sh_date_time'] = format_time(time=fetch_pending[0][4], timezone=timezone, to_utc=False)
                 sch_data['who_asked'] = fetch_pending[0][5]
                 sch_data['accepted'] = 0
             else:
@@ -3102,7 +3114,7 @@ def admin_get_client(data: GetSomeoneData):
                 sch_data['pending'] = False
                 sch_data['ch_id'] = None
                 sch_data['old_sh_id'] = fetch_normal[0][0]
-                sch_data['old_sh_date_time'] = fetch_normal[0][1]
+                sch_data['old_sh_date_time'] = format_time(time=fetch_normal[0][1], timezone=timezone, to_utc=False)
                 sch_data['new_sh_id'] = None
                 sch_data['new_sh_date_time'] = None
                 sch_data['who_asked'] = None
@@ -3548,6 +3560,12 @@ def doctor_appoint_client(data: DocAppoint):
         cur.execute(sql_token)
         doc_id = cur.fetchall()[0][0]
 
+        sql_tz = f'SELECT doc_timezone FROM doctors WHERE doc_id = {doc_id}'
+        cur.execute(sql_tz)
+        timezone = cur.fetchall()[0][0]
+
+        date_time = format_time(time=date_time, timezone=timezone, to_utc=True)
+
         sql_has_theraipst = f'SELECT has_therapist FROM clients WHERE client_id = {user_id}'
         cur.execute(sql_has_theraipst)
 
@@ -3776,8 +3794,8 @@ def check_sessionn(data: SingleToken):
         rooms = []
         for row in sessions:
             print(row)
-            x = datetime.datetime.now() - datetime.timedelta(hours=4, minutes=5)
-            y = datetime.datetime.now() + datetime.timedelta(hours=4, minutes=5)
+            x = datetime.datetime.utcnow() - datetime.timedelta(hours=0, minutes=5)
+            y = datetime.datetime.utcnow() + datetime.timedelta(hours=1, minutes=5)
             try:
                 # if x < row[1] < y:
                 rooms.append({'room': row[0], 'time': datetime.datetime.strftime(row[1], '%d-%m-%Y %H:%M')})
