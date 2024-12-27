@@ -1412,7 +1412,8 @@ def get_doc_data(data: SingleToken):
                f'doc_contact_other, '  # 83
                f'doc_timezone, '  # 84
                
-               f'card_number '
+               f'card_number, ' # 85
+               f'approved '
                f'FROM doctors '
                f'JOIN tokens ON doctors.doc_id = tokens.user_id '
                f'JOIN languages ON doctors.doc_id = languages.doc_id '
@@ -1540,7 +1541,8 @@ def get_doc_data(data: SingleToken):
                'doc_symptoms': doc_symptoms_out,
                'user_photo': fph,
                'doc_contact_other': f[0][83],
-               'doc_timezone': f[0][84]
+               'doc_timezone': f[0][84],
+               'approved': f[0][86]
                }
         print(out)
         return out
@@ -2178,8 +2180,17 @@ def approve_therapist(data: ApproveTherapistToken):
         con.commit()
         cur.close()
 
-        if f:
+        if f and not data.deactivate:
             sql = f"UPDATE doctors SET approved = 1 WHERE doc_id = {doc_id}"
+            con = mariadb.connect(**config)
+            cur = con.cursor()
+            cur.execute(sql)
+            con.commit()
+            cur.close()
+            print({'status': True})
+            return {'status': True}
+        elif f and not data.deactivate:
+            sql = f"UPDATE doctors SET approved = 0 WHERE doc_id = {doc_id}"
             con = mariadb.connect(**config)
             cur = con.cursor()
             cur.execute(sql)

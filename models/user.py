@@ -225,6 +225,7 @@ class GetSomeoneDataBatch(CoreModel):
 class ApproveTherapistToken(CoreModel):
     session_token: str
     doc_id: int
+    deactivate: Optional[int] = 0
 
 
 class SelectTime(CoreModel):
