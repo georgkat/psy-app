@@ -2230,7 +2230,7 @@ def list_therapists(data: SingleToken):
 
         out = []
         if f:
-            sql = 'SELECT doc_id, doc_name, doc_gender, email, registred_date FROM users JOIN doctors ON doc_id = users.id'
+            sql = 'SELECT doc_id, doc_name, doc_gender, email, registred_date, approved FROM users JOIN doctors ON doc_id = users.id'
             con = mariadb.connect(**config)
             cur = con.cursor()
             cur.execute(sql)
@@ -2242,7 +2242,8 @@ def list_therapists(data: SingleToken):
                             'doc_name': row[1],
                             'doc_gender': row[2],
                             'email': row[3],
-                            'registred_date': row[4]})
+                            'registred_date': row[4],
+                            'approved': row[5]})
             print({'status': True,
                     'list': out})
             return {'status': True,
