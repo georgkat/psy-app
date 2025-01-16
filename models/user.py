@@ -195,6 +195,8 @@ class DocUpdate(CoreModel):
     doc_therapy_type: int
     symptoms: list
 
+    doc_timezone: Optional[int] = None
+
 
 
 class DocScheldure(CoreModel):

@@ -862,23 +862,42 @@ def get_therapist_list(data: SingleToken):
 
         valid_docs = {}
 
+        print('sorting')
+        print('client_therapy_type')
+        print(client_therapy_type)
         for doc_info in docs:
             doc_gender = doc_info[1]
             doc_therapy_type = doc_info[2]
             doc_langauges = doc_info[3:6]
 
+
+            print('client_therapy_type')
+            print(client_therapy_type)
+            print('doc_therapy_type')
+            print(doc_therapy_type)
+
             if client_therapy_type == doc_therapy_type:
+                print('we are here')
                 if sum(tuple(map(sub, doc_langauges, client_languages))) > 0:
+                    print('next_step')
                 # if client_gender_pref == doc_gender or client_gender_pref == 2:
                     intersections = sum(tuple(map(sub, doc_info[4:], client_symptoms)))
+                    print('intersections')
+                    print(doc_info[6:])
+                    print(client_symptoms)
+                    print(intersections)
                     if intersections > 0:
                         valid_docs[doc_info[0]] = intersections
 
+        print(valid_docs)
         valid_docs = list({k: v for k, v in sorted(valid_docs.items(), key=lambda item: item[1], reverse=True)}.keys())
         #for item in docs:
 
 
         valid_docs = [str(x) for x in valid_docs]
+
+        print('GOT VAILID DOCS')
+        print(valid_docs)
 
         if not valid_docs:
             valid_docs = ['0']
@@ -901,14 +920,12 @@ def get_therapist_list(data: SingleToken):
         sql_3 = f'SELECT doc_id, year, university, faculty, degree FROM educations_main WHERE doc_id IN ({", ".join(valid_docs)})'
         cur.execute(sql_3)
         out_edu = cur.fetchall()
-        print(out_edu)
 
         edu_dict = {}
         for doc_id in valid_docs:
             edu_dict[int(doc_id)] = []
 
         for row in out_edu:
-            print(row)
             doc_id = row[0]
             year = row[1]
             university = row[2]
@@ -916,17 +933,13 @@ def get_therapist_list(data: SingleToken):
             degree = row[4]
             edu_dict[int(doc_id)].append({'year': year, 'university': university, 'faculty': faculty, 'degree': degree})
 
-        print('edu_dict')
-        print(edu_dict)
-
-        #cur.execute(sql_photos)
-        #fetch_photos = cur.fetchall()
-
 
 
         sql_4 = f'SELECT doctor_id, sh_id, date_time FROM schedule WHERE client IS NULL and doctor_id IN ({", ".join(valid_docs)}) AND date_time > NOW()'
         cur.execute(sql_4)
         out_sch = cur.fetchall()
+
+        print('pos 926')
 
         sh_dict = {}
         for doc_id in valid_docs:
