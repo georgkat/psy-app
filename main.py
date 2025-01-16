@@ -866,6 +866,7 @@ def get_therapist_list(data: SingleToken):
         print('client_therapy_type')
         print(client_therapy_type)
         for doc_info in docs:
+            print(f'CHEKIN DOC {doc_info[0]}')
             doc_gender = doc_info[1]
             doc_therapy_type = doc_info[2]
             doc_langauges = doc_info[3:6]
@@ -876,9 +877,12 @@ def get_therapist_list(data: SingleToken):
             print('doc_therapy_type')
             print(doc_therapy_type)
 
-            if client_therapy_type == doc_therapy_type:
+            if client_therapy_type == doc_therapy_type or doc_therapy_type == 2:
                 print('we are here')
-                if sum(tuple(map(sub, doc_langauges, client_languages))) > 0:
+
+                # Всрратая лямбда функция умнее в 5 утра не придумал
+                print([1 if doc_langauges[x] == client_languages[x] and doc_langauges != 0 else 0 for x in range(len(doc_langauges))])
+                if sum([1 if doc_langauges[x] == client_languages[x] and doc_langauges != 0 else 0 for x in range(len(doc_langauges))]) > 0:
                     print('next_step')
                 # if client_gender_pref == doc_gender or client_gender_pref == 2:
                     intersections = sum(tuple(map(sub, doc_info[4:], client_symptoms)))
@@ -888,7 +892,7 @@ def get_therapist_list(data: SingleToken):
                     print(intersections)
                     if intersections > 0:
                         valid_docs[doc_info[0]] = intersections
-
+        print('valid_docs')
         print(valid_docs)
         valid_docs = list({k: v for k, v in sorted(valid_docs.items(), key=lambda item: item[1], reverse=True)}.keys())
         #for item in docs:
