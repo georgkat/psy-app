@@ -1757,7 +1757,8 @@ def update_therapist(data: DocUpdate):
         sql_sympthoms = []
         sql_sympthoms_items = []
 
-        timezone = data.doc_timezone
+        if data.doc_timezone:
+            timezone = data.doc_timezone
 
         # DATA doc_method
         # if str(data.doc_method):
