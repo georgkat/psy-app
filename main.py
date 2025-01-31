@@ -152,6 +152,19 @@ async def send_email_func(to_addr, sender = '', noreply = True, author = None, p
             # TODO 550 ERROR RETURN
             pass
 
+def mail_to_notify(token, subject, content):
+    try:
+        sql = f'SELECT email FROM users JOIN tokens ON users.id = tokens.user_id WHERE token = "{token}"'
+        con = mariadb.connect(**config)
+        cur = con.cursor()
+        cur.execute(sql)
+        email = cur.fetchall()[0]
+        cur.execute(sql)
+
+        send_email_func(to_addr=email, subject=subject, content=content)
+    except Exception as e:
+        print(e)
+
 
 def create_session_func(doc_id, client_id, sh_id):
     room_id = uuid.uuid4()
@@ -245,13 +258,19 @@ def logout(data: SingleToken):
     Logout user/therapist/admin
     """
     token = data.session_token
+    sql_0 = f'SELECT email FROM users JOIN tokens ON users.id = tokens.user_id'
     sql = f"DELETE FROM tokens WHERE token = '{token}'"
     con = mariadb.connect(**config)
     cur = con.cursor()
+    cur.execute(sql_0)
+    email = cur.fetchall()[0]
     cur.execute(sql)
     con.commit()
     cur.close()
     con.close()
+
+    content = 'You have succesfully logged out from speakyourmind.help. Have a nice day!'
+    asyncio.run(send_email_func(to_addr=f'{email}', subject='SYM Logout', content=content))
 
     print({"status": True})
     return {"status": True}
@@ -277,6 +296,7 @@ def login(data: ActionUserLogin):
                 con.commit()
                 cur.close()
                 con.close()
+                mail_to_notify(token, subject='SYM Login', content='You have successfully logged in!')
                 return {'status': True,
                         'token': token,
                         'is_therapist': is_therapist}
@@ -635,6 +655,8 @@ def update_user(data: UserClient):
         con.commit()
         cur.close()
         con.close()
+
+        mail_to_notify(token, subject='SYM Update Info', content='You have successfully updated your data!')
         return {'status': True}
 
     except Exception as e:
@@ -687,6 +709,8 @@ def user_therapist_cancel_review(data: UserTherapistReview):
         con.commit()
         cur.close()
         con.close()
+
+        mail_to_notify(token, subject='SYM therapy cancelled', content='You have canceled therapy session!')
 
         return {'status': True}
 
@@ -753,6 +777,8 @@ def update_user_main(data: UserMainData):
         cur.close()
         con.close()
 
+        mail_to_notify(token, subject='SYM update data', content='You have successfully updated your data!')
+
         return {'status': True}
     except Exception as e:
         try:
@@ -813,6 +839,8 @@ def update_client_request(data: UserRequestData):
         con.commit()
         cur.close()
         con.close()
+
+        mail_to_notify(token, subject='SYM update request data', content='You have successfully updated your request data!')
 
         return {'status': True}
     except Exception as e:
@@ -1854,6 +1882,8 @@ def update_therapist(data: DocUpdate):
             con.commit()
             cur.close()
             con.close()
+
+            mail_to_notify(token, subject='SYM update data', content='You have successfully updated your data!')
             print({'status': True})
             return {'status': True}
     except Exception as e:
@@ -1939,7 +1969,7 @@ def select_slot_client(data: SelectTime):
     print(sql_1)
     cur.execute(sql_1)
 
-    sql_1 = f'UPDATE schedule SET client = {client_id} WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
+    sql_1 = f'UPDATE schedule SET client = {client_id}, accepted = 1 WHERE sh_id = {sh_id} AND doctor_id = {doc_id} AND client IS NULL'
     print(sql_1)
     cur.execute(sql_1)
     sql_2 = f'SELECT date_time FROM schedule WHERE client = {client_id} AND sh_id = {sh_id} AND doctor_id = {doc_id}'
@@ -1960,9 +1990,17 @@ def select_slot_client(data: SelectTime):
     else:
         return {"status": False}
 
+    sql_4 = f'SELECT email FROM users WHERE id = {doc_id}'
+    cur.execute(sql_4)
+    therapist_email = cur.fetchall()[0]
     con.commit()
     cur.close()
     con.close()
+
+
+
+    mail_to_notify(token, subject='SYM chosen therapy', content='You have successfully chosen therapy time!')
+    asyncio.run(send_email_func(to_addr=therapist_email, subject='SYM chosen therapy', content='You have client!'))
 
     return {"status": True,
             "time": date_time}
@@ -2125,6 +2163,8 @@ def approve_time_client(data: ApproveTime):
         con.commit()
         cur.close()
         con.close()
+
+        mail_to_notify(token, subject='SYM time approved', content='You have approved new therapy time!')
 
         return {'status': True}
     except Exception as e:
@@ -2404,12 +2444,16 @@ def client_change_session_time(data: ReSelectTime):
         cur.execute(sql_1)
         doc_id = cur.fetchall()[0][0]
 
+        therapist_email = f'SELECT email FROM users WHERE id = {doc_id}'
+        cur.execute(therapist_email)
+        therapist_email = cur.fetchall()[0][0]
+
         # sql_check_accepted = f'SELECT accepted FROM schedule WHERE sh_id = {old_sh_id}'
         # cur.execute(sql_check_accepted)
         # accepted = cur.fetchall()[0][0]
 
         print(2)
-        sql_2 = f'UPDATE schedule SET pending_change = 1, accepted = 0 WHERE sh_id = {old_sh_id}'
+        sql_2 = f'UPDATE schedule SET pending_change = 0, accepted = 0, client = NULL WHERE sh_id = {old_sh_id}'
         cur.execute(sql_2)
 
         sql_2 = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id} AND doc_id = {doc_id}'
@@ -2453,6 +2497,9 @@ def client_change_session_time(data: ReSelectTime):
             sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
             cur.execute(sql)
 
+        mail_to_notify(token, subject='SYM time changed', content='You selected another session slot!')
+        asyncio.run(send_email_func(to_addr=therapist_email, subject='SYM therapy time changed', content='Your client changed session time, check SYM to approve'))
+
         con.commit()
         cur.close()
         con.close()
@@ -2495,7 +2542,7 @@ def therapist_change_session_time(data: ReSelectTime):
         print(client_id)
 
         print(2)
-        sql_2 = f'UPDATE schedule SET pending_change = 2, accepted = 0 WHERE sh_id = {old_sh_id}'
+        sql_2 = f'UPDATE schedule SET pending_change = 2, accepted = 0, client = NULL WHERE sh_id = {old_sh_id}'
         print(sql_2)
         cur.execute(sql_2)
 
@@ -2539,6 +2586,13 @@ def therapist_change_session_time(data: ReSelectTime):
             sql = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id} AND doc_id = {doc_id}'
             print(sql_2)
             cur.execute(sql)
+
+        client_email = f'SELECT email FROM users WHERE id = {client_id}'
+        cur.execute(client_email)
+        client_email = cur.fetchall()[0][0]
+        mail_to_notify(token, subject='SYM time changed', content='You selected another session slot!')
+        asyncio.run(send_email_func(to_addr=client_email, subject='SYM therapy time changed',
+                                    content='Your client changed session time, check SYM to approve'))
 
         con.commit()
         cur.close()
