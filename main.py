@@ -1992,7 +1992,7 @@ def select_slot_client(data: SelectTime):
 
     sql_4 = f'SELECT email FROM users WHERE id = {doc_id}'
     cur.execute(sql_4)
-    therapist_email = cur.fetchall()[0]
+    therapist_email = cur.fetchall()[0][0]
     con.commit()
     cur.close()
     con.close()
