@@ -230,7 +230,7 @@ def gen_password(data: UserLoginGen):
         con.close()
 
         content = f'Hello!\n Your new password is {password}'
-        asyncio.run(send_email_func(to_addr=f'{email}', subject='SYM New Password', content=content))
+        asyncio.run(send_email_func(to_addr=f'{email}', subject='STAGE SYM New Password', content=content))
 
         print({"status": True,
                "password": password})
@@ -270,7 +270,7 @@ def logout(data: SingleToken):
     con.close()
 
     content = 'You have succesfully logged out from speakyourmind.help. Have a nice day!'
-    asyncio.run(send_email_func(to_addr=f'{email}', subject='SYM Logout', content=content))
+    asyncio.run(send_email_func(to_addr=f'{email}', subject='STAGE SYM Logout', content=content))
 
     print({"status": True})
     return {"status": True}
@@ -296,7 +296,7 @@ def login(data: ActionUserLogin):
                 con.commit()
                 cur.close()
                 con.close()
-                mail_to_notify(token, subject='SYM Login', content='You have successfully logged in!')
+                mail_to_notify(token, subject='STAGE SYM Login', content='You have successfully logged in!')
                 return {'status': True,
                         'token': token,
                         'is_therapist': is_therapist}
@@ -346,7 +346,7 @@ def register(data:UserCreate):
             cur.execute(sql)
 
             content=f'Hello!\nYou have registred on Speakyourmind.help!\nYour new password is {password}'
-            asyncio.run(send_email_func(to_addr=f'{data.user_email}', subject='SYM Registration', content=content))
+            asyncio.run(send_email_func(to_addr=f'{data.user_email}', subject='STAGE SYM Registration', content=content))
 
 
             con.commit()
@@ -656,7 +656,7 @@ def update_user(data: UserClient):
         cur.close()
         con.close()
 
-        mail_to_notify(token, subject='SYM Update Info', content='You have successfully updated your data!')
+        mail_to_notify(token, subject='STAGE SYM Update Info', content='You have successfully updated your data!')
         return {'status': True}
 
     except Exception as e:
@@ -710,7 +710,7 @@ def user_therapist_cancel_review(data: UserTherapistReview):
         cur.close()
         con.close()
 
-        mail_to_notify(token, subject='SYM therapy cancelled', content='You have canceled therapy session!')
+        mail_to_notify(token, subject='STAGE SYM therapy cancelled', content='You have canceled therapy session!')
 
         return {'status': True}
 
@@ -777,7 +777,7 @@ def update_user_main(data: UserMainData):
         cur.close()
         con.close()
 
-        mail_to_notify(token, subject='SYM update data', content='You have successfully updated your data!')
+        mail_to_notify(token, subject='STAGE SYM update data', content='You have successfully updated your data!')
 
         return {'status': True}
     except Exception as e:
@@ -840,7 +840,7 @@ def update_client_request(data: UserRequestData):
         cur.close()
         con.close()
 
-        mail_to_notify(token, subject='SYM update request data', content='You have successfully updated your request data!')
+        mail_to_notify(token, subject='STAGE SYM update request data', content='You have successfully updated your request data!')
 
         return {'status': True}
     except Exception as e:
@@ -1883,7 +1883,7 @@ def update_therapist(data: DocUpdate):
             cur.close()
             con.close()
 
-            mail_to_notify(token, subject='SYM update data', content='You have successfully updated your data!')
+            mail_to_notify(token, subject='STAGE SYM update data', content='You have successfully updated your data!')
             print({'status': True})
             return {'status': True}
     except Exception as e:
@@ -1999,8 +1999,8 @@ def select_slot_client(data: SelectTime):
 
 
 
-    mail_to_notify(token, subject='SYM chosen therapy', content='You have successfully chosen therapy time!')
-    asyncio.run(send_email_func(to_addr=therapist_email, subject='SYM chosen therapy', content='You have client!'))
+    mail_to_notify(token, subject='STAGE SYM chosen therapy', content='You have successfully chosen therapy time!')
+    asyncio.run(send_email_func(to_addr=therapist_email, subject='STAGE SYM chosen therapy', content='You have client!'))
 
     return {"status": True,
             "time": date_time}
@@ -2164,7 +2164,7 @@ def approve_time_client(data: ApproveTime):
         cur.close()
         con.close()
 
-        mail_to_notify(token, subject='SYM time approved', content='You have approved new therapy time!')
+        mail_to_notify(token, subject='STAGE SYM time approved', content='You have approved new therapy time!')
 
         return {'status': True}
     except Exception as e:
@@ -2497,8 +2497,8 @@ def client_change_session_time(data: ReSelectTime):
             sql = f'DELETE FROM change_schedule WHERE ch_id = {ch_id}'
             cur.execute(sql)
 
-        mail_to_notify(token, subject='SYM time changed', content='You selected another session slot!')
-        asyncio.run(send_email_func(to_addr=therapist_email, subject='SYM therapy time changed', content='Your client changed session time, check SYM to approve'))
+        mail_to_notify(token, subject='STAGE SYM time changed', content='You selected another session slot!')
+        asyncio.run(send_email_func(to_addr=therapist_email, subject='STAGE SYM therapy time changed', content='Your client changed session time, check SYM to approve'))
 
         con.commit()
         cur.close()
@@ -2590,8 +2590,8 @@ def therapist_change_session_time(data: ReSelectTime):
         client_email = f'SELECT email FROM users WHERE id = {client_id}'
         cur.execute(client_email)
         client_email = cur.fetchall()[0][0]
-        mail_to_notify(token, subject='SYM time changed', content='You selected another session slot!')
-        asyncio.run(send_email_func(to_addr=client_email, subject='SYM therapy time changed',
+        mail_to_notify(token, subject='STAGE SYM time changed', content='You selected another session slot!')
+        asyncio.run(send_email_func(to_addr=client_email, subject='STAGE SYM therapy time changed',
                                     content='Your client changed session time, check SYM to approve'))
 
         con.commit()
