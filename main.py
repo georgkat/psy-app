@@ -59,7 +59,7 @@ config_pc = {
     'port': 3306,
     'user': 'root',
     'password': '',
-    'database': 'testdb'
+    'database': 'testdb2'
 }
 
 config_dock = {
@@ -67,7 +67,7 @@ config_dock = {
     'port': 3306,
     'user': 'root',
     'password': '',
-    'database': 'testdb'
+    'database': 'testdb2'
 }
 
 config_serv = {
@@ -75,7 +75,7 @@ config_serv = {
     'port': 3306,
     'user': 'root',
     'password': 'Ru3-H84-BPg-WkX',
-    'database': 'testdb'
+    'database': 'testdb2'
 }
 
 configs = [config_serv, config_dock, config_pc]
