@@ -345,7 +345,15 @@ def register(data:UserCreate):
             sql = f"INSERT INTO client_symptoms (client_id) VALUES ('{client_id}');"
             cur.execute(sql)
 
-            content=f'Hello!\nYou have registred on Speakyourmind.help!\nYour new password is {password}'
+            content=f'''Здравствуйте, [Имя клиента]!\n
+Добро пожаловать на [название вашего сайта]! Мы рады, что вы выбрали нас для поиска своего психолога.\n
+Теперь вы можете:\n
+●	Изучить профили психологов и выбрать подходящего специалиста.\n
+●	Записываться на сессии в удобное время.\n
+●	Получать поддержку и заботу прямо здесь.\n
+Если у вас возникнут вопросы, наша служба поддержки всегда готова помочь. Просто напишите нам на [email поддержки].\n
+Удачного начала вашего пути к улучшению жизни!С уважением,Команда Speak your mind
+'''
             asyncio.run(send_email_func(to_addr=f'{data.user_email}', subject='STAGE SYM Registration', content=content))
 
 
@@ -1324,10 +1332,17 @@ def register_therapist(data: DocRegister):
                             "faculty": item[3],
                             "degree": item[4]})
 
-        subj = "Speak your mind password"
-        cont = f'''Hello, {data.doc_name}!\nYour first one time password is {password}!\nSincerely yours, SPEAK YOUR MIND team!'''
+        subj = "Speak Your Mind Registration"
+        cont = f'''<b>Спасибо за регистрацию!</b>\n
+Мы рады, что вы решили стать частью нашей команды.\n
+Что дальше?\n
+1.	<b>Свяжемся с вами</b>: В течение 7–10 рабочих дней мы дадим вам обратную связь по поводу вашей заявки. Пожалуйста, убедитесь, что ваш контактный адрес электронной почты и номер телефона указаны правильно.\n
+2.	<b>Интервью</b>: Если вы соответствуете требованиям нашей платформы, мы пригласим вас на интервью, где обсудим ваш опыт, специализацию и процесс работы с клиентами.\n
+3.	<b>Активация профиля</b>: Если интервью пройдет успешно, ваш профиль будет активирован, и вы сможете принимать клиентов через нашу платформу.\n
+Если у вас возникли вопросы, напишите нам на [email поддержки]. Мы всегда готовы помочь!\n
+С уважением, Команда Speak your mind'''
 
-        # send_email_func(to_addr=data.doc_email, subject=subj, content=cont)
+        send_email_func(to_addr=data.doc_email, subject=subj, content=cont)
 
         out = {'status': True,
                'password': f'{password}',
@@ -2000,7 +2015,14 @@ def select_slot_client(data: SelectTime):
 
 
     mail_to_notify(token, subject='STAGE SYM chosen therapy', content='You have successfully chosen therapy time!')
-    asyncio.run(send_email_func(to_addr=therapist_email, subject='STAGE SYM chosen therapy', content='You have client!'))
+
+    subject = 'STAGE SYM chosen therapy'
+    content = f'''Добрый день, [Имя специалиста]!\n
+                Поздравляем! У вас есть новая запись на сессию с клиентом. Сессия назначена на [Дата и время]. Пожалуйста, подготовьтесь к встрече и убедитесь, что ваше расписание обновлено.\n
+Если возникнут изменения или вопросы, сообщите нам, и мы постараемся помочь.\n
+Желаем продуктивной работы и успешных сессий!\n
+С уважением,Команда Speak your mind'''
+    asyncio.run(send_email_func(to_addr=therapist_email, subject=subject, content=content))
 
     return {"status": True,
             "time": date_time}
@@ -2298,8 +2320,22 @@ def approve_therapist(data: ApproveTherapistToken):
             con = mariadb.connect(**config)
             cur = con.cursor()
             cur.execute(sql)
+            sql_2 = f'SELECT email FROM users WHERE id = {doc_id}'
+            cur.execute(sql_2)
+            doc_email = cur.fetchall()[0][0]
             con.commit()
             cur.close()
+
+            subj = "Speak Your Mind Activated"
+            cont = f'''Здравствуйте, [Имя специалиста]!\n
+Ваш профиль на платформе [Название платформы] успешно активирован, и теперь вы можете начать принимать консультации. Пользователи смогут записываться к вам, и вы сможете вести сессии через нашу платформу.\n
+Если вам нужно больше информации о функциях платформы или возникли вопросы, наша служба поддержки всегда готова помочь.\n
+Успешной работы и плодотворных встреч с клиентами!\n
+С уважением,Команда Speak your mind
+'''
+
+            send_email_func(to_addr=doc_email, subject=subj, content=cont)
+
             print({'status': True})
             return {'status': True}
         elif f and data.deactivate == 1:
@@ -3101,7 +3137,11 @@ def cancel_session(data: CancelSession):
         if is_therapist:
             doc_id = user_id
 
-            sql = f'DELETE FROM ongoing_sessions WHERE client_id = (SELECT client FROM schedule WHERE sh_id = {sh_id} AND doctor_id = {doc_id}) AND doc_id = {doc_id}'
+            client_email = f'SELECT email FROM users WHERE id = (SELECT client FROM schedule WHERE sh_id = {sh_id} AND doctor_id = {doc_id}) AND doc_id = {doc_id})'
+            cur.execute(client_email)
+            client_email = cur.fetchall()[0][0]
+
+            sql = f'DELETE FROM ongoing_sessions WHERE client_id = (SELECT client FROM schedule WHERE sh_id = {sh_id} AND doctor_id = {doc_id}) AND doc_id = {doc_id})'
             print(sql)
             cur.execute(sql)
 
@@ -3114,9 +3154,24 @@ def cancel_session(data: CancelSession):
                 print(sql)
                 cur.execute(sql)
 
+            content = f'''Здравствуйте, [Имя клиента]!\n
+            Мы хотим сообщить, что ваша запланированная сессия с [Имя психолога] на [дата и время] была отменена.\n
+            Если это решение принято вами, вы можете записаться на новое удобное время в вашем личном кабинете. Если же отмена произошла по другой причине, наша команда уже работает над тем, чтобы помочь вам выбрать другое время.\n
+            Если у вас возникнут вопросы, пожалуйста, свяжитесь с нами по [email поддержки].\n
+            С уважением,Команда Speak your mind
+
+                        '''
+            asyncio.run(
+                send_email_func(to_addr=f'{client_email}', subject='STAGE SYM Session canceled', content=content))
+
         else:
             client_id = user_id
-
+            doctor_email = f'SELECT email FROM users WHERE id = (SELECT has_therapist FROM clients WHERE client_id = {client_id})'
+            cur.execute(doctor_email)
+            doctor_email = cur.fetchall()[0][0]
+            client_email = f'SELECT email FROM users WHERE id = {client_id}'
+            cur.execute(doctor_email)
+            client_email = cur.fetchall()[0][0]
             sql = f'SELECT ch_id, old_sh_id, new_sh_id FROM change_schedule WHERE client_id = {client_id}'
             print(sql)
             cur.execute(sql)
@@ -3155,6 +3210,25 @@ def cancel_session(data: CancelSession):
                 print(sql)
                 cur.execute(sql)
 
+            subj = "Stage Speak Your Mind Cancel"
+            cont = f'''Здравствуйте, [Имя специалиста]!\n
+К сожалению, сессия с клиентом, запланированная на [Дата и время], была отменена. Если клиент захочет перенести встречу, мы свяжемся с вами, чтобы предложить новое время.\n
+Если у вас возникнут вопросы или предложения по работе, не стесняйтесь обращаться.\n
+С уважением,Команда Speak your mind
+
+            '''
+
+            send_email_func(to_addr=f'{doctor_email}', subject=subj, content=cont)
+
+            content = f'''Здравствуйте, [Имя клиента]!\n
+Мы хотим сообщить, что ваша запланированная сессия с [Имя психолога] на [дата и время] была отменена.\n
+Если это решение принято вами, вы можете записаться на новое удобное время в вашем личном кабинете. Если же отмена произошла по другой причине, наша команда уже работает над тем, чтобы помочь вам выбрать другое время.\n
+Если у вас возникнут вопросы, пожалуйста, свяжитесь с нами по [email поддержки].\n
+С уважением,Команда Speak your mind
+
+            '''
+            asyncio.run(
+                send_email_func(to_addr=f'{client_email}', subject='STAGE SYM Session canceled', content=content))
 
         con.commit()
         cur.close()
