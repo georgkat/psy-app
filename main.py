@@ -3114,6 +3114,13 @@ def cancel_session(data: CancelSession):
                 print(sql)
                 cur.execute(sql)
 
+            client_email = f'SELECT email FROM users WHERE (SELECT client FROM schedule WHERE sh_id = {sh_id} AND doctor_id = {doc_id})'
+            cur.execute(client_email)
+            client_email = cur.fetchall()[0][0]
+            mail_to_notify(token, subject='SYM session canceled', content='You canceled session!')
+            asyncio.run(send_email_func(to_addr=client_email, subject='SYM therapist cancelled session',
+                                        content='Your therapist has changed session!'))
+
         else:
             client_id = user_id
 
@@ -3154,6 +3161,15 @@ def cancel_session(data: CancelSession):
                 sql = f'DELETE FROM ongoing_sessions WHERE client_id = {client_id}'
                 print(sql)
                 cur.execute(sql)
+
+            # therapist = f'SELECT email FROM users WHERE (SELECT client FROM schedule WHERE sh_id = {sh_id} AND doctor_id = {doc_id})'
+            # cur.execute(client_email)
+            # client_email = cur.fetchall()[0][0]
+            # mail_to_notify(token, subject='SYM session canceled', content='You canceled session!')
+            # asyncio.run(send_email_func(to_addr=client_email, subject='SYM therapist cancelled session',
+            #                             content='Your therapist has changed session!'))
+
+
 
 
         con.commit()
