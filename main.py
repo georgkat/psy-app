@@ -3680,6 +3680,27 @@ def admin_update_therapist(data: AdminUpdateDoc):
         doc_language = data.doc_language
         doc_method = data.doc_method
 
+        sql_edu_main_items = []
+        sql_edu = None
+        sql_edu_del = None
+
+        if str(data.doc_edu):
+            print(data.doc_edu)
+            for line in data.doc_edu:
+                print(line)
+                sql_edu_main_items.append(f'''({doc_id}, {line['year']}, "{line['university']}", "{line['faculty']}", "{line['degree']}")''')
+                print(sql_edu_main_items)
+            print(sql_edu_main_items)
+            sql_edu_main_items = ', '.join([x for x in sql_edu_main_items])
+
+        if sql_edu:
+            sql_edu_del = f'DELETE FROM educations_main WHERE doc_id = {doc_id}'
+            sql_edu = f"INSERT INTO educations_main (doc_id, year, university, faculty, degree) VALUES {sql_edu_main_items};"
+
+
+
+
+
         sql_email = f'UPDATE users SET email = "{doc_email}" WHERE id = {doc_id}'
 
         sql_main = (f'UPDATE doctors SET '
@@ -3719,6 +3740,9 @@ def admin_update_therapist(data: AdminUpdateDoc):
         sql_language = f'UPDATE languages SET {l_sql} WHERE doc_id = {doc_id}'
         sql_method = f'UPDATE methods SET {m_sql} WHERE doc_id = {doc_id}'
 
+        if sql_edu_del:
+            cur.execute(sql_edu_del)
+            cur.execute(sql_edu)
         cur.execute(sql_email)
         cur.execute(sql_main)
         cur.execute(sql_language)

@@ -149,6 +149,8 @@ class AdminUpdateDoc(CoreModel):
     doc_language: list[int]
     doc_method: list[int]
 
+    doc_edu: list[dict] = None
+
 class DocRegister(CoreModel):
     doc_name: str
     doc_date_of_birth: date # YYYY-MM-DD
