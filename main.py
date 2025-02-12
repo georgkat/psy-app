@@ -232,11 +232,9 @@ def gen_password(data: UserLoginGen):
         content = f'Hello!\n Your new password is {password}'
         asyncio.run(send_email_func(to_addr=f'{email}', subject='STAGE SYM New Password', content=content))
 
-        print({"status": True,
-               "password": password})
+        print({"status": True})
 
-        return {"status": True,
-                "password": password}
+        return {"status": True}
     except Exception as e:
         try:
             cur.close()
@@ -363,8 +361,7 @@ def register(data:UserCreate):
             con.close()
 
             return {'status': True,
-                    'token': f'{token}',
-                    'password': password}
+                    'token': f'{token}'}
         else:
             cur.close()
             con.close()
@@ -1346,7 +1343,6 @@ def register_therapist(data: DocRegister):
         send_email_func(to_addr=data.doc_email, subject=subj, content=cont)
 
         out = {'status': True,
-               'password': f'{password}',
                'token': f'{token}',
                'doc_name': f[0][1],
                'doc_date_of_birth': f[0][2],
