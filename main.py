@@ -3680,7 +3680,8 @@ def admin_update_therapist(data: AdminUpdateDoc):
         sql_edu_main_items = []
         sql_edu = None
         sql_edu_del = None
-
+        print('CHEKIN EDUS')
+        print(f'{str(data.doc_edu)}')
         if str(data.doc_edu):
             print(data.doc_edu)
             for line in data.doc_edu:
@@ -3690,7 +3691,7 @@ def admin_update_therapist(data: AdminUpdateDoc):
             print(sql_edu_main_items)
             sql_edu_main_items = ', '.join([x for x in sql_edu_main_items])
 
-        if sql_edu:
+        if sql_edu_main_items:
             sql_edu_del = f'DELETE FROM educations_main WHERE doc_id = {doc_id}'
             sql_edu = f"INSERT INTO educations_main (doc_id, year, university, faculty, degree) VALUES {sql_edu_main_items};"
 
