@@ -54,7 +54,7 @@ from email.mime.text import MIMEText
 # email password = pQ6-c8K-Wph-Z2p
 # no_reply password = BPW-XGN-r7g-p8v
 
-database = 'testdb2'
+database = 'testdb'
 
 config_pc = {
     'host': 'localhost', # для сборки на пеке
@@ -82,8 +82,8 @@ config_serv = {
 
 configs = [config_serv, config_dock, config_pc]
 
-app = FastAPI(ssl_keyfile = "/etc/letsencrypt/live/www.speakyourmind.help/privkey.pem", ssl_certfile = "/etc/letsencrypt/live/www.speakyourmind.help/fullchain.pem")
-# app = FastAPI()
+# app = FastAPI(ssl_keyfile = "/etc/letsencrypt/live/www.speakyourmind.help/privkey.pem", ssl_certfile = "/etc/letsencrypt/live/www.speakyourmind.help/fullchain.pem")
+app = FastAPI()
 
 # origins = ['http://localhost:3000', 'https://localhost:3000', 'http://127.0.0.1:3000', 'http://0.0.0.0:3000', 'http://www.speakyourmind.help/*', 'http://www.speakyourmind.help/']
 origins = ['*', 'http://localhost:3000', 'https://localhost:3000', 'http://127.0.0.1:3000', 'http://0.0.0.0:3000', 'http://www.speakyourmind.help/*', 'http://www.speakyourmind.help/']
