@@ -54,12 +54,14 @@ from email.mime.text import MIMEText
 # email password = pQ6-c8K-Wph-Z2p
 # no_reply password = BPW-XGN-r7g-p8v
 
+database = 'testdb'
+
 config_pc = {
     'host': 'localhost', # для сборки на пеке
     'port': 3306,
     'user': 'root',
     'password': '',
-    'database': 'testdb2'
+    'database': database
 }
 
 config_dock = {
@@ -67,7 +69,7 @@ config_dock = {
     'port': 3306,
     'user': 'root',
     'password': '',
-    'database': 'testdb2'
+    'database': database
 }
 
 config_serv = {
@@ -75,13 +77,13 @@ config_serv = {
     'port': 3306,
     'user': 'root',
     'password': 'Ru3-H84-BPg-WkX',
-    'database': 'testdb2'
+    'database': database
 }
 
 configs = [config_serv, config_dock, config_pc]
 
-app = FastAPI(ssl_keyfile = "/etc/letsencrypt/live/www.speakyourmind.help/privkey.pem", ssl_certfile = "/etc/letsencrypt/live/www.speakyourmind.help/fullchain.pem")
-# app = FastAPI()
+# app = FastAPI(ssl_keyfile = "/etc/letsencrypt/live/www.speakyourmind.help/privkey.pem", ssl_certfile = "/etc/letsencrypt/live/www.speakyourmind.help/fullchain.pem")
+app = FastAPI()
 
 # origins = ['http://localhost:3000', 'https://localhost:3000', 'http://127.0.0.1:3000', 'http://0.0.0.0:3000', 'http://www.speakyourmind.help/*', 'http://www.speakyourmind.help/']
 origins = ['*', 'http://localhost:3000', 'https://localhost:3000', 'http://127.0.0.1:3000', 'http://0.0.0.0:3000', 'http://www.speakyourmind.help/*', 'http://www.speakyourmind.help/']
@@ -1630,7 +1632,6 @@ def get_doc_data(data: SingleToken):
         return out
     # except Exception as e:
     #     print({'status': False,
-    #             'error': f'get_doc_data error: {e}, {traceback.extract_stack()}'})
     #     return {'status': False,
     #             'error': f'get_doc_data error: {e}, {traceback.extract_stack()}'}
 
@@ -3698,7 +3699,8 @@ def admin_update_therapist(data: AdminUpdateDoc):
 
 
         sql_email = f'UPDATE users SET email = "{doc_email}" WHERE id = {doc_id}'
-
+        if doc_avatar == None:
+            doc_avatar = 'NULL'
         sql_main = (f'UPDATE doctors SET '
                     f'doc_name = "{doc_name}", '
                     f'doc_gender = {doc_gender}, '
@@ -3736,9 +3738,19 @@ def admin_update_therapist(data: AdminUpdateDoc):
         sql_language = f'UPDATE languages SET {l_sql} WHERE doc_id = {doc_id}'
         sql_method = f'UPDATE methods SET {m_sql} WHERE doc_id = {doc_id}'
 
+        print(sql_language)
+        print(sql_method)
+
+
         if sql_edu_del:
+            print(sql_edu_del)
+            print(sql_edu)
             cur.execute(sql_edu_del)
             cur.execute(sql_edu)
+
+        print('we are here')
+        print(sql_email)
+        print(sql_main)
         cur.execute(sql_email)
         cur.execute(sql_main)
         cur.execute(sql_language)
